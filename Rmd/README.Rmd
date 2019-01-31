@@ -6,7 +6,7 @@ output:
   
 ---
 
-## READ ME
+## Shorebird bioenergetics & Central Valley wetland incentives
 
 This repo is for a study of the contribution of wetland incentives programs in the Central Valley (e.g. Bird Returns, WHEP) to shorebird bioenergetics, particularly during both dry and wet years during 2013-2017. The intention is to estimate the contribution of these wetlands to meeting CVJV habitat objectives and shrinking shorebird energy shortfalls during the non-breeding season.
 
