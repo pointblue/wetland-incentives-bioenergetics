@@ -1,0 +1,707 @@
+polygonID,UniqueID,GIS_Ac,season,year,dates,opt,program
+2,co2287,171.065478294,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+7,co2304,104.091277154,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+8,co892,66.8740937386,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+12,su911,95.2733872166,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+19,su1395,149.711734102,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+20,co4682,12.5724780129,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+21,co4691,25.3438621658,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+22,co1167,67.6061559348,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+23,co4681,32.5466820474,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+26,bu5724,26.177604569,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+27,pl12,16.1715434246,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+40,tnc2,23.708902743,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+41,tnc3,79.2081940804,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+44,co5302,102.858665673,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+45,co6530,145.6143451,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+80,co1802,101.293688649,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+84,co686,188.994660487,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+85,yo5460,225.220071732,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+93,su934,132.155317295,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+119,tnc9,82.9107993793,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+120,su1945,154.751637577,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+121,pl428,73.663952307,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+122,pl219,21.4867572472,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+161,tnc11,51.7662441391,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+222,co470,64.6127636,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+224,tnc15,73.5823994865,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+225,co1933,150.718367023,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+226,co1946,156.381339527,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+227,co6325,125.104416345,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+228,co2290,123.16339536,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+257,tnc122,35.9784345121,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+261,co1804,161.116477269,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+269,co6281,371.839941472,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+270,co6425,317.828465929,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+271,co922,358.430712162,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+281,co938,117.452013342,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+286,co5811,346.263948717,spring,2014,Feb 1 - Mar 14,Multiple Bids,enrolled
+287,co5300,96.364069523,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+288,co901,126.297495513,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+289,co887,128.95512198,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+290,co4412,73.1970754386,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+291,tnc107,30.7757571974,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+293,co3956,75.55784243,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+294,co5075,62.2176793514,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+295,su1396,148.432675652,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+301,pl6,15.2739408264,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+302,pl8,10.7915630004,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+303,pl9,10.6090642396,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+304,pl10,12.5206520657,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+305,pl11,10.9609772401,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+306,pl5,12.6173798411,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+307,pl7,10.6459740756,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+321,tnc17,24.6097341877,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+322,tnc18,30.7351137732,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+323,tnc19,30.1870176922,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+324,tnc20,21.5552199833,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+325,tnc21,2.99733869341,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+370,co1798,120.088478674,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+371,co1799,115.582690134,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+372,co1800,117.600485168,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+373,co1801,115.29671196,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+374,co1803,80.3287912443,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+390,tnc31,36.4265679745,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+428,tnc32,31.7201570415,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+429,tnc33,4.70455113374,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+434,tnc38,20.2722102366,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+435,tnc39,20.5078650976,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+436,tnc40,10.0132768634,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+483,tnc123,4.40514861676,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+484,tnc124,22.1909514673,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+485,tnc125,7.78189140741,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+503,su1912,118.301604941,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+504,su1909,132.287113559,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+530,yo5459,149.966445523,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+542,pl217,19.995361584,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+543,pl218,13.8808519223,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+544,pl429,30.2524686047,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+545,pl27,40.3147753771,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+551,co6218,99.143670593,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+552,co469,48.9197458215,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+553,co2263,107.531417742,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+554,co2265,25.3733417549,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+555,co2264,121.901196995,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+556,co2266,112.553478395,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+557,co1943,152.464619588,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+558,co1944,71.8483304051,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+559,co1945,73.1619368819,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+560,co1947,153.165360121,spring,2014,Feb 1 - Mar 28,8 week,enrolled
+561,bu5723,21.2695565112,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+562,bu3210,17.3945969103,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+563,bu5722,24.3119734162,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+573,co2303,142.789989658,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+574,co2305,78.4857289157,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+642,su1911,80.7043947949,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+643,su1910,123.600553627,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+644,su1908,132.0314677,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+675,co894,42.2510471547,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+758,tnc146,146.222317326,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+759,tnc147,149.300940668,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+760,yo5578,131.4981242,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+761,tnc144,155.140713859,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+762,tnc145,150.258197942,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+763,yo5577,66.860273864,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+806,co1165,18.6982674412,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+819,co4667,20.7699279735,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+820,co4668,21.9441741043,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+821,co4669,22.0667204167,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+822,co4672,23.4684173958,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+823,co4670,24.8441573582,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+824,co4671,24.7078762245,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+825,co4673,20.2557702893,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+826,co4680,33.2527471178,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+827,co4674,15.9438647599,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+828,co4687,141.083333641,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+829,co4693,23.0202864733,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+830,co4692,24.1181907296,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+831,co4689,24.8724484211,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+832,co4690,23.6662662249,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+833,co4694,25.2130933665,spring,2014,Feb 1 - Mar 14,6 week,enrolled
+10,su637,58.7949076155,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+61,su3305,130.318032903,fall,2014,Sep 2 - Sep 15,Sep A,enrolled
+62,su4020,68.3120452878,fall,2014,Sep 2 - Sep 15,Sep A,enrolled
+63,su3300,140.715162623,fall,2014,Sep 2 - Sep 15,Sep A,enrolled
+64,su3298,144.827516057,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+67,su3291,63.9393709341,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+78,tnc137,96.1429015338,fall,2014,Sep 2 - Sep 15,Sep A,enrolled
+86,su3428,159.151838341,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+87,su3429,140.346714123,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+88,su4504,52.4281515935,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+89,su3427,162.836986175,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+90,su3419,109.95213978,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+91,su3267,314.283737345,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+92,su3422,103.620250519,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+108,co5348,29.9774772356,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+109,co2478,59.4512290926,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+112,co184,92.2447897402,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+113,co185,51.5580889985,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+118,su1925,146.383443203,fall,2014,Sep 2 - Sep 15,Sep A,enrolled
+134,yu2009,47.6234479753,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+135,yu2803,97.949290636,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+137,yu2804,105.656518356,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+139,yu2008,53.6441363563,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+142,yu2794,35.5566494097,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+143,yu2474,51.8320889889,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+144,yu2004,54.8771526798,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+145,yu2007,43.2466548077,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+147,yu2467,42.4571704501,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+148,yu2001,40.4595689081,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+149,yu2472,51.9801878859,fall,2014,NA,NA,enrolled
+150,yu2465,37.5906493124,fall,2014,NA,NA,enrolled
+151,yu2792,120.494064303,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+152,yu2469,75.1428047258,fall,2014,NA,NA,enrolled
+153,yu2464,70.7327629713,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+154,yu894,21.0832391668,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+155,yu2416,27.2919581969,fall,2014,NA,NA,enrolled
+156,yu2424,83.2037879748,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+157,yu2420,24.2151626877,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+158,yu2413,34.4083009237,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+159,yu2410,23.5303845391,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+162,yu2418,45.1008742092,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+164,yu1670,108.402656719,fall,2014,NA,NA,enrolled
+168,yu1668,90.472257735,fall,2014,NA,NA,enrolled
+169,yu1669,106.568066734,fall,2014,NA,NA,enrolled
+183,su2574,33.4181611403,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+223,su4268,35.2481800572,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+258,tnc120,26.5536391095,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+259,tnc121,23.6681971943,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+260,su2388,33.4997160081,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+261,co1804,161.116477269,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+282,su954,65.4150147512,fall,2014,NA,NA,enrolled
+283,su953,166.633482153,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+284,su946,124.861290085,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+300,su3426,151.409954263,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+326,yu2463,18.6563266463,fall,2014,NA,NA,enrolled
+327,yu2466,35.730359712,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+330,yu2473,36.0432717928,fall,2014,NA,NA,enrolled
+331,yu2006,39.6772414246,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+332,yu2005,45.7379456399,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+333,yu2010,50.3439933357,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+340,co186,17.9401350764,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+388,tnc29,20.9642100566,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+389,tnc30,12.1577105398,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+425,yu340,64.0231139975,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+426,su3435,37.8440791602,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+430,tnc34,12.7298406529,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+431,tnc35,4.83704063957,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+432,tnc36,6.24850119348,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+433,tnc37,4.09651197737,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+506,su2571,85.3519707747,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+507,su2576,41.9793883462,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+508,su2575,46.8750534915,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+509,su2573,23.2749869915,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
+518,su4264,29.9690865186,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+519,su4266,36.8949189643,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+520,su4267,22.9967310453,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+956,su3420,24.7889826687,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+957,su3421,27.2443126773,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+958,su3424,31.7054380876,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
+39,tnc1,23.7710727641,winter,2015,Jan 1 - Jan 31,NA,enrolled
+40,tnc2,23.708902743,winter,2015,Jan 1 - Jan 31,NA,enrolled
+42,tnc4,15.5646257391,winter,2015,Jan 1 - Jan 31,NA,enrolled
+105,pl200,36.098094328,winter,2015,Jan 1 - Jan 31,NA,enrolled
+106,pl195,66.7290163166,winter,2015,Jan 1 - Jan 31,NA,enrolled
+229,pl716,39.4669439354,winter,2015,Jan 1 - Jan 31,NA,enrolled
+230,pl710,147.162690227,winter,2015,Jan 1 - Jan 31,NA,enrolled
+231,pl451,74.1222285465,winter,2015,Jan 1 - Jan 31,NA,enrolled
+296,su2434,19.4393269398,winter,2015,Jan 1 - Jan 31,NA,enrolled
+297,tnc115,28.7228702701,winter,2015,Jan 1 - Jan 31,NA,enrolled
+299,pl302,28.6173372991,winter,2015,Jan 1 - Jan 31,NA,enrolled
+382,tnc23,53.0879492145,winter,2015,Jan 1 - Jan 31,NA,enrolled
+383,tnc24,16.2401547559,winter,2015,Jan 1 - Jan 31,NA,enrolled
+384,tnc25,9.81315716484,winter,2015,Jan 1 - Jan 31,NA,enrolled
+385,tnc26,18.3461723302,winter,2015,Jan 1 - Jan 31,NA,enrolled
+386,tnc27,32.4709970023,winter,2015,Jan 1 - Jan 31,NA,enrolled
+387,tnc28,30.957426371,winter,2015,Jan 1 - Jan 31,NA,enrolled
+390,tnc31,36.4265679745,winter,2015,Jan 1 - Jan 31,NA,enrolled
+412,pl194,28.4738362017,winter,2015,Jan 1 - Jan 31,NA,enrolled
+413,pl197,20.4835481151,winter,2015,Jan 1 - Jan 31,NA,enrolled
+414,pl196,22.3139493806,winter,2015,Jan 1 - Jan 31,NA,enrolled
+415,pl198,30.4828432751,winter,2015,Jan 1 - Jan 31,NA,enrolled
+416,pl199,44.0762428702,winter,2015,Jan 1 - Jan 31,NA,enrolled
+417,pl729,31.3006440327,winter,2015,Jan 1 - Jan 31,NA,enrolled
+418,pl721,24.5691104829,winter,2015,Jan 1 - Jan 31,NA,enrolled
+419,pl201,24.6707079362,winter,2015,Jan 1 - Jan 31,NA,enrolled
+428,tnc32,31.7201570415,winter,2015,Jan 1 - Jan 31,NA,enrolled
+429,tnc33,4.70455113374,winter,2015,Jan 1 - Jan 31,NA,enrolled
+434,tnc38,20.2722102366,winter,2015,Jan 1 - Jan 31,NA,enrolled
+435,tnc39,20.5078650976,winter,2015,Jan 1 - Jan 31,NA,enrolled
+436,tnc40,10.0132768634,winter,2015,Jan 1 - Jan 31,NA,enrolled
+437,tnc41,19.8137326358,winter,2015,Jan 1 - Jan 31,NA,enrolled
+438,tnc42,9.09343238719,winter,2015,Jan 1 - Jan 31,NA,enrolled
+439,tnc43,16.8736649377,winter,2015,Jan 1 - Jan 31,NA,enrolled
+446,pl441,24.2828389454,winter,2015,Jan 1 - Jan 31,NA,enrolled
+447,pl303,16.5539401517,winter,2015,Jan 1 - Jan 31,NA,enrolled
+448,pl304,31.2338351893,winter,2015,Jan 1 - Jan 31,NA,enrolled
+449,pl305,15.7316382751,winter,2015,Jan 1 - Jan 31,NA,enrolled
+450,pl438,23.2421760377,winter,2015,Jan 1 - Jan 31,NA,enrolled
+451,tnc113,22.7035767824,winter,2015,Jan 1 - Jan 31,NA,enrolled
+452,pl321,20.3246170485,winter,2015,Jan 1 - Jan 31,NA,enrolled
+453,pl322,2.29775217409,winter,2015,Jan 1 - Jan 31,NA,enrolled
+454,pl320,4.23487833105,winter,2015,Jan 1 - Jan 31,NA,enrolled
+455,tnc114,30.1102731777,winter,2015,Jan 1 - Jan 31,NA,enrolled
+456,pl319,12.9261471957,winter,2015,Jan 1 - Jan 31,NA,enrolled
+457,pl318,14.1318693692,winter,2015,Jan 1 - Jan 31,NA,enrolled
+458,pl317,24.657166392,winter,2015,Jan 1 - Jan 31,NA,enrolled
+459,pl724,23.547328384,winter,2015,Jan 1 - Jan 31,NA,enrolled
+460,pl725,24.0600422408,winter,2015,Jan 1 - Jan 31,NA,enrolled
+461,tnc116,27.4584957718,winter,2015,Jan 1 - Jan 31,NA,enrolled
+462,tnc117,28.2513348134,winter,2015,Jan 1 - Jan 31,NA,enrolled
+463,tnc118,29.8664811834,winter,2015,Jan 1 - Jan 31,NA,enrolled
+464,tnc119,21.7755603012,winter,2015,Jan 1 - Jan 31,NA,enrolled
+465,su2440,8.18872932194,winter,2015,Jan 1 - Jan 31,NA,enrolled
+466,su2433,18.0347754778,winter,2015,Jan 1 - Jan 31,NA,enrolled
+467,su2432,29.7802386573,winter,2015,Jan 1 - Jan 31,NA,enrolled
+468,su2431,26.8451109201,winter,2015,Jan 1 - Jan 31,NA,enrolled
+521,tnc45,16.4810304534,winter,2015,Jan 1 - Jan 31,NA,enrolled
+522,tnc46,6.1140686323,winter,2015,Jan 1 - Jan 31,NA,enrolled
+547,tnc49,12.7548489518,winter,2015,Jan 1 - Jan 31,NA,enrolled
+548,tnc50,13.7401362632,winter,2015,Jan 1 - Jan 31,NA,enrolled
+549,tnc51,15.3285549759,winter,2015,Jan 1 - Jan 31,NA,enrolled
+550,tnc52,17.8086562985,winter,2015,Jan 1 - Jan 31,NA,enrolled
+571,pl453,29.9020313605,winter,2015,Jan 1 - Jan 31,NA,enrolled
+572,pl450,50.1977773749,winter,2015,Jan 1 - Jan 31,NA,enrolled
+927,pl713,34.7055588943,winter,2015,Jan 1 - Jan 31,NA,enrolled
+928,pl714,34.8091066817,winter,2015,Jan 1 - Jan 31,NA,enrolled
+12,su911,95.2733872166,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+18,yu337,151.881971747,spring,2015,Feb 1 - Feb 14,2 week,enrolled
+20,co4682,12.5724780129,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+23,co4681,32.5466820474,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+27,pl12,16.1715434246,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+41,tnc3,79.2081940804,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+80,co1802,101.293688649,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+85,yo5460,225.220071732,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+114,tnc5,121.471550666,spring,2015,Feb 1 - Feb 14,2 week,enrolled
+115,tnc6,33.071554801,spring,2015,Feb 1 - Feb 14,2 week,enrolled
+210,yo2868,260.565461422,spring,2015,Feb 1 - Feb 14,2 week,enrolled
+257,tnc122,35.9784345121,spring,2015,Feb 1 - Mar 28,8 week,enrolled
+261,co1804,161.116477269,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+301,pl6,15.2739408264,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+302,pl8,10.7915630004,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+303,pl9,10.6090642396,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+304,pl10,12.5206520657,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+305,pl11,10.9609772401,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+306,pl5,12.6173798411,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+307,pl7,10.6459740756,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+370,co1798,120.088478674,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+371,co1799,115.582690134,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+372,co1800,117.600485168,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+373,co1801,115.29671196,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+374,co1803,80.3287912443,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+388,tnc29,20.9642100566,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+389,tnc30,12.1577105398,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+430,tnc34,12.7298406529,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+431,tnc35,4.83704063957,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+432,tnc36,6.24850119348,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+433,tnc37,4.09651197737,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+440,yo2867,135.019538457,spring,2015,Feb 1 - Feb 14,2 week,enrolled
+441,yo2866,128.311717261,spring,2015,Feb 1 - Feb 14,2 week,enrolled
+483,tnc123,4.40514861676,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+484,tnc124,22.1909514673,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+485,tnc125,7.78189140741,spring,2015,Feb 1 - Mar 28,8 week,enrolled
+503,su1912,118.301604941,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+504,su1909,132.287113559,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+530,yo5459,149.966445523,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+642,su1911,80.7043947949,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+643,su1910,123.600553627,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+644,su1908,132.0314677,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+758,tnc146,146.222317326,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+759,tnc147,149.300940668,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+760,yo5578,131.4981242,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+761,tnc144,155.140713859,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+762,tnc145,150.258197942,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+763,yo5577,66.860273864,spring,2015,Feb 1 - Feb 28,4 week,enrolled
+819,co4667,20.7699279735,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+820,co4668,21.9441741043,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+821,co4669,22.0667204167,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+822,co4672,23.4684173958,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+823,co4670,24.8441573582,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+824,co4671,24.7078762245,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+825,co4673,20.2557702893,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+826,co4680,33.2527471178,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+827,co4674,15.9438647599,spring,2015,Feb 1 - Mar 14,6 week,enrolled
+9,su642,41.2545982928,fall,2015,Sep 1 - Sep 14,Sep A,enrolled
+31,co575,122.765533515,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+65,su3297,72.3224182852,fall,2015,Sep 1 - Sep 14,Sep A,enrolled
+66,su3296,116.45195462,fall,2015,Sep 1 - Sep 14,Sep A,enrolled
+86,su3428,159.151838341,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+87,su3429,140.346714123,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+89,su3427,162.836986175,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+90,su3419,109.95213978,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+92,su3422,103.620250519,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+97,bu3003,173.470524747,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+98,bu1278,172.740577492,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+99,bu3385,116.791304897,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+100,bu3380,71.8948691856,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+101,bu3382,92.8925830211,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+102,bu5781,135.189433986,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+103,bu5780,105.888874041,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+104,bu5123,149.409148591,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+108,co5348,29.9774772356,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+109,co2478,59.4512290926,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+110,co966,87.217368092,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+113,co185,51.5580889985,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+137,yu2804,105.656518356,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+139,yu2008,53.6441363563,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+144,yu2004,54.8771526798,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+145,yu2007,43.2466548077,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+148,yu2001,40.4595689081,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+149,yu2472,51.9801878859,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+152,yu2469,75.1428047258,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+153,yu2464,70.7327629713,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+154,yu894,21.0832391668,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+157,yu2420,24.2151626877,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+158,yu2413,34.4083009237,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+159,yu2410,23.5303845391,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+162,yu2418,45.1008742092,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+168,yu1668,90.472257735,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+169,yu1669,106.568066734,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+210,yo2868,260.565461422,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+220,yo3036,162.654422808,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+229,pl716,39.4669439354,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+230,pl710,147.162690227,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+231,pl451,74.1222285465,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+254,co2270,271.721483097,fall,2015,Sep 1 - Sep 14,Sep A,enrolled
+292,co2312,381.924729439,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+300,su3426,151.409954263,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+314,yu2940,24.5320476553,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+330,yu2473,36.0432717928,fall,2015,Sep 15 - Sep 28,Sep B,enrolled
+331,yu2006,39.6772414246,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+340,co186,17.9401350764,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+411,co574,84.3348723333,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+423,yo4639,410.833938403,fall,2015,NA,Aug A,enrolled
+440,yo2867,135.019538457,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+441,yo2866,128.311717261,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+442,yo3038,153.28633418,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+469,bu3387,90.242206517,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+470,bu3386,89.5373390029,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+471,bu3384,44.5814563573,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+472,bu3378,69.7175523269,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+473,bu3379,45.870798543,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+474,bu3383,54.4715785416,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+475,bu3381,67.1480767555,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+476,bu2301,33.3808967339,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+477,bu1275,103.669691686,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+486,co4600,18.094969753,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+487,co4602,12.3258383335,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+488,co4601,13.0531408018,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+489,co4603,27.3097041474,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+490,co4604,27.760148704,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+491,co4605,27.0435278313,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+492,co4606,18.3966186565,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+493,co5788,28.3975955511,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+494,co5786,34.6673445703,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+504,su1909,132.287113559,fall,2015,Aug 15 - Aug 28,Aug B,enrolled
+571,pl453,29.9020313605,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+643,su1910,123.600553627,fall,2015,Aug 15 - Aug 28,Aug B,enrolled
+644,su1908,132.0314677,fall,2015,Aug 15 - Aug 28,Aug B,enrolled
+928,pl714,34.8091066817,fall,2015,Oct 15 - Oct 28,Oct B,enrolled
+956,su3420,24.7889826687,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+957,su3421,27.2443126773,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+958,su3424,31.7054380876,fall,2015,Oct 1 - Oct 14,Oct A,enrolled
+3,bu1648,140.392488077,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+4,bu2458,131.980514788,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+5,bu894,106.810386732,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+27,pl12,16.1715434246,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+28,co580,134.950083421,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+29,co577,141.75137325,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+31,co575,122.765533515,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+39,tnc1,23.7710727641,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+40,tnc2,23.708902743,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+41,tnc3,79.2081940804,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+55,yo5457,218.994127743,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+57,yo5456,262.766600171,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+59,yo5462,260.057206569,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+60,yo5461,224.435496738,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+71,su939,18.0202796558,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+72,su935,155.38634728,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+73,su936,56.4546453145,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+74,su921,79.9272698359,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+124,pl663,32.336906604,spring,2016,Feb 1 - Apr 14,10 week,enrolled
+130,co6618,90.255815881,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+131,co6673,106.096079018,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+164,yu1670,108.402656719,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+179,bu6804,152.978754955,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+188,su1320,146.12627056,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+267,yo3463,153.38046377,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+268,yo3442,123.735095366,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+274,co4396,300.562043697,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+279,gl6932,49.4692842933,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+280,gl6926,26.1302350407,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+301,pl6,15.2739408264,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+302,pl8,10.7915630004,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+303,pl9,10.6090642396,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+304,pl10,12.5206520657,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+305,pl11,10.9609772401,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+306,pl5,12.6173798411,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+307,pl7,10.6459740756,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+309,yu1680,80.6853909098,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+360,yo3449,199.438346239,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+361,yo3448,197.650602725,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+362,yo3447,412.235835066,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+363,yo3453,29.3990320086,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+364,yo3454,175.223716119,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+365,yo3455,167.312383881,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+366,yo3464,127.529600424,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+384,tnc25,9.81315716484,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+385,tnc26,18.3461723302,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+386,tnc27,32.4709970023,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+387,tnc28,30.957426371,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+388,tnc29,20.9642100566,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+389,tnc30,12.1577105398,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+390,tnc31,36.4265679745,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+428,tnc32,31.7201570415,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+429,tnc33,4.70455113374,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+430,tnc34,12.7298406529,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+431,tnc35,4.83704063957,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+432,tnc36,6.24850119348,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+433,tnc37,4.09651197737,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+434,tnc38,20.2722102366,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+435,tnc39,20.5078650976,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+436,tnc40,10.0132768634,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+437,tnc41,19.8137326358,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+438,tnc42,9.09343238719,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+439,tnc43,16.8736649377,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+521,tnc45,16.4810304534,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+522,tnc46,6.1140686323,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+528,co581,174.803776391,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+672,bu1934,268.761377497,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+673,yo3934,173.003871651,spring,2016,Feb 1 - Mar 14,6 week,enrolled
+758,tnc146,146.222317326,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+759,tnc147,149.300940668,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+760,yo5578,131.4981242,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+761,tnc144,155.140713859,spring,2016,Feb 1 - Feb 28,4 week,enrolled
+929,gl6921,51.8584474541,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+930,gl6922,49.7918958185,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+931,gl6923,50.3907843176,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+932,gl8934,10.0112751024,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+933,gl8935,10.0467028273,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+934,gl8936,20.1058336478,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+935,gl8937,9.958910061,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+936,gl6924,51.269639053,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+937,gl8841,16.0562845856,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+938,gl8842,16.2023398766,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+939,gl8843,16.5993161158,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+940,gl8844,15.234624258,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+941,gl8845,16.5742101942,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+942,gl8846,16.3889541038,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+943,gl8847,9.89648556577,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+944,gl8848,9.87220418581,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+945,gl8849,9.64122975602,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+946,gl8850,9.69314385083,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+947,gl8851,10.158753494700001,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+948,gl6927,17.2230286373,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+949,gl6928,17.2710811726,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+950,gl6929,17.0334432737,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+951,gl6930,15.7073340367,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+979,gl6926,23.1243487857,spring,2016,Feb 1 - Mar 28,8 week,enrolled
+9,su642,41.2545982928,fall,2016,NA,NA,enrolled
+10,su637,58.7949076155,fall,2016,NA,NA,enrolled
+41,tnc3,79.2081940804,fall,2016,NA,NA,enrolled
+56,yo5453,125.327026077,fall,2016,NA,NA,enrolled
+87,su3429,140.346714123,fall,2016,NA,NA,enrolled
+95,bu2472,57.2838626674,fall,2016,NA,NA,enrolled
+96,bu5971,77.0005979023,fall,2016,NA,NA,enrolled
+101,bu3382,92.8925830211,fall,2016,NA,NA,enrolled
+104,bu5123,149.409148591,fall,2016,NA,NA,enrolled
+153,yu2464,70.7327629713,fall,2016,NA,NA,enrolled
+154,yu894,21.0832391668,fall,2016,NA,NA,enrolled
+193,yo3053,109.242806573,fall,2016,NA,NA,enrolled
+194,yo3054,178.803229886,fall,2016,NA,NA,enrolled
+195,yo3055,211.054301601,fall,2016,NA,NA,enrolled
+282,su954,65.4150147512,fall,2016,NA,NA,enrolled
+283,su953,166.633482153,fall,2016,NA,NA,enrolled
+339,tnc22,13.6363386429,fall,2016,NA,NA,enrolled
+388,tnc29,20.9642100566,fall,2016,NA,NA,enrolled
+389,tnc30,12.1577105398,fall,2016,NA,NA,enrolled
+390,tnc31,36.4265679745,fall,2016,NA,NA,enrolled
+428,tnc32,31.7201570415,fall,2016,NA,NA,enrolled
+429,tnc33,4.70455113374,fall,2016,NA,NA,enrolled
+430,tnc34,12.7298406529,fall,2016,NA,NA,enrolled
+431,tnc35,4.83704063957,fall,2016,NA,NA,enrolled
+432,tnc36,6.24850119348,fall,2016,NA,NA,enrolled
+433,tnc37,4.09651197737,fall,2016,NA,NA,enrolled
+469,bu3387,90.242206517,fall,2016,NA,NA,enrolled
+470,bu3386,89.5373390029,fall,2016,NA,NA,enrolled
+602,bu816,107.072248842,fall,2016,NA,NA,enrolled
+603,su1124,81.1501733304,fall,2016,NA,NA,enrolled
+604,su1125,37.9597132525,fall,2016,NA,NA,enrolled
+606,bu1672,114.797647051,fall,2016,NA,NA,enrolled
+607,bu1670,105.161911859,fall,2016,NA,NA,enrolled
+609,su1383,148.744995878,fall,2016,NA,NA,enrolled
+610,su4539,68.9474458765,fall,2016,NA,NA,enrolled
+613,yo3060,169.749251948,fall,2016,NA,NA,enrolled
+618,su641,44.4713065447,fall,2016,NA,NA,enrolled
+619,su4061,87.7904645478,fall,2016,NA,NA,enrolled
+624,bu2043,104.628469331,fall,2016,NA,NA,enrolled
+625,bu5807,102.320646022,fall,2016,NA,NA,enrolled
+626,tnc53,101.586452613,fall,2016,NA,NA,enrolled
+655,co187,31.8512498529,fall,2016,NA,NA,enrolled
+657,bu2465,112.704243176,fall,2016,NA,NA,enrolled
+661,yo1105,48.3961873565,fall,2016,NA,NA,enrolled
+662,yo1129,144.744477677,fall,2016,NA,NA,enrolled
+663,yo3998,103.054913734,fall,2016,NA,NA,enrolled
+664,yo3999,148.073103316,fall,2016,NA,NA,enrolled
+665,yo4002,59.3616039783,fall,2016,NA,NA,enrolled
+666,tnc109,84.3297302278,fall,2016,NA,NA,enrolled
+667,tnc110,82.0279100888,fall,2016,NA,NA,enrolled
+670,tnc138,51.1432965293,fall,2016,NA,NA,enrolled
+714,tnc55,209.427516295,fall,2016,NA,NA,enrolled
+21,co4691,25.3438621658,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+27,pl12,16.1715434246,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+32,co5487,31.1793765249,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+33,co5488,90.0335416158,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+34,co5486,181.28119123,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+35,co5484,138.483038103,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+80,co1802,101.293688649,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+141,yu2478,89.8871896753,spring,2017,Feb 1 - Mar 28,8 week,enrolled
+146,yu2471,12.3954156469,spring,2017,Feb 1 - Mar 28,8 week,enrolled
+152,yu2469,75.1428047258,spring,2017,Feb 1 - Mar 28,8 week,enrolled
+179,bu6804,152.978754955,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+188,su1320,146.12627056,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+301,pl6,15.2739408264,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+302,pl8,10.7915630004,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+303,pl9,10.6090642396,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+304,pl10,12.5206520657,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+305,pl11,10.9609772401,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+306,pl5,12.6173798411,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+307,pl7,10.6459740756,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+337,yu1850,96.5131826358,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+338,yu1849,58.7506041788,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+373,co1801,115.29671196,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+374,co1803,80.3287912443,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+660,bu1871,86.8681298136,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+735,bu1641,119.67912042,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+747,su3977,114.420601626,spring,2017,Feb 1 - Mar 28,8 week,enrolled
+748,su3978,93.805679307,spring,2017,Feb 1 - Mar 28,8 week,enrolled
+758,tnc146,146.222317326,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+759,tnc147,149.300940668,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+760,yo5578,131.4981242,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+761,tnc144,155.140713859,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+789,tnc81,140.01166362,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+790,tnc82,147.320769577,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+791,su922,147.199573629,spring,2017,Feb 1 - Mar 14,6 week,enrolled
+809,tnc99,90.5641867558,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+819,co4667,20.7699279735,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+820,co4668,21.9441741043,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+821,co4669,22.0667204167,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+822,co4672,23.4684173958,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+823,co4670,24.8441573582,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+824,co4671,24.7078762245,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+825,co4673,20.2557702893,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+827,co4674,15.9438647599,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+829,co4693,23.0202864733,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+830,co4692,24.1181907296,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+831,co4689,24.8724484211,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+832,co4690,23.6662662249,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+833,co4694,25.2130933665,spring,2017,Feb 1 - Feb 28,4 week,enrolled
+20,co4682,12.5724780129,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+21,co4691,25.3438621658,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+39,tnc1,23.7710727641,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+55,yo5457,218.994127743,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+57,yo5456,262.766600171,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+95,bu2472,57.2838626674,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+96,bu5971,77.0005979023,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+137,yu2804,105.656518356,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+149,yu2472,51.9801878859,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+153,yu2464,70.7327629713,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+154,yu894,21.0832391668,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+168,yu1668,90.472257735,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+308,yu1671,98.6059324479,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+339,tnc22,13.6363386429,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+351,co977,147.448581195,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+385,tnc26,18.3461723302,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+386,tnc27,32.4709970023,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+387,tnc28,30.957426371,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+521,tnc45,16.4810304534,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+522,tnc46,6.1140686323,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+597,yu1651,39.2297084317,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+598,yu1650,45.8922651463,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+599,yu1652,37.8614947874,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+682,co687,111.951563049,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+705,co1025,75.7737230307,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+819,co4667,20.7699279735,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+820,co4668,21.9441741043,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+821,co4669,22.0667204167,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+822,co4672,23.4684173958,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+823,co4670,24.8441573582,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+824,co4671,24.7078762245,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+825,co4673,20.2557702893,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+827,co4674,15.9438647599,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+829,co4693,23.0202864733,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+830,co4692,24.1181907296,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+831,co4689,24.8724484211,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+832,co4690,23.6662662249,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+833,co4694,25.2130933665,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+969,co1011,71.3986021648,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+974,co4395,51.8675618929,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+975,co4396,53.648605301,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+976,co4397,16.9621540662,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+977,co4398,19.8975980078,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+978,co6251,51.2856051509,fall,2017,Aug 15 - Sep 11,Aug B,enrolled
+980,su5101,118.423778084,fall,2017,Oct 1 - Oct 28,Oct A,enrolled
+998,su2813,55.9676443185,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+999,su2814,57.6535516556,fall,2017,Sep 1 - Sep 28,Sep A,enrolled
+4,bu2458,131.980514788,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+28,co580,134.950083421,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+29,co577,141.75137325,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+31,co575,122.765533515,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+32,co5487,31.1793765249,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+33,co5488,90.0335416158,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+34,co5486,181.28119123,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+35,co5484,138.483038103,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+36,co5485,137.686043769,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+141,yu2478,89.8871896753,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+142,yu2794,35.5566494097,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+143,yu2474,51.8320889889,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+146,yu2471,12.3954156469,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+147,yu2467,42.4571704501,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+150,yu2465,37.5906493124,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+152,yu2469,75.1428047258,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+161,tnc11,51.7662441391,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+171,yu2293,132.974901141,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+291,tnc107,30.7757571974,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+321,tnc17,24.6097341877,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+325,tnc21,2.99733869341,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+326,yu2463,18.6563266463,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+327,yu2466,35.730359712,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+330,yu2473,36.0432717928,spring,2018,Mar 1 - Apr 15,Mar A (6 week),enrolled
+334,yu2292,56.921463738,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+527,co578,95.0921759439,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+528,co581,174.803776391,spring,2018,Mar 1 - Mar 28,Mar A (4 week),enrolled
+541,tnc108,21.9089176108,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1040,tnc150,41.2954294659,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1045,tnc154,31.788886664,spring,2018,Mar 19 - Apr 15,Mar B (4 week),enrolled
+1046,tnc155,28.1106861819,spring,2018,Mar 19 - Apr 15,Mar B (4 week),enrolled
+1047,co4734,52.2617204926,spring,2018,Mar 19 - Apr 15,Mar B (4 week),enrolled
+1048,tnc156,70.0162043804,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1049,tnc157,12.2199814765,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1050,tnc158,17.2751806256,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1051,tnc159,15.4310976733,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1053,co4378,98.06459095,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1054,tnc160,253.413607431,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+1055,co6751,92.5979301797,spring,2018,Mar 19 - Apr 29,Mar B (6 week),enrolled
+10,su637,58.7949076155,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+86,su3428,159.151838341,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+88,su4504,52.4281515935,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+89,su3427,162.836986175,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+91,su3267,314.283737345,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+153,yu2464,70.7327629713,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+154,yu894,21.0832391668,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+300,su3426,151.409954263,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+426,su3435,37.8440791602,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+623,su3266,304.690399221,fall,2018,Sep 17 - Oct 14,Sep B,enrolled
+969,co1011,71.3986021648,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1024,yo3377,96.3554147535,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1026,yo3379,34.4537492561,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1040,tnc150,41.2954294659,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1047,co4734,52.2617204926,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1053,co4378,98.06459095,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1058,tnc163,50.13690207,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1059,tnc164,56.6493278467,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1060,tnc165,85.4610371794,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1087,tnc192,134.694794711,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1132,co4400,43.5386812426,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1133,co4401,32.7055522381,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
+1134,co4399,20.9126711648,fall,2018,Sep 1 - Sep 28,Sep A,enrolled
