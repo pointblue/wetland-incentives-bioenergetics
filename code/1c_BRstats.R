@@ -26,7 +26,7 @@ shp <- st_read(here::here(brfields), 'CONFIDENTIAL_br_fieldsMaster') %>%
          d_sprg_2018 = d_sprg_205,
          d_fall_2018 = d_fall_205,
          wn15_opt = wn18_opt) %>% #fix error in field name
-  mutate(polygonID = c(1:nrow(shp))) %>%
+  mutate(polygonID = c(1:nrow(.))) %>%
   # remove encoded field names and property details
   select(polygonID, UniqueID, GIS_Ac, d_sprg_2014:d_fa18_dat) 
 

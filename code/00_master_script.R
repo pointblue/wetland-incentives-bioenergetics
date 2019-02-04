@@ -15,7 +15,7 @@ rmarkdown::render(here::here("Rmd/README.Rmd"),
 # - 'data/annual_NASS_raw_statewide.csv' (raw data straight from NASS)
 # - 'data/annual_NASS_totals_statewide.csv' (total area by crop class and year)
 
-source(here::here('code/01_agstats.R'))
+source(here::here('code/1a_agstats.R'))
 
 # 2. Proportion of statewide crops that typically fall within the CVJV primary
 #    focus area and each CVJV basin
@@ -26,4 +26,4 @@ source(here::here('code/01_agstats.R'))
 # OUTPUT: 
 # - 'output/planted_crops_mean_2013-17.csv' (total area within CVJV by crop class and year)
 
-source(here::here('code/02_agtotals.R'))
+source(here::here('code/1b_agtotals.R'))
