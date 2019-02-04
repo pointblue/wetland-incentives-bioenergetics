@@ -9,12 +9,12 @@ Data compilation and processing
 
 ### CHECKLIST:
 
-#### Base acreages
+#### Land cover (potential habitat)
 
--   Get annual crop acreages from NASS through 2017
--   Use CVJV distribution of crops (from same TNC layer) to estimate proportion of statewide acreages in the primary focus area and in each CVJV basin
--   Extract annual/seasonal incentive acreages from spatial data (subtract from rice in the CV?)
--   Overlay spatial incentive data with crop layer to generate new rasters of landcover type (for each year/sesaon?)
+-   DONE Get annual crop acreages from NASS through 2017
+-   DONE Use CVJV distribution of crops (from same TNC layer) to estimate proportion of statewide acreages in the primary focus area and in each CVJV basin
+-   IN PROGRESS Extract annual/seasonal incentive acreages from spatial data
+-   Overlay spatial incentive data with crop layer to generate new rasters of landcover type (for each year/sesaon?) - is all of the overlay matching rice?
 
 #### Proportion open water
 
