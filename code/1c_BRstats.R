@@ -64,18 +64,28 @@ dat <- shp %>%
   spread(key = 'var', value = 'value') %>%
   filter(program == 'enrolled') %>% #INCLUDE ONLY ENROLLED FIELDS
   arrange(year, season, polygonID) %>%
-  mutate(dates = gsub('Feb 1-', 'Feb 1 -', dates))
+  mutate(dates = gsub('Feb 1-', 'Feb 1 -', dates),
+         opt = gsub('Aug A', 'Aug B', opt),
+         dates = case_when(opt == 'Aug B' & is.na(dates) ~ 'Aug 15 - Aug 28',
+                           TRUE ~ dates)) #fix typo
 
 write_csv(dat, here::here(br_enrollment))
 
 
-# SEASONAL TOTALS---------
-# summarize total acreage enrolled by year and season
+# EXPLORE & SUMMARIZE---------
 
+# total acreage of all fields ever enrolled:
+dat %>% select(polygonID:GIS_Ac) %>% 
+  distinct() %>% 
+  summarize(GIS_Ac = sum(GIS_Ac)/2.47105)
+# 13,890 ha
+
+# total acreage enrolled by year, season, and date range
+# NOTE: there are still some date ranges that need to be filled in
 dat %>%
   group_by(year, season, dates, opt) %>%
   summarize(GIS_Ac = sum(GIS_Ac)) %>% 
-  print(n = 37)
+  print(n = 36)
 
 # summarize number of times each field enrolled
 dat %>%
@@ -95,6 +105,39 @@ dat %>%
   spread(key = season, value = program)
 #--> many enrolled in multiple seasons
 
+# TIME SERIES---------------
+# proportion of all BR acres (ever) enrolled on each day of the shorebird
+# non-breeding season (where day 1 = 1 July) in each year
+mdat <- dat %>% 
+  # change date range text into start and end dates
+  separate(dates, into = c('start', 'end'), sep = ' - ') %>%
+  mutate(start = as.Date(paste(year, start), format = '%Y %b %d'),
+         end = as.Date(paste(year, end), format = '%Y %b %d')) %>%
+  # calculate day of (calendar) year
+  mutate(ystart = as.numeric(format(start, '%j')),
+         yend = as.numeric(format(end, '%j'))) %>%
+  # adjust for bioyear (Jul to Jun) -- no date ranges span Jun 30-Jul 1
+  mutate(startm = as.numeric(format(start, '%m')),
+         endm = as.numeric(format(end, '%m')),
+         bioyear = case_when(startm >=1 & endm <=6 ~ year - 1,
+                             TRUE ~ year),
+         ystart = case_when(startm <= 6 ~ ystart + 184,
+                            startm >= 7 ~ ystart - 181),
+         yend = case_when(endm <= 6 ~ yend + 184,
+                          endm >= 7 ~ yend - 181))
+
+ts <- expand.grid(yday = c(1:320),
+                  bioyear = c(2013:2017))
+
+ts$ha <- pmap_dbl(list(ts$yday, ts$bioyear),
+     function(yday, byear) {
+       res <- mdat %>% 
+         filter(ystart <= yday & yend >= yday & bioyear == byear) %>%
+         summarize(ha = sum(GIS_Ac) / 2.47105) %>% 
+         pull(ha)
+     })
+
+ggplot(ts, aes(x = yday, y = ha)) + geom_line() + facet_wrap(~bioyear)
 
 sdat <- dat %>%
   # collapse dates and opt into fewer categories that apply over all years
@@ -108,17 +151,23 @@ sdat <- dat %>%
                          dates == 'Aug 15 - Aug 28' ~ 'Aug2B',
                          dates == 'Aug 15 - Sep 11' ~ 'Aug4B',
                          dates == 'Sep 1 - Sep 14' ~ 'Sep2A',
-                         dates == 'Sep 2 - Sep 15' ~ 'Sep2A', #treat as the same
+                         dates == 'Sep 2 - Sep 15' ~ 'Sep2A', #treat as the same?
                          dates == 'Sep 1 - Sep 28' ~ 'Sep4A',
                          dates == 'Sep 15 - Sep 28' ~ 'Sep2B',
-                         dates == 'Sep 16 - Sep 30' ~ 'Sep2B', #treat as the same
+                         dates == 'Sep 16 - Sep 30' ~ 'Sep2B', #treat as the same?
                          dates == 'Sep 17 - Oct 14' ~ 'Sep4B',
                          dates == 'Oct 1 - Oct 14' ~ 'Oct2A',
-                         dates == 'Oct 4 - Oct 17' ~ 'Oct2A', #treat as the same
+                         dates == 'Oct 4 - Oct 17' ~ 'Oct2A', #treat as the same?
                          dates == 'Oct 1 - Oct 28' ~ 'Oct4A',
                          dates == 'Oct 15 - Oct 28' ~ 'Oct2B',
-                         dates == 'Oct 18 - Oct 31' ~ 'Oct2B', #treat as the same
+                         dates == 'Oct 18 - Oct 31' ~ 'Oct2B', #treat as the same?
                          TRUE ~ opt)) %>%
+  # filter(year < 2018) %>%
+  # unite('enrolled', year, opt) %>%
+  # select(polygonID:GIS_Ac, enrolled) %>%
+  # mutate(value = 1) %>%
+  # spread(key = enrolled, value = value, fill = 0)
+  
   # add fields marking whether or not enrolled in the first/second halves of the month
   mutate(jan_a = case_when(opt %in% c('Jan4') ~ 1,
                            TRUE ~ 0),
@@ -145,7 +194,11 @@ sdat <- dat %>%
          oct_b = case_when(opt %in% c('Oct4A', 'Oct2B') ~ 1,
                            TRUE ~ 0)) %>%
   # summarize acres by year/half-month
-  select(-season, -dates, -opt, -program) %>%
+  select(-season, -dates, -opt, -program) 
+write_csv(sdat, here::here(br_totals)) # Note: still missing some with no dates
+
+# total acreage by half-month:
+sdat %>%
   gather(jan_a:oct_b, key = 'timing', value = 'value') %>%
   mutate(timing = factor(timing, levels = c('jan_a', 'jan_b', 'feb_a', 'feb_b',
                                             'mar_a', 'mar_b', 'apr_a', 'aug_b',
@@ -155,34 +208,4 @@ sdat <- dat %>%
   summarize(GIS_Ac = sum(GIS_Ac)) %>%
   spread(key = timing, value = GIS_Ac, fill = 0)
 
-write_csv(sdat, here::here(br_totals)) # Note: still missing some with no dates
 
-
-
-
-dat %>% 
-  ## FOR NOW, FOR CODE DEVELOPMENT PURPOSES, DROP MISSING DATES:
-  filter(!is.na(dates)) %>%
-  separate(dates, into = c('start', 'end'), sep = ' - ') %>%
-  mutate(date_start = as.Date(paste(year, start), format = '%Y %b %d'),
-         date_end = as.Date(paste(year, end), format = '%Y %b %d'),
-         length = difftime(date_end, date_start, units = 'days'),
-         length = as.numeric(length)) %>%
-  select(polygonID:season, date_start, length) %>%
-  spread(key = 'date_start', value = 'length')
-
-
-
-
-sdat %>% filter(season == 'winter')
-sdat %>% filter(season == 'spring') %>% arrange(opt)
-sdat %>% filter(season == 'fall') %>% arrange(opt)
-
-  
-sdat <- std %>%
-  group_by(year, season, opt) %>%
-  summarize(Report_Ac = sum(Report_Ac),
-            GIS_Ac = sum(GIS_Ac)) %>%
-  filter(year < 2018)
-sdat %>% print(n = 30)
-sdat %>% filter(season == 'fall') %>% arrange(opt)
