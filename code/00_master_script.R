@@ -34,6 +34,10 @@ source(here::here('code/1b_agtotals.R'))
 # - confidential shapefile in 'data/CONFIDENTIAL_br_fieldsMaster'
 # OUTPUTS:
 # - 'data/BR_fields.csv' (anonymized table of when different fields were enrolled)
+# - 'data/BR_timeseries.csv' (area of new or existing fields enrolled each day
+#     of the shorebird nonbreeding season)
+# - 'data/BR_enrollment_table.csv' (chart of which fields enrolled in each 
+#     half-month of each yeear for use with creating seasonal land cover rasters)
 # - 'data/BR_totals.csv' (seasonal summary of total acreage enrolled)
 
 source(here::here('code/1c_BRstats.R'))

@@ -10,6 +10,8 @@ brfields <- 'data/CONFIDENTIAL_br_fieldsMaster'
 
 # OUTPUT DATA
 br_enrollment <- 'data/BR_fields.csv'
+br_ts <- 'data/BR_timeseries.csv'
+br_table <- 'data/BR_enrollment_table.csv'
 br_totals <- 'data/BR_totals.csv'
 
 # PROCESS DATA--------------
@@ -128,16 +130,35 @@ mdat <- dat %>%
 
 ts <- expand.grid(yday = c(1:320),
                   bioyear = c(2013:2017))
+ts <- pmap_dfr(list(ts$yday, ts$bioyear),
+               function(y, byear) {
+                 res <- mdat %>% 
+                   filter(ystart <= y & yend >= y & bioyear == byear) %>%
+                   mutate(group = case_when(ystart == y ~ 'new',
+                                            TRUE ~ 'existing')) %>%
+                   group_by(group) %>%
+                   summarize(ha = sum(GIS_Ac) / 2.47105) %>%
+                   mutate(yday = y, bioyear = byear)
+                 }
+               ) %>%
+  mutate(group = factor(group, levels = c('new', 'existing'))) %>%
+  spread(key = group, value = ha) %>% 
+  arrange(bioyear, yday)
+write_csv(ts, here::here(br_ts))
 
-ts$ha <- pmap_dbl(list(ts$yday, ts$bioyear),
-     function(yday, byear) {
-       res <- mdat %>% 
-         filter(ystart <= yday & yend >= yday & bioyear == byear) %>%
-         summarize(ha = sum(GIS_Ac) / 2.47105) %>% 
-         pull(ha)
-     })
+ggplot(ts, aes(x = yday, y = existing), color = 'black') + geom_line() +
+  geom_point(aes(y = new), color = 'red') + facet_wrap(~bioyear) + ylab('ha')
+# red points are dates when new acres were added; black line shows existing 
+# (previously enrolled acres)
 
-ggplot(ts, aes(x = yday, y = ha)) + geom_line() + facet_wrap(~bioyear)
+# Note: fall program date ranges don't overlap, so assume all new acres
+#  established for each option in the program (same field never enrolled under
+#  two options in the same season)
+
+# ENROLLMENT TABLE---------
+# chart of which half-months each field was enrolled in each year; can be
+# combined with polygons to pull out fields to include in seasonal land cover
+# rasters if needed
 
 sdat <- dat %>%
   # collapse dates and opt into fewer categories that apply over all years
@@ -162,12 +183,6 @@ sdat <- dat %>%
                          dates == 'Oct 15 - Oct 28' ~ 'Oct2B',
                          dates == 'Oct 18 - Oct 31' ~ 'Oct2B', #treat as the same?
                          TRUE ~ opt)) %>%
-  # filter(year < 2018) %>%
-  # unite('enrolled', year, opt) %>%
-  # select(polygonID:GIS_Ac, enrolled) %>%
-  # mutate(value = 1) %>%
-  # spread(key = enrolled, value = value, fill = 0)
-  
   # add fields marking whether or not enrolled in the first/second halves of the month
   mutate(jan_a = case_when(opt %in% c('Jan4') ~ 1,
                            TRUE ~ 0),
@@ -195,17 +210,21 @@ sdat <- dat %>%
                            TRUE ~ 0)) %>%
   # summarize acres by year/half-month
   select(-season, -dates, -opt, -program) 
-write_csv(sdat, here::here(br_totals)) # Note: still missing some with no dates
+write_csv(sdat, here::here(br_table))
 
+# TOTAL ACREAGE ENROLLED---------------
 # total acreage by half-month:
-sdat %>%
+tdat <- sdat %>%
   gather(jan_a:oct_b, key = 'timing', value = 'value') %>%
   mutate(timing = factor(timing, levels = c('jan_a', 'jan_b', 'feb_a', 'feb_b',
                                             'mar_a', 'mar_b', 'apr_a', 'aug_b',
                                             'sep_a', 'sep_b', 'oct_a', 'oct_b'))) %>%
   filter(value == 1) %>%
   group_by(year, timing) %>%
-  summarize(GIS_Ac = sum(GIS_Ac)) %>%
-  spread(key = timing, value = GIS_Ac, fill = 0)
+  summarize(ha = sum(GIS_Ac) / 2.47105) %>%
+  spread(key = timing, value = ha, fill = 0)
+
+write_csv(tdat, here::here(br_totals)) # Note: still missing some with no dates
+
 
 
