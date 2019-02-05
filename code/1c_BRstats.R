@@ -129,7 +129,7 @@ mdat <- dat %>%
                           endm >= 7 ~ yend - 181))
 
 ts <- expand.grid(yday = c(1:320),
-                  bioyear = c(2013:2017))
+                  bioyear = c(2013:2016))
 ts <- pmap_dfr(list(ts$yday, ts$bioyear),
                function(y, byear) {
                  res <- mdat %>% 
@@ -144,10 +144,18 @@ ts <- pmap_dfr(list(ts$yday, ts$bioyear),
   mutate(group = factor(group, levels = c('new', 'existing'))) %>%
   spread(key = group, value = ha) %>% 
   arrange(bioyear, yday)
+
 write_csv(ts, here::here(br_ts))
 
-ggplot(ts, aes(x = yday, y = existing), color = 'black') + geom_line() +
-  geom_point(aes(y = new), color = 'red') + facet_wrap(~bioyear) + ylab('ha')
+ts %>% 
+  mutate(label = recode(bioyear, 
+                        '2013' = '2013-14',
+                        '2014' = '2014-15',
+                        '2015' = '2015-16',
+                        '2016' = '2016-17')) %>%
+  ggplot(aes(x = yday, y = existing), color = 'black') + geom_line() +
+  geom_point(aes(y = new), color = 'red') + 
+  facet_wrap(~label) + ylab('ha') + xlab('day of year (1 = 1 July)') 
 # red points are dates when new acres were added; black line shows existing 
 # (previously enrolled acres)
 
