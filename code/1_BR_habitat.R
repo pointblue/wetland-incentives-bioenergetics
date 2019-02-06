@@ -1,5 +1,7 @@
-# README------------
-# Extract annual/seasonal acres enrolled in Bird Returns program
+# READ ME------------
+# Compile time series of habitat available and accessible from fields enrolled 
+# in Bird Returns program. Assume fields are 100% available (open water) and
+# accessible (suitable shorebird depth) during enrollment.
 
 # PACKAGES
 library(tidyverse)
@@ -14,7 +16,9 @@ br_ts <- 'data/BR_timeseries.csv'
 br_table <- 'data/BR_enrollment_table.csv'
 br_totals <- 'data/BR_totals.csv'
 
-# PROCESS DATA--------------
+# PROCESS SPATIAL DATA--------------
+# remove individual names and simplify fields
+
 shp <- st_read(here::here(brfields), 'CONFIDENTIAL_br_fieldsMaster') %>%
   rename(d_sprg_2014 = d_sprg_201,
          d_fall_2014 = d_fall_201,
@@ -107,6 +111,7 @@ dat %>%
   spread(key = season, value = program)
 #--> many enrolled in multiple seasons
 
+
 # TIME SERIES---------------
 # proportion of all BR acres (ever) enrolled on each day of the shorebird
 # non-breeding season (where day 1 = 1 July) in each year
@@ -128,33 +133,44 @@ mdat <- dat %>%
          yend = case_when(endm <= 6 ~ yend + 184,
                           endm >= 7 ~ yend - 181))
 
-ts <- expand.grid(yday = c(1:320),
+df <- expand.grid(yday = c(1:320),
                   bioyear = c(2013:2016))
-ts <- pmap_dfr(list(ts$yday, ts$bioyear),
+ts <- pmap_dfr(list(df$yday, df$bioyear),
                function(y, byear) {
                  res <- mdat %>% 
                    filter(ystart <= y & yend >= y & bioyear == byear) %>%
-                   mutate(group = case_when(ystart == y ~ 'new',
-                                            TRUE ~ 'existing')) %>%
+                   mutate(group = case_when(ystart == y ~ 'added',
+                                            yend == y ~ 'returned',
+                                            TRUE ~ 'available')) %>%
                    group_by(group) %>%
                    summarize(ha = sum(GIS_Ac) / 2.47105) %>%
                    mutate(yday = y, bioyear = byear)
                  }
-               ) %>%
-  mutate(group = factor(group, levels = c('new', 'existing'))) %>%
+               ) 
+
+# data frame of daily change in area available, accessible, newly added and returned
+change <- ts %>%
+  complete(bioyear, yday = 1:320, fill = list(group = 'available', ha = 0)) %>%
   spread(key = group, value = ha) %>% 
-  arrange(bioyear, yday)
+  arrange(bioyear, yday) %>%
+  mutate(available = case_when(!is.na(available) & !is.na(returned) ~ returned + available,
+                               is.na(available) & !is.na(added) ~ added,
+                               is.na(available) & !is.na(returned) ~ returned,
+                               TRUE ~ available),
+         accessible = available) %>%
+  select(bioyear, yday, available, accessible, added, returned)
+  
+write_csv(change, here::here(br_ts))
 
-write_csv(ts, here::here(br_ts))
-
-ts %>% 
+change %>% 
   mutate(label = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
                         '2016' = '2016-17')) %>%
-  ggplot(aes(x = yday, y = existing), color = 'black') + geom_line() +
-  geom_point(aes(y = new), color = 'red') + 
+  ggplot(aes(x = yday, y = available), color = 'black') + geom_line() +
+  geom_point(aes(y = added), color = 'green') + 
+  geom_point(aes(y = available - returned), color = 'red') +
   facet_wrap(~label) + ylab('ha') + xlab('day of year (1 = 1 July)') 
 # red points are dates when new acres were added; black line shows existing 
 # (previously enrolled acres)
