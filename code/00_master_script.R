@@ -20,11 +20,11 @@ source(here::here('code/1a_agstats.R'))
 # b) Proportion of statewide crops that typically fall within the CVJV primary
 #    focus area and each CVJV basin
 # INPUTS:
-# - 'data/annual_NASS_totals_statewide.csv' (from previous step)
-# - 'data/ag_distribution_basins.csv' (typical proportion of statewide crop 
+# - 'data/NASS_totals_statewide.csv' (from previous step)
+# - 'data/cvjv_orig/ag_distribution_basins.csv' (typical proportion of statewide crop 
 #      classes that fall in each basin - from prior CVJV work)
 # OUTPUT: 
-# - 'output/planted_crops_mean_2013-17.csv' (total area within CVJV by crop class and year)
+# - 'data/NASS_totals_cvjv.csv' (total area within CVJV by crop class and year)
 
 source(here::here('code/1b_agtotals.R'))
 

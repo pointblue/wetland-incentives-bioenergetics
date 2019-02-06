@@ -7,11 +7,11 @@
 library(tidyverse)
 
 # INPUT DATA
-agstats <- 'data/annual_NASS_totals_statewide.csv'
-agdist <- 'data/ag_distribution_basins.csv'
+agstats <- 'data/NASS_totals_statewide.csv'
+agdist <- 'data/cvjv_orig/ag_distribution_basins.csv'
 
 # OUTPUT DATA
-results <- 'output/planted_crops_mean_2013-17.csv'
+results <- 'data/NASS_totals_cvjv.csv'
 
 
 # ANNUAL BASIN TOTALS------------
