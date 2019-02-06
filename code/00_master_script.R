@@ -5,30 +5,13 @@ rmarkdown::render(here::here("Rmd/README.Rmd"),
                   output_file = here::here("README.md"))
 
 
-# 1. LAND COVER--------
+# HABITAT AVAILABILITY & ACCESSIBILITY--------
 
-# a) Annual acres planted in California from NASS Quickstats
-# PACKAGES: rnass (rOpenSci interface to NASS quickstats)
-# FUNCTIONS: extract_nass (custom function to extract the specific crop types 
-#    we need for this project for a given year)
-# OUTPUT: 
-# - 'data/NASS_raw_statewide.csv' (raw data straight from NASS)
-# - 'data/NASS_totals_statewide.csv' (total area by crop class and year)
-
-source(here::here('code/1a_agstats.R'))
-
-# b) Proportion of statewide crops that typically fall within the CVJV primary
-#    focus area and each CVJV basin
-# INPUTS:
-# - 'data/NASS_totals_statewide.csv' (from previous step)
-# - 'data/cvjv_orig/ag_distribution_basins.csv' (typical proportion of statewide crop 
-#      classes that fall in each basin - from prior CVJV work)
-# OUTPUT: 
-# - 'data/NASS_totals_cvjv.csv' (total area within CVJV by crop class and year)
-
-source(here::here('code/1b_agtotals.R'))
-
-# c) Annual and seasonal spatial extent of fields enrolled in Bird Returns
+# 1. BR habitat
+# Compile time series of habitat available and accessible from fields enrolled 
+# in Bird Returns program. Assume fields are 100% available (open water) and
+# accessible (suitable shorebird depth) during enrollment.
+#
 # PACKAGES: sf
 # INPUTS:
 # - confidential shapefile in 'data/GIS/CONFIDENTIAL_br_fieldsMaster'
@@ -40,10 +23,11 @@ source(here::here('code/1b_agtotals.R'))
 #     half-month of each yeear for use with creating seasonal land cover rasters)
 # - 'data/BR_totals.csv' (seasonal summary of total acreage enrolled)
 
-source(here::here('code/1c_BRstats.R'))
+source(here::here('code/1_BR_habitat.R'))
 
-# d) Relationship between fields enrolled in Bird Returns and earlier CVJV
-#    land cover data
+# 1b. BR spatial
+# Overlay BR fields with original CVJV land cover raster to check correspondence
+#
 # PACKAGES: raster, sf, fasterize
 # INPUTS:
 # - 'data/GIS/landcover/combined_landcover&cvjv.tif' (older CVJV land cover raster)
@@ -54,6 +38,34 @@ source(here::here('code/1c_BRstats.R'))
 # - 'data/BR_landcover.csv' (number and proportion of pixels from rasterized 
 #    BR polygons that fall within each of the older CVJV land cover "zones")
 
-source(here::here('code/1d_BRlandcover.R'))
+source(here::here('code/1b_BR_spatial.R'))
+
+
+# 2. WHEP
+# Temporary code stub for compiling time series of habitat available and accessible
+
+
+# 3. Crops and wetland habitat
+# STEP 1: update area of potential habitat in each year through 2017
+#
+# PACKAGES: rnass (rOpenSci interface to NASS quickstats)
+# FUNCTIONS: extract_nass (custom function to extract the specific crop types 
+#    we need for this project for a given year)
+# INPUTS:
+# - 'data/cvjv_orig/ag_distribution_basins.csv' (typical proportion of statewide crop 
+#      classes that fall in each basin - from prior CVJV work)
+# OUTPUTS: 
+# - 'data/NASS_raw_statewide.csv' (raw data straight from NASS)
+# - 'data/NASS_totals_statewide.csv' (total area by crop class and year)
+# - 'data/NASS_totals_cvjv.csv' (total area within CVJV by crop class and year)
+
+source(here::here('code/3_crops_and_wetlands.R'))
+
+# 3b. Update flooding curves
+# STEP 2: update flooding curves for crops and wetland habitats to reflect
+#  recent drought and wet years
+
+
+
 
 
