@@ -1,8 +1,5 @@
 # README--------
-# Overlay land cover raster from prior CVJV work (including wetlands and 
-#   consistent crop classes within the CVJV primary focus area) with fields 
-#   included in incentive programs -- treat those fields as a different land 
-#   cover type with its own flooding schedule
+# Overlay BR fields with original CVJV land cover raster to check correspondence
 
 # PACKAGES
 library(raster)
