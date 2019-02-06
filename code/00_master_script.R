@@ -31,7 +31,7 @@ source(here::here('code/1b_agtotals.R'))
 # c) Annual and seasonal spatial extent of fields enrolled in Bird Returns
 # PACKAGES: sf
 # INPUTS:
-# - confidential shapefile in 'data/CONFIDENTIAL_br_fieldsMaster'
+# - confidential shapefile in 'data/GIS/CONFIDENTIAL_br_fieldsMaster'
 # OUTPUTS:
 # - 'data/BR_fields.csv' (anonymized table of when different fields were enrolled)
 # - 'data/BR_timeseries.csv' (area of new or existing fields enrolled each day
@@ -46,9 +46,9 @@ source(here::here('code/1c_BRstats.R'))
 #    land cover data
 # PACKAGES: raster, sf, fasterize
 # INPUTS:
-# - 'data/landcover/combined_landcover&cvjv.tif' (older CVJV land cover raster)
-# - 'data/landcover/landcover_key.csv' (key to the coded raster values)
-# - confidential shapefile in 'data/CONFIDENTIAL_br_fieldsMaster' 
+# - 'data/GIS/landcover/combined_landcover&cvjv.tif' (older CVJV land cover raster)
+# - 'data/GIS/landcover/landcover_key.csv' (key to the coded raster values)
+# - confidential shapefile in 'data/GIS/CONFIDENTIAL_br_fieldsMaster' 
 # - 'data/BR_totals.csv' (from previous step)
 # OUTPUTS:
 # - 'output/BR_landcover.csv' (number and proportion of pixels from rasterized 

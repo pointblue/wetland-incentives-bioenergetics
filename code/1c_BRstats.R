@@ -6,7 +6,7 @@ library(tidyverse)
 library(sf)
 
 # INPUT DATA
-brfields <- 'data/CONFIDENTIAL_br_fieldsMaster'
+brfields <- 'data/GIS/CONFIDENTIAL_br_fieldsMaster'
 
 # OUTPUT DATA
 br_enrollment <- 'data/BR_fields.csv'

@@ -11,9 +11,9 @@ library(fasterize)
 library(tidyverse)
 
 # INPUT DATA
-cvjv_landcover <- 'data/landcover/combined_landcover&cvjv.tif'
-zonekey <- 'data/landcover/landcover_key.csv'
-brfields <- 'data/CONFIDENTIAL_br_fieldsMaster'
+cvjv_landcover <- 'data/GIS/landcover/combined_landcover&cvjv.tif'
+zonekey <- 'data/GIS/landcover/landcover_key.csv'
+brfields <- 'data/GIS/CONFIDENTIAL_br_fieldsMaster'
 br_totals <- 'data/BR_totals.csv'
 
 # OUTPUT DATA
