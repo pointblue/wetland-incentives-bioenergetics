@@ -7,32 +7,39 @@ This repo is for a study of the contribution of wetland incentives programs in t
 
 Data compilation and processing
 
-### CHECKLIST:
+### DATA CHECKLIST:
 
-#### Land cover (potential habitat)
+#### Habitat available & accessible
 
--   DONE - Get annual crop acreages from NASS through 2017
--   DONE - Use CVJV distribution of crops (from same TNC layer) to estimate proportion of statewide acreages in the primary focus area and in each CVJV basin
--   IN PROGRESS - Extract annual/seasonal incentive acreages from spatial data (waiting on data from partners)
--   IN PROGRESS - Overlay polygons from incentive programs with old CVJV land cover data to check correspondence (complete for Bird Returns?)
--   TBD: Necessary? - Generate new land cover rasters including fields enrolled in incentive programs as their own land cover type (but separate rasters for each year/month?)
+##### Bird Returns
 
-#### Flooding curves
+-   IN PROGRESS - Compile annual/seasonal incentive acreages from spatial data (waiting on updated data from partners)
+-   IN PROGRESS - Overlay spatial data with original CVJV land cover data to check correspondence (waiting on updated data from partners, but mostly rice as expected)
+-   Assume 100% available during enrollment (100% open water)
+-   Assume 100% accessible during enrollment (100% suitable depth for shorebirds)
+-   Do not assume credit for any lingering flooding after enrollment that may occur
+-   Do we care about precipitation?
 
--   Proportion open water: repeat prior CVJV process to extract proportion open water by crop class and date of satellite imagery through 2017
--   Get access to recent surface water data (from Matt/Nathan/water tracker)
--   For each date and landcover type (including incentive acres as a "type"), extract proportion open water & proportion masked by clouds (or use cloud-filled imagery?)
--   Alternative option: use data already available on water tracker time series?
--   For fields enrolled in incentive programs, assume 100% open water?
+##### WHEP
 
--   Flooding curve models:
--   For rice, adjust proportion open water on dates during the incentive programs by subtracting the proportion of all rice enrolled in incentive programs that should be flooded during that time of year (probably a tiny %?)
--   For each landcover type, model proportion open water as a function of day of year (consider effect of precipitation or some annual effect of water year type?)
--   For each land cover type and year (2013-14 through 2016-17), predict proportion open water by day of year with confidence intervals
--   For fields enrolled in incentive programs, assume 100% flooded on day 1? Generate comparable time series for each year with the proportion open water of all fields enrolled in each incentive program by day of year
+-   IN PROGRESS - Compile annual/seasonal incentive acreages by program type from Kristin/NRCS data downloads (waiting on potential spatial data)
+-   If spatial data become available, overlay spatial data with original CVJV land cover data to check correspondence (waiting on potential spatial data)
+-   Assume 100% available habitat during enrollment? (boards-in only floods with rain?)
+-   Do not assume 100% accessible during enrollment? Base on rice proportion accessible plus adjustments from variable drawdown study?
+-   Do we care about precipitation?
 
-#### Proportion accessible to shorebirds
+##### Wetlands & crops (potential habitat)
 
--   For rice and wetlands, assume same depth curves as in CVJV paper (for comparability)
--   For BR acres, assume 100% suitable
--   For WHEP acres, base on rice depth curve + variable drawdown study?
+-   DONE - Compile annual statewide crop acreages from NASS through 2017, using original CVJV land cover data to estimate total acreage of each crop class within the CVJV primary focus area
+-   Extract proportion open water in each crop class through 2017 using water tracker data (or use time series already on water tracker website?)
+-   Fit new/updated flooding curves for each crop class including data through 2017
+    -   Model proportion open water as a function of day of year, accounting for proportion masked by clouds
+    -   Consider effect of precipitation or annual water year type? (2013-14 = critical; 2014-15 = critical; 2015-16 = dry/below normal; 2016-17 = wet)
+    -   Consider adjusting proportion open water by acreages enrolled in incentive programs? (but probably a tiny %)
+-   Predict proportion open water by day of year with confidence intervals for each crop class and year
+-   Assume same proportion accessible as original CVJV analysis
+
+#### Energy density & energy needs
+
+-   Assume same energy densities by crop class as in original CVJV analysis
+-   Assume same population objectives, baseline population size, and daily energy needs as original CVJV analysis
