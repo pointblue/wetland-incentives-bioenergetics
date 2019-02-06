@@ -12,8 +12,8 @@ rmarkdown::render(here::here("Rmd/README.Rmd"),
 # FUNCTIONS: extract_nass (custom function to extract the specific crop types 
 #    we need for this project for a given year)
 # OUTPUT: 
-# - 'data/annual_NASS_raw_statewide.csv' (raw data straight from NASS)
-# - 'data/annual_NASS_totals_statewide.csv' (total area by crop class and year)
+# - 'data/NASS_raw_statewide.csv' (raw data straight from NASS)
+# - 'data/NASS_totals_statewide.csv' (total area by crop class and year)
 
 source(here::here('code/1a_agstats.R'))
 

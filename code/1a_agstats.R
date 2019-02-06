@@ -16,8 +16,8 @@ library(tidyverse)
 source(here::here('functions/extract_nass.R'))
 
 # OUTPUT
-rawdat <- 'data/annual_NASS_raw_statewide.csv'
-agstats <- 'data/annual_NASS_totals_statewide.csv'
+rawdat <- 'data/NASS_raw_statewide.csv'
+agstats <- 'data/NASS_totals_statewide.csv'
 
 
 # EXTRACT QUICKSTATS-------------
