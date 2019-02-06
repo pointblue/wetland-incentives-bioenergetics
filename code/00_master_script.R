@@ -51,7 +51,7 @@ source(here::here('code/1c_BRstats.R'))
 # - confidential shapefile in 'data/GIS/CONFIDENTIAL_br_fieldsMaster' 
 # - 'data/BR_totals.csv' (from previous step)
 # OUTPUTS:
-# - 'output/BR_landcover.csv' (number and proportion of pixels from rasterized 
+# - 'data/BR_landcover.csv' (number and proportion of pixels from rasterized 
 #    BR polygons that fall within each of the older CVJV land cover "zones")
 
 source(here::here('code/1d_BRlandcover.R'))

@@ -17,7 +17,7 @@ brfields <- 'data/GIS/CONFIDENTIAL_br_fieldsMaster'
 br_totals <- 'data/BR_totals.csv'
 
 # OUTPUT DATA
-br_landcover <- 'output/BR_landcover.csv'
+br_landcover <- 'data/BR_landcover.csv'
 
 
 # CVJV LAND COVER DATA----------
