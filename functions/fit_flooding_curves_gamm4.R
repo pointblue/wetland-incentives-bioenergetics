@@ -1,14 +1,14 @@
 fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled', 
-                     nflooded = 'nflooded', ntotal = 'ntotal', year = 'year',
+                     nwater = 'nflooded', ntotal = 'ntotal', year = 'year',
                      minprop = NULL, plot = TRUE, k = 10, by = NULL) {
   require(gamm4)
   
   # set up variables:
   df <- df %>%
     rename(yday = dayofyear, ntotal = ntotal, nsampled = nsampled, 
-           nflooded = nflooded, year = year) %>%
+           nwater = nwater, year = year) %>%
     mutate(zday = (yday - 150) / 100,
-           nflooded = as.integer(nflooded),
+           nwater = as.integer(nwater),
            nsampled = as.integer(nsampled)) 
 
   # sampledat$precip.2wk = sampledat$precip.2wk/10 #convert tenths of mm to mm
@@ -29,13 +29,12 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
   print(paste('Observations:', nrow(df)))
   
   if (is.null(by)) {
-    res <- gamm4(cbind(nflooded, nsampled - nflooded) ~ s(zday, k = k), 
+    res <- gamm4(cbind(nwater, nsampled - nwater) ~ s(zday, k = k), 
                  random = ~(1 | year) + (1 | id), 
                  family = binomial, data = df, weights = weights)
     
     newdat <- data.frame(yday = seq(1, 319, 1), 
-                         prop.flooded = 0, 
-                         nflooded = 0, 
+                         nwater = 0, 
                          nsampled = 0, 
                          prop.sampled = 0)
 
@@ -44,31 +43,31 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
       rename(group = by) %>%
       mutate(group = as.factor(group))
     
-    res <- gamm4(cbind(nflooded, nsampled - nflooded) ~ s(zday, k = k, by = group), 
+    res <- gamm4(cbind(nwater, nsampled - nwater) ~ group + s(zday, k = k, by = group), 
                  random = ~(1 | id), 
                  family = binomial, data = df, weights = weights)
     
     newdat <- expand.grid(yday = seq(1, 319, 1), 
                           group = levels(df$group)) %>%
-      mutate(prop.flooded = 0, nflooded = 0, nsampled = 0, prop.sampled = 0)
+      mutate(nwater = 0, nsampled = 0, prop.sampled = 0)
   }
   
   # predict proportion open water by day of year with CI
   newdat$zday = (newdat$yday - 150) / 100
-  newdat$prop.flooded <- predict(res$gam, newdat, type = 'response')
   pred <- as.data.frame(predict(res$gam, newdat, type = 'link', se.fit = T))
+  newdat$fit <- plogis(pred$fit)
   newdat$lcl <- plogis(pred$fit - 2 * pred$se.fit)
   newdat$ucl <- plogis(pred$fit + 2 * pred$se.fit)
-  newdat$nflooded <- NULL
+  newdat$nwater <- NULL
   newdat$nsampled <- NULL
   newdat$prop.sampled <- NULL
   newdat$zday <- NULL
 
-  res <- list(mod = res, sampledat = df, pred = newdat)
+  # res <- list(mod = res, sampledat = df, pred = newdat)
   
   if (plot == TRUE) {
     require(ggplot2)
-    p <- ggplot(newdat, aes(x = yday, y = prop.flooded)) +
+    p <- ggplot(newdat, aes(x = yday, y = fit)) +
       scale_x_continuous(limits = c(1, 319), 
                          expand = c(0, 0), 
                          breaks = c(1, 32, 62, 93, 124, 154, 185, 216, 244, 
@@ -85,23 +84,23 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
     
     if (!is.null(by)) {
       p <- p + 
-        # geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.3) +
+        geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.3) +
         geom_line(aes(color = group), size = 1) +
         geom_point(data = df, 
-                   aes(y = nflooded/nsampled, size = nsampled/ntotal, 
+                   aes(y = nwater/nsampled, size = nsampled/ntotal, 
                        color = group), shape = 21) 
     } else {
       p <- p + 
         geom_ribbon(aes(ymin = lcl, ymax = ucl), alpha = 0.5, fill = 'gray50') + 
         geom_line() +
         geom_point(data = df, shape = 21,
-                   aes(y = nflooded/nsampled, size = nsampled/ntotal))
+                   aes(y = nwater/nsampled, size = nsampled/ntotal))
     }
     
     print(p)      
   }
   
-  return(res)
+  return(newdat)
     
   # } 
   # else if (precip == TRUE) {
