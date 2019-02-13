@@ -19,6 +19,7 @@ tracker <- 'data/stats_basin_ag.csv' #data from water tracker (via Nathan)
 
 # OUTPUTS
 floodcurves <- 'output/open_water_annual.csv'
+floodcurves_wateryear <- 'output/open_water_by_wateryear.csv'
 floodcurves_overall <- 'output/open_water_overall.csv'
 
 # RAW DATA-------------
@@ -41,7 +42,8 @@ dat <- read_csv(here::here(tracker), col_types = cols()) %>%
   
 
 # OPEN WATER BY CROP CLASS----------
-# summarize open water data by crop class over all basins (except Suisun)
+# summarize open water data by crop class over all basins (except Suisun) in
+#  each individual central valley mosaic
 
 sdat <- dat %>%
   # first back-calculate total area from percent observed and observed area
@@ -52,21 +54,15 @@ sdat <- dat %>%
   filter(!(Name %in% c('Tulare Corn', 'San Joaquin Corn'))) %>%
   group_by(ClassName, Mosaic, MosaicDateStart, MosaicDateEnd) %>%
   # summarize and conver to number of pixels (30x30m)
-  summarize(TotalArea = sum(TotalArea) / 900,
-            ObservedArea = sum(ObservedArea) / 900,
-            ObservedAreaWater = sum(ObservedAreaWater) / 900,
-            PropObserved = ObservedArea/TotalArea,
-            PropWater = ObservedAreaWater/ObservedArea) %>%
+  summarize(ntotal = sum(TotalArea) / 900,
+            nsampled = sum(ObservedArea) / 900,
+            nflooded = sum(ObservedAreaWater) / 900) %>%
   ungroup() %>%
-  # # filter dates to remove duplicates
-  # mutate(monthpart = case_when(as.numeric(format(MosaicDateStart, '%d')) <= 15 & 
-  #                                as.numeric(format(MosaicDateEnd, '%d')) <= 15 ~ 'A',
-  #                              as.numeric(format(MosaicDateStart, '%d')) >= 16 &
-  #                                as.numeric(format(MosaicDateEnd, '%d')) >= 16 ~ 'B',
-  #                              MosaicDateStart %in% c('2015-10-08', '2015-10-31') ~ 'A',
-  #                              MosaicDateStart %in% c('2014-12-15', '2015-11-16') ~ 'B',
-  #                              TRUE ~ NA_character_)) %>%
-  # filter(!is.na(monthpart)) %>%
+  # bias correction
+  mutate(nflooded2 = case_when(ClassName == 'Wetland' ~ nflooded * 1.11,
+                               ClassName == 'Rice' ~ nflooded * 0.96,
+                               ClassName == 'Corn' ~ nflooded * 0.95,
+                               TRUE ~ nflooded)) %>%
   # add mid-point of mosaic date range:
   mutate(MosaicDateMid = MosaicDateStart + (MosaicDateEnd - MosaicDateStart)/2,
          month = as.numeric(format(MosaicDateMid, '%m')),
@@ -76,94 +72,91 @@ sdat <- dat %>%
          bioyear = as.numeric(format(MosaicDateMid, '%Y')),
          bioyear = case_when(month <=6 ~ bioyear - 1,
                              TRUE ~ bioyear)) %>%
-  filter(bioyear >= 2013 & bioyear <= 2017) %>%
+  filter(bioyear >= 2013 & bioyear <= 2016 & yday <= 319) %>%
   mutate(label = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
-                        '2016' = '2016-17',
-                        '2017' = '2017-18'))
+                        '2016' = '2016-17'),
+         wateryear = recode(bioyear,
+                            '2013' = 'critical',
+                            '2014' = 'critical',
+                            '2015' = 'below normal',
+                            '2016' = 'wet')) 
 
-ggplot(sdat %>% filter(yday < 330), 
-       aes(yday, PropWater, color = as.factor(label))) + 
-  geom_point() + facet_wrap(~ClassName) 
+ggplot(sdat, aes(yday, nflooded/nsampled, color = label)) +
+  geom_point() + facet_wrap(~ClassName) +
+  geom_point(aes(y = nflooded2/nsampled), shape = 21)
 
+ggplot(sdat %>% filter(ClassName == 'Wetland'), 
+       aes(yday, nflooded2/nsampled, color = label)) +
+  geom_smooth(aes(fill = label)) + geom_point() 
+
+ggplot(sdat %>% filter(ClassName == 'Wetland'), 
+       aes(yday, nflooded2/nsampled, color = wateryear)) +
+  geom_smooth(aes(fill = wateryear)) + geom_point() 
 
 # FIT GAMMS-------------
-# same model calls as in CVJV work, but eliminate some duplicated scenes from
-#  rolling mosaics
 
-tmp <- sdat %>% filter(ClassName == 'Wetland' & yday <= 319) %>% 
-  arrange(MosaicDateStart)
-for (i in c(1:(nrow(tmp) - 1))) {
-  if (tmp$MosaicDateEnd[i] >= tmp$MosaicDateStart[i+1]) tmp = tmp[-i,]
-}  
-wetlands <- fit_gamm4(tmp, 
-                      dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea', 
-                      nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater', 
-                      minprop = 0.4, k = 20, by = 'label') 
-wetlands_overall <- fit_gamm4(tmp, 
-                              dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea', 
-                              nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater', 
-                              minprop = 0.4, k = 20) 
+by_class <- sdat %>% split(.$ClassName)
 
+by_year <- by_class %>% 
+  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
+                      year = 'bioyear', minprop = 0.4, by = 'label', 
+                      plot = FALSE)) %>%
+  mutate(landcover = rep(levels(sdat$ClassName), 
+                         each = nrow(.)/length(levels(sdat$ClassName))))
 
-tmp <- sdat %>% filter(ClassName == 'Rice' & yday <= 319) %>% 
-  arrange(MosaicDateStart)
-for (i in c(1:(nrow(tmp) - 1))) {
-  if (tmp$MosaicDateEnd[i] >= tmp$MosaicDateStart[i+1]) tmp = tmp[-i,]
-} 
-rice <- fit_gamm4(tmp,
-                  dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea',
-                  nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater',
-                  minprop = 0.4, k = 20, by = 'label') 
-rice_overall = fit_gamm4(tmp,
-                         dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea',
-                         nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater',
-                         minprop = 0.4, k = 20) 
+by_water_year <- by_class %>%
+  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
+                      year = 'bioyear', minprop = 0.4, by = 'wateryear', 
+                      plot = FALSE)) %>%
+  mutate(landcover = rep(levels(sdat$ClassName), 
+                         each = nrow(.)/length(levels(sdat$ClassName))))
 
-tmp <- sdat %>% filter(ClassName == 'Corn' & yday <= 319) %>% 
-  arrange(MosaicDateStart)
-for (i in c(1:(nrow(tmp) - 1))) {
-  if (tmp$MosaicDateEnd[i] >= tmp$MosaicDateStart[i+1]) tmp = tmp[-i,]
-} 
-corn = fit_gamm4(tmp, 
-                 dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea', 
-                 nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater',
-                 minprop = 0.4, k = 20, by = 'label')
+overall <- by_class %>%
+  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
+                      year = 'bioyear', minprop = 0.4, plot = FALSE)) %>%
+  mutate(landcover = rep(levels(sdat$ClassName), 
+                         each = nrow(.)/length(levels(sdat$ClassName))))
 
-corn_overall = fit_gamm4(tmp, 
-                         dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea', 
-                         nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater',
-                         minprop = 0.4, k = 20) 
+ggplot(by_year %>% filter(landcover == 'Wetland'), 
+       aes(yday, fit)) +
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = sdat %>% filter(ClassName == 'Wetland'),
+             aes(y = nflooded2/nsampled, color = label), shape = 21)
 
-tmp <- sdat %>% filter(ClassName == 'Other' & yday <= 319) %>% 
-  arrange(MosaicDateStart)
-for (i in c(1:(nrow(tmp) - 1))) {
-  if (tmp$MosaicDateEnd[i] >= tmp$MosaicDateStart[i+1]) tmp = tmp[-i,]
-} 
-other = fit_gamm4(tmp, 
-                  dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea', 
-                  nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater',
-                  minprop = 0.4, k = 20, by = 'label') 
-other_overall = fit_gamm4(tmp, 
-                          dayofyear = 'yday', year = 'bioyear', ntotal = 'TotalArea', 
-                          nsampled = 'ObservedArea', nflooded = 'ObservedAreaWater',
-                          minprop = 0.4) 
-
-## combine predicted values:
-pred <- wetlands$pred %>% mutate(landcover = 'wetlands') %>%
-  bind_rows(rice$pred %>% mutate(landcover = 'rice')) %>% 
-  bind_rows(corn$pred %>% mutate(landcover = 'corn')) %>%
-  bind_rows(other$pred %>% mutate(landcover = 'other')) %>% 
-  mutate(landcover = as.factor(landcover)) 
-
-pred_overall <- wetlands_overall$pred %>% mutate(landcover = 'wetlands') %>%
-  bind_rows(rice_overall$pred %>% mutate(landcover = 'rice')) %>% 
-  bind_rows(corn_overall$pred %>% mutate(landcover = 'corn')) %>%
-  bind_rows(other_overall$pred %>% mutate(landcover = 'other')) %>% 
-  mutate(landcover = as.factor(landcover)) 
+ggplot(by_water_year %>% filter(landcover == 'Wetland'), aes(yday, fit)) +
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = sdat %>% filter(ClassName == 'Wetland'),
+             aes(y = nflooded2/nsampled, color = wateryear), shape = 21) +
+  # add overall/average curve for comparison:
+  geom_ribbon(data = overall %>% filter(landcover == 'Wetland'), 
+              aes(ymin = lcl, ymax = ucl), fill = 'gray50', alpha = 0.5) +
+  geom_line(data = overall %>% filter(landcover == 'Wetland'), color = 'black')
+ 
+ggplot(by_year %>% filter(landcover == 'Rice'), 
+       aes(yday, fit)) +
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = sdat %>% filter(ClassName == 'Rice'),
+             aes(y = nflooded2/nsampled, color = label), shape = 21)
 
 
-write_csv(pred, here::here(floodcurves))
-write_csv(pred_overall, here::here(floodcurves_overall))
+## mid-winter peak values:
+by_year %>% 
+  group_by(landcover, group) %>%
+  summarize(yday = yday[which(fit == max(fit[which(yday < 250)]))], #avoid late peaks in rice
+            peak = max(fit),
+            lcl = lcl[which(fit == max(fit))],
+            ucl = ucl[which(fit == max(fit))])
+# wetlands: 202-229, 0.604-0.646
+# rice: 200-209, 0.485-0.648
+# corn: 197-207, 0.242-0.260
+# other: 174-191, 0.105-0.138
+
+write_csv(by_year, here::here(floodcurves))
+write_csv(by_water_year, here::here(floodcurves_wateryear))
+write_csv(overall, here::here(floodcurves_overall))
