@@ -3,10 +3,6 @@ Shorebird bioenergetics & Central Valley wetland incentives
 
 This repo is for a study of the contribution of wetland incentives programs in the Central Valley (e.g. Bird Returns, WHEP) to shorebird bioenergetics, particularly during both dry and wet years during 2013-2017. The intention is to estimate the contribution of these wetlands to meeting CVJV habitat objectives and shrinking shorebird energy shortfalls during the non-breeding season.
 
-### CURRENT STATUS:
-
-Data compilation and processing
-
 ### DATA CHECKLIST:
 
 #### Habitat available & accessible
@@ -31,12 +27,11 @@ Data compilation and processing
 ##### Wetlands & crops (potential habitat)
 
 -   DONE - Compile annual statewide crop acreages from NASS through 2017, using original CVJV land cover data to estimate total acreage of each crop class within the CVJV primary focus area
--   Extract proportion open water in each crop class through 2017 using water tracker data (or use time series already on water tracker website?)
--   Fit new/updated flooding curves for each crop class including data through 2017
-    -   Model proportion open water as a function of day of year, accounting for proportion masked by clouds
-    -   Consider effect of precipitation or annual water year type? (2013-14 = critical; 2014-15 = critical; 2015-16 = dry/below normal; 2016-17 = wet)
+-   IN PROGRESS - Model proportion open water in each crop class through 2017 using water tracker data
+    -   Model proportion open water as a function of day of year
+    -   Consider fitting separate models for each year, or effect of precipitation/annual water year type? (2013-14 = critical; 2014-15 = critical; 2015-16 = dry/below normal; 2016-17 = wet)
     -   Consider adjusting proportion open water by acreages enrolled in incentive programs? (but probably a tiny %)
--   Predict proportion open water by day of year with confidence intervals for each crop class and year
+    -   Predict proportion open water by day of year with confidence intervals for each crop class and year
 -   Assume same proportion accessible as original CVJV analysis
 
 #### Energy density & energy needs
