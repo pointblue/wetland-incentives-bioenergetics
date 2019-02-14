@@ -16,6 +16,8 @@ source(here::here('functions/fit_flooding_curves_gamm4.R'))
 
 # INPUTS
 tracker <- 'data/stats_basin_ag.csv' #data from water tracker (via Nathan)
+br_ts <- 'data/BR_timeseries.csv'
+whep_ts <- 'data/WHEP_timeseries.csv'
 
 # OUTPUTS
 floodcurves <- 'output/open_water_annual.csv'
@@ -47,7 +49,10 @@ dat <- read_csv(here::here(tracker), col_types = cols()) %>%
 
 sdat <- dat %>%
   # first back-calculate total area from percent observed and observed area
-  mutate(TotalArea = ObservedArea / (PercentObserved/100)) %>%
+  mutate(ObservedAreaWater = case_when(ObservedArea==0 & is.na(ObservedAreaWater) ~ 0,
+                                       TRUE ~ ObservedAreaWater),
+         TotalArea = case_when(ObservedArea == 0 ~ 0,
+                               TRUE ~ ObservedArea / (PercentObserved/100))) %>%
   # drop non-existent Tulare Rice:
   filter(Name != 'Tulare Rice') %>%
   # drop unsuitable corn in Tulare and San Joaquin basins:
@@ -96,42 +101,77 @@ ggplot(sdat %>% filter(ClassName == 'Wetland'),
        aes(yday, nflooded2/nsampled, color = wateryear)) +
   geom_smooth(aes(fill = wateryear)) + geom_point() 
 
+
+# SUBTRACT INCENTIVE ACRES------------
+br <- read_csv(here::here(br_ts)) %>%
+  select(bioyear, yday, available) %>%
+  filter(available > 0) %>%
+  rename(br = available) %>%
+  # convert from ha to 900m2 pixels
+  mutate(br = (br * 10000)/900)
+
+whep <- read_csv(here::here(whep_ts)) %>%
+  select(bioyear, yday, available, landcover) %>%
+  filter(available > 0) %>%
+  mutate(available = (available * 10000)/900) %>%
+  spread(key = landcover, value = available, fill = 0)
+
+mdat <- sdat %>% 
+  select(ClassName, bioyear, yday, ntotal, nsampled, nflooded, nflooded2, label, 
+         wateryear) %>%
+  left_join(br, by = c('bioyear', 'yday')) %>%
+  left_join(whep, by = c('bioyear', 'yday')) %>%
+  mutate(br = case_when(is.na(br) ~ 0,
+                        TRUE ~ br),
+         whep_fall = case_when(is.na(whep_fall) ~ 0,
+                               TRUE ~ whep_fall),
+         whep_vardd = case_when(is.na(whep_vardd) ~ 0,
+                                TRUE ~ whep_vardd),
+         nflooded3 = case_when(ClassName == 'Rice' ~ nflooded2 - br - whep_fall - whep_vardd,
+                               TRUE ~ nflooded2))
+
+ggplot(mdat, aes(yday, nflooded2/nsampled, color = label)) +
+  geom_point() + facet_wrap(~ClassName) +
+  # geom_point(aes(y = nflooded2/nsampled), shape = 21) +
+  geom_point(aes(y = nflooded3/nsampled), shape = 21)
+
+
 # FIT GAMMS-------------
 
-by_class <- sdat %>% split(.$ClassName)
+by_class <- mdat %>% split(.$ClassName)
 
 by_year <- by_class %>% 
-  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
+  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, by = 'label', 
                       plot = FALSE)) %>%
-  mutate(landcover = rep(levels(sdat$ClassName), 
-                         each = nrow(.)/length(levels(sdat$ClassName))))
+  mutate(landcover = rep(levels(mdat$ClassName), 
+                         each = nrow(.)/length(levels(mdat$ClassName))))
 
 by_water_year <- by_class %>%
-  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
+  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, by = 'wateryear', 
                       plot = FALSE)) %>%
-  mutate(landcover = rep(levels(sdat$ClassName), 
-                         each = nrow(.)/length(levels(sdat$ClassName))))
+  mutate(landcover = rep(levels(mdat$ClassName), 
+                         each = nrow(.)/length(levels(mdat$ClassName))))
 
 overall <- by_class %>%
   map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, plot = FALSE)) %>%
-  mutate(landcover = rep(levels(sdat$ClassName), 
-                         each = nrow(.)/length(levels(sdat$ClassName))))
+  mutate(landcover = rep(levels(mdat$ClassName), 
+                         each = nrow(.)/length(levels(mdat$ClassName))))
 
 ggplot(by_year %>% filter(landcover == 'Wetland'), 
        aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = sdat %>% filter(ClassName == 'Wetland'),
-             aes(y = nflooded2/nsampled, color = label), shape = 21)
+  geom_point(data = mdat %>% filter(ClassName == 'Wetland'),
+             aes(y = nflooded3/nsampled, color = label), shape = 21)
 
 ggplot(by_water_year %>% filter(landcover == 'Wetland'), aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = sdat %>% filter(ClassName == 'Wetland'),
-             aes(y = nflooded2/nsampled, color = wateryear), shape = 21) +
+  geom_point(data = mdat %>% filter(ClassName == 'Wetland'),
+             aes(y = nflooded3/nsampled, color = wateryear), shape = 21) +
   # add overall/average curve for comparison:
   geom_ribbon(data = overall %>% filter(landcover == 'Wetland'), 
               aes(ymin = lcl, ymax = ucl), fill = 'gray50', alpha = 0.5) +
@@ -141,8 +181,10 @@ ggplot(by_year %>% filter(landcover == 'Rice'),
        aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = sdat %>% filter(ClassName == 'Rice'),
-             aes(y = nflooded2/nsampled, color = label), shape = 21)
+  geom_point(data = mdat %>% filter(ClassName == 'Rice'),
+             aes(y = nflooded3/nsampled, color = label), shape = 21) +
+  geom_point(data = mdat %>% filter(ClassName == 'Rice'),
+             aes(y = nflooded2/nsampled, color = label), shape = 19)
 
 
 ## mid-winter peak values:
@@ -153,7 +195,7 @@ by_year %>%
             lcl = lcl[which(fit == max(fit))],
             ucl = ucl[which(fit == max(fit))])
 # wetlands: 202-229, 0.604-0.646
-# rice: 200-209, 0.485-0.648
+# rice: 200-215, 0.424-0.609
 # corn: 197-207, 0.242-0.260
 # other: 174-191, 0.105-0.138
 
