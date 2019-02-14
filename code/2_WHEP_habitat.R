@@ -1,5 +1,8 @@
 # README--------------
-# Stub for developing WHEP habitat availability and accessibility estimates
+# Compile time series of habitat available from fields enrolled 
+# in WHEP programs. Distribute availability of fields across possible date
+# ranges of each program.
+# Still to do: add in estimates of habitat accessible (based on rice depth curves)
 
 # PACKAGES
 library(tidyverse)
@@ -115,37 +118,79 @@ mdat <- dat %>%
 ##  estimate a proportion open water under each practice
 
 ## - WHEP_fall: distribute evenly over period 1 July - 15 Sep + 2 week drawdown
-ts <- data.frame(yday = c(1:92),
-           bioyear = 2014,
-           added = c(rep(138/64, 64), rep(0, 28)),
-           returned = c(rep(0, 14), cumsum(rep(138/64/14, 14)), 
-                        rep(138/64, 64 - 15), 
-                        rev(cumsum(rep(138/64/14, 14))), 0)) %>%
+##    The latest date new acres could be added is Sep 2 (yday 64) to allow 2 weeks of 
+##    flooding by Sept 15
+##    Note: no data for fall 2013 (because in FY2013)
+
+ts_fall <- expand.grid(yday = c(1:92), bioyear = c(2013:2016)) %>%
+  as.tibble() %>%
+  left_join(tdat %>% filter(practice == 'WHEP_fall') %>% select(bioyear, ha)) %>%
+  filter(!is.na(ha)) %>%
+  mutate(added = case_when(yday <= 64 ~ ha/64,
+                           TRUE ~ 0),
+         returned = case_when(yday > 14 & yday <= 28 ~ ha/64/14,
+                              yday > 28 ~ ha/64,
+                              # yday > 77 & yday <92 ~ ha/64/14,
+                              # yday > 28 & yday <=77 ~ cumsum(ha/64/14),
+                              # yday > 77 ~ rev(cumsum(rep(ha/64/14))),
+                              TRUE ~ 0)) %>%
+  group_by(bioyear) %>%
+  mutate(rampup = case_when(yday > 14 & yday <= 28 ~ returned,
+                            TRUE ~ 0),
+         rampup = cumsum(rampup),
+         returned = case_when(yday > 14 & yday <= 28 ~ rampup,
+                              TRUE ~ returned),
+         rampup = NULL) %>%
+  mutate(taper = case_when(yday > 78 ~ ha/64/14,
+                           TRUE ~ 0),
+         taper = cumsum(taper),
+         returned = case_when(yday > 77 ~ returned - taper,
+                           TRUE ~ returned),
+         taper = NULL) %>%
   mutate(lagreturn = lag(returned, 1),
          lagreturn = replace_na(lagreturn, 0),
          available = cumsum(added) - cumsum(lagreturn)) %>%
-  select(-lagreturn)
+  select(-lagreturn) %>%
+  mutate(landcover = 'whep_fall')
 
-
-ggplot(ts, aes(yday, added)) + geom_line() + 
+ggplot(ts_fall, aes(yday, added)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
-  geom_line(aes(y = available), col = 'blue')
+  geom_line(aes(y = available), col = 'blue') +
+  facet_wrap(~bioyear)
 
 
+## - WHEP VARIABLE DRAWDOWN: distribute flood-up over the first ~2 weeks of Nov,
+##     and drawdown over 4 weeks of Feb
+
+ts_vardd <- expand.grid(yday = c(124:243), bioyear = c(2013:2016)) %>%
+  as.tibble() %>%
+  left_join(tdat %>% filter(practice == 'WHEP_vardd') %>% select(bioyear, ha)) %>%
+  mutate(added = case_when(yday < 124 + 14 ~ ha / 14,
+                           TRUE ~ 0),
+         returned = case_when(yday > 215 & yday <= 215 + 7 ~ ha/4/7 + ha/4/14 + ha/4/21 + ha/4/28,
+                              yday > 215 + 7 & yday <= 215 + 14 ~ ha/4/14 + ha/4/21 + ha/4/28,
+                              yday > 215 + 14 & yday <= 215 + 21 ~ ha/4/21 + ha/4/28,
+                              yday > 215 + 21 ~ ha/4/28,
+                              TRUE ~ 0)) %>%
+  mutate(lagreturn = lag(returned, 1),
+         lagreturn = replace_na(lagreturn, 0),
+         available = cumsum(added) - cumsum(lagreturn)) %>%
+  select(-lagreturn) %>%
+  mutate(landcover = 'whep_vardd')
+
+ggplot(ts_vardd, aes(yday, added)) + geom_line() + 
+  geom_line(aes(y = returned), col = 'red') +
+  geom_line(aes(y = available), col = 'blue') +
+  facet_wrap(~bioyear)
 
 
+## - combined:
+ts <- bind_rows(ts_fall, ts_vardd) %>%
+  complete(landcover, bioyear, yday = 1:320, fill = list(available = 0, added = 0, returned = 0)) 
 
-df <- expand.grid(yday = c(1:320),
-                  bioyear = c(2013:2016))
-ts <- pmap_dfr(list(df$yday, df$bioyear),
-               function(y, byear) {
-                 res <- mdat %>% 
-                   filter(ystart <= y & yend >= y & bioyear == byear) %>%
-                   mutate(group = case_when(ystart == y ~ 'added',
-                                            yend == y ~ 'returned',
-                                            TRUE ~ 'available')) %>%
-                   group_by(group) %>%
-                   summarize(ha = sum(GIS_Ac) / 2.47105) %>%
-                   mutate(yday = y, bioyear = byear)
-               }
-) 
+ggplot(ts, aes(yday, added, linetype = landcover)) + geom_line() + 
+  geom_line(aes(y = returned), col = 'red') +
+  geom_line(aes(y = available), col = 'blue') +
+  facet_wrap(~bioyear)
+
+write_csv(ts, here::here(whep_ts))
