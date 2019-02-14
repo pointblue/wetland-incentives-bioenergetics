@@ -1,9 +1,9 @@
 # README---------------
 # Compile time series of habitat available and accessible from crops and 
-# wetlands not enrolled in incentive programs. Because areas of these programs
-# are relatively small, ignore them?
+# wetlands not enrolled in incentive programs.
 #
-# STEP 2: update flooding curves
+# STEP 2: update flooding curves (proportion of each land cover with open water
+#   on each day of the nonbreeding season)
 #
 # PACKAGES
 library(tidyverse)
@@ -87,17 +87,18 @@ sdat <- dat %>%
                             '2013' = 'critical',
                             '2014' = 'critical',
                             '2015' = 'below normal',
-                            '2016' = 'wet')) 
+                            '2016' = 'wet'),
+         ClassName = tolower(ClassName)) 
 
 ggplot(sdat, aes(yday, nflooded/nsampled, color = label)) +
   geom_point() + facet_wrap(~ClassName) +
   geom_point(aes(y = nflooded2/nsampled), shape = 21)
 
-ggplot(sdat %>% filter(ClassName == 'Wetland'), 
+ggplot(sdat %>% filter(ClassName == 'wetland'), 
        aes(yday, nflooded2/nsampled, color = label)) +
   geom_smooth(aes(fill = label)) + geom_point() 
 
-ggplot(sdat %>% filter(ClassName == 'Wetland'), 
+ggplot(sdat %>% filter(ClassName == 'wetland'), 
        aes(yday, nflooded2/nsampled, color = wateryear)) +
   geom_smooth(aes(fill = wateryear)) + geom_point() 
 
@@ -127,7 +128,7 @@ mdat <- sdat %>%
                                TRUE ~ whep_fall),
          whep_vardd = case_when(is.na(whep_vardd) ~ 0,
                                 TRUE ~ whep_vardd),
-         nflooded3 = case_when(ClassName == 'Rice' ~ nflooded2 - br - whep_fall - whep_vardd,
+         nflooded3 = case_when(ClassName == 'rice' ~ nflooded2 - br - whep_fall - whep_vardd,
                                TRUE ~ nflooded2))
 
 ggplot(mdat, aes(yday, nflooded2/nsampled, color = label)) +
@@ -144,46 +145,46 @@ by_year <- by_class %>%
   map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, by = 'label', 
                       plot = FALSE)) %>%
-  mutate(landcover = rep(levels(mdat$ClassName), 
-                         each = nrow(.)/length(levels(mdat$ClassName))))
+  mutate(landcover = rep(levels(as.factor(mdat$ClassName)), 
+                         each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
 
 by_water_year <- by_class %>%
   map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, by = 'wateryear', 
                       plot = FALSE)) %>%
-  mutate(landcover = rep(levels(mdat$ClassName), 
-                         each = nrow(.)/length(levels(mdat$ClassName))))
+  mutate(landcover = rep(levels(as.factor(mdat$ClassName)), 
+                         each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
 
 overall <- by_class %>%
   map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, plot = FALSE)) %>%
-  mutate(landcover = rep(levels(mdat$ClassName), 
-                         each = nrow(.)/length(levels(mdat$ClassName))))
+  mutate(landcover = rep(levels(as.factor(mdat$ClassName)), 
+                         each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
 
-ggplot(by_year %>% filter(landcover == 'Wetland'), 
+ggplot(by_year %>% filter(landcover == 'wetland'), 
        aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(ClassName == 'Wetland'),
+  geom_point(data = mdat %>% filter(ClassName == 'wetland'),
              aes(y = nflooded3/nsampled, color = label), shape = 21)
 
-ggplot(by_water_year %>% filter(landcover == 'Wetland'), aes(yday, fit)) +
+ggplot(by_water_year %>% filter(landcover == 'wetland'), aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(ClassName == 'Wetland'),
+  geom_point(data = mdat %>% filter(ClassName == 'wetland'),
              aes(y = nflooded3/nsampled, color = wateryear), shape = 21) +
   # add overall/average curve for comparison:
-  geom_ribbon(data = overall %>% filter(landcover == 'Wetland'), 
+  geom_ribbon(data = overall %>% filter(landcover == 'wetland'), 
               aes(ymin = lcl, ymax = ucl), fill = 'gray50', alpha = 0.5) +
-  geom_line(data = overall %>% filter(landcover == 'Wetland'), color = 'black')
+  geom_line(data = overall %>% filter(landcover == 'wetland'), color = 'black')
  
-ggplot(by_year %>% filter(landcover == 'Rice'), 
+ggplot(by_year %>% filter(landcover == 'rice'), 
        aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(ClassName == 'Rice'),
+  geom_point(data = mdat %>% filter(ClassName == 'rice'),
              aes(y = nflooded3/nsampled, color = label), shape = 21) +
-  geom_point(data = mdat %>% filter(ClassName == 'Rice'),
+  geom_point(data = mdat %>% filter(ClassName == 'rice'),
              aes(y = nflooded2/nsampled, color = label), shape = 19)
 
 
@@ -199,6 +200,118 @@ by_year %>%
 # corn: 197-207, 0.242-0.260
 # other: 174-191, 0.105-0.138
 
-write_csv(by_year, here::here(floodcurves))
-write_csv(by_water_year, here::here(floodcurves_wateryear))
-write_csv(overall, here::here(floodcurves_overall))
+# SPLIT WETLANDS----------
+# estimate percent of flooded wetlands that are semi-permanent vs. seasonal
+
+## per Craig Isola: 
+##  - seasonal wetlands start getting water in early Aug, so assume 100% of 
+##      any wetlands before early August is a semi-permanent wetland (assumed 
+##      to be day 34 in original CVJV work)
+##  - peak of dryness in semi-permanent wetlands is mid-August through 
+##      mid-October (e.g. day 107), so assume extent of flooded semi-permanent 
+##      wetlands remains constant from early Aug (before seasonal wetlands
+##      have any water) 
+##  - all semi-permanent wetlands are fully flooded by early November 
+##      (e.g. day 124), so from early Nov through May (end of season) assume: 
+##      proportion of open water in wetlands that is semi-perm = 
+##        total perm / prop.flooded*total wetlands
+# -> fill in gap between day 107 and day 124 during flood-up in semi-permanent
+#    wetlands with a spline
+totalwetlands <- 74835.2959
+semipermwetlands <- 6896.1698
+
+by_year_wetsplit <- by_year %>%
+  group_by(group, landcover) %>%
+  mutate(minperm = fit[yday == 34],
+         prop.perm = case_when(yday <= 34 ~ 1,
+                               yday > 34 & yday <= 107 ~ 
+                                 (minperm * totalwetlands)/(fit * totalwetlands),
+                               yday >= 124 ~ 
+                                 semipermwetlands/ (fit * totalwetlands),
+                               yday > 107 & yday < 124 ~
+                                 NA_real_,
+                               TRUE ~ 0),
+         spline = spline(x = yday, y = prop.perm, method = 'natural', 
+                         xout = c(1:319))$y,
+         prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
+                               TRUE ~ prop.perm),
+         minperm = NULL,
+         spline = NULL) %>%
+  ungroup() %>%
+  mutate(prop.perm = case_when(landcover != 'wetland' ~ NA_real_,
+                               TRUE ~ prop.perm))
+
+by_water_year_wetsplit <- by_water_year %>%
+  group_by(group, landcover) %>%
+  mutate(minperm = fit[yday == 34],
+         prop.perm = case_when(yday <= 34 ~ 1,
+                               yday > 34 & yday <= 107 ~ 
+                                 (minperm * totalwetlands)/(fit * totalwetlands),
+                               yday >= 124 ~ 
+                                 semipermwetlands/ (fit * totalwetlands),
+                               yday > 107 & yday < 124 ~
+                                 NA_real_,
+                               TRUE ~ 0),
+         spline = spline(x = yday, y = prop.perm, method = 'natural', 
+                         xout = c(1:319))$y,
+         prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
+                               TRUE ~ prop.perm),
+         minperm = NULL,
+         spline = NULL) %>%
+  ungroup() %>%
+  mutate(prop.perm = case_when(landcover != 'wetland' ~ NA_real_,
+                               TRUE ~ prop.perm))
+
+
+overall_wetsplit <- overall %>%
+  group_by(landcover) %>%
+  mutate(minperm = fit[yday == 34],
+         prop.perm = case_when(yday <= 34 ~ 1,
+                               yday > 34 & yday <= 107 ~ 
+                                 (minperm * totalwetlands)/(fit * totalwetlands),
+                               yday >= 124 ~ 
+                                 semipermwetlands/ (fit * totalwetlands),
+                               yday > 107 & yday < 124 ~
+                                 NA_real_,
+                               TRUE ~ 0),
+         spline = spline(x = yday, y = prop.perm, method = 'natural', 
+                         xout = c(1:319))$y,
+         prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
+                               TRUE ~ prop.perm),
+         minperm = NULL,
+         spline = NULL) %>%
+  ungroup() %>%
+  mutate(prop.perm = case_when(landcover != 'wetland' ~ NA_real_,
+                               TRUE ~ prop.perm))
+
+## check curves:
+ggplot(by_year_wetsplit %>% filter(landcover == 'wetland'), 
+       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() + ylim(0,1) +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May')) +
+  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
+  xlab(NULL) + ylab('Proportion open water') + facet_wrap(~group)
+ggplot(by_water_year_wetsplit %>% filter(landcover == 'wetland'), 
+       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() + ylim(0,1) +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May')) +
+  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
+  xlab(NULL) + ylab('Proportion open water') + facet_wrap(~group)
+ggplot(overall_wetsplit %>% filter(landcover == 'wetland'), 
+       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() + ylim(0,1) +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May')) +
+  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
+  xlab(NULL) + ylab('Proportion open water')
+
+
+
+write_csv(by_year_wetsplit, here::here(floodcurves))
+write_csv(by_water_year_wetsplit, here::here(floodcurves_wateryear))
+write_csv(overall_wetsplit, here::here(floodcurves_overall))
