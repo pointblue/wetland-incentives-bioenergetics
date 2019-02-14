@@ -25,6 +25,7 @@ rmarkdown::render(here::here("Rmd/README.Rmd"),
 
 source(here::here('code/1_BR_habitat.R'))
 
+
 # 1b. BR spatial
 # Overlay BR fields with original CVJV land cover raster to check correspondence
 #
@@ -42,7 +43,19 @@ source(here::here('code/1b_BR_spatial.R'))
 
 
 # 2. WHEP
-# Temporary code stub for compiling time series of habitat available and accessible
+# Compile time series of habitat available from fields enrolled 
+# in WHEP programs. Distribute availability of fields across possible date
+# ranges of each program.
+# Still to do: add in estimates of habitat accessible (based on rice depth curves)
+#
+# INPUTS:
+# - 'data/WHEP_summary.xlsx' (raw estimates of acres enrolled by year)
+# OUTPUT:
+# - 'data/WHEP_timeseries.csv' (area of new or existing fields enrolled each
+#     day of the shorebird nonbreeding season)
+# - 'data/WHEP_totals.csv' (seasonal summary of total acreage enrolled)
+
+source(here::here('code/2_WHEP_habitat.R'))
 
 
 # 3. Crops and wetland habitat
@@ -61,11 +74,26 @@ source(here::here('code/1b_BR_spatial.R'))
 
 source(here::here('code/3_crops_and_wetlands.R'))
 
+
 # 3b. Update flooding curves
 # STEP 2: update flooding curves for crops and wetland habitats to reflect
 #  recent drought and wet years
+#
+# PACKAGES: gamm4
+# FUNCTIONS: fit_flooding_curves_gamm4.R (custom function to fit GAMMs to water 
+#   tracker data of proportion open water by date)
+# INPUTS:
+# - 'data/stats_basin_ag.csv' #data from water tracker (via Nathan)
+# - 'data/BR_timeseries.csv' (from step 1 above)
+# - 'data/WHEP_timeseries.csv' (from step 2 above)
+# OUTPUTS:
+# - 'output/open_water_annual.csv' (year- and crop-specific estimates of 
+#     proportion open water by day of year)
+# - 'output/open_water_by_wateryear.csv' (water-year and crop-specific
+#     estimates of proportion open water by day of year -- 13-14 and 14-15 are
+#     grouped here)
+# - 'output/open_water_overall.csv' (crop-specific estimates of proportion open
+#     water by day of year, for all years combined)
 
-
-
-
+source(here::here('code/3b_update_flooding_curves.R'))
 
