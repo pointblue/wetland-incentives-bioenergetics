@@ -97,3 +97,27 @@ source(here::here('code/3_crops_and_wetlands.R'))
 
 source(here::here('code/3b_update_flooding_curves.R'))
 
+
+# 4. Total habitat available
+# Estimate total open water and accessible open water in all land cover types 
+# on each day of the nonbreeding season from updated flooding curves and 
+# original CVJV depth curves (i.e., proportion of open water in each land cover 
+# type that is of suitable depth for shorebird foraging habitat), plus data 
+# from Bird Returns and WHEP programs
+#
+# PACKAGES: bioenergmod (devtools::install_github("kdybala/bioenergmod"))
+# INPUTS:
+# - 'data/NASS_totals_cvjv.csv' #year-specific extent of each crop class
+# - 'output/open_water_annual.csv' #year-specific flooding curve estimates
+# - 'data/cvjv_orig/depth_curves.csv' #original CVJV depth curves
+# - 'data/BR_timeseries.csv' #time series of bird returns habitat added/returned
+# - 'data/WHEP_timeseries.csv' #time series of whep habitat added/returned
+# OUTPUTS:
+# - 'output/habitat_available.csv'
+# - 'output/habitat_accessible.csv'
+# - 'output/habitat_added.csv'
+# - 'output/habitat_returned.csv'
+# - 'output/habitat_prop.accessible.csv'
+
+source(here::here('code/4_total_habitat_available.R'))
+
