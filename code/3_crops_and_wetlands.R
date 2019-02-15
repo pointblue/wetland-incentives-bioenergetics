@@ -34,10 +34,11 @@ results <- 'data/NASS_totals_cvjv.csv'
 ##  safflower, sorghum, sugarbeets, wheat),  row crops (vegetable totals),
 ##  and alfalfa
 
-dat <- do.call(bind_rows, lapply(c(2007:2017), extract_nass, cvjv.match = FALSE))
-write_csv(dat, here::here(rawdat))
+# dat <- do.call(bind_rows, lapply(c(2007:2017), extract_nass, cvjv.match = FALSE))
+# write_csv(dat, here::here(rawdat))
 
-dat %>% ggplot(aes(as.numeric(year), Value/1000, color = as.factor(commodity_desc))) + 
+read_csv(here::here(rawdat)) %>% 
+  ggplot(aes(as.numeric(year), Value/1000, color = as.factor(commodity_desc))) + 
   geom_line() + geom_point() + scale_color_viridis_d() + theme_classic() +
   scale_x_continuous(breaks = seq(2007, 2017, 1)) # remember these are state-wide totals
 
@@ -74,7 +75,7 @@ sdat %>% ggplot(aes(year, acres/1000, color = crop_class)) +
 
 write_csv(sdat, here::here(agstats))
 
-# ANNUAL CVJV TOTALS------------
+# ANNUAL CVJV CROP TOTALS------------
 # allocate annual crop totals to basins (and therefore the CVJV primary focus area)
 # based on average spatial distribution of crops in CA (same spatial distribution
 # assumed for CVJV non-breeding shorebirds paper)
@@ -114,4 +115,20 @@ tdat <- mdat %>%
   group_by(crop_class, year) %>%
   summarize(ha = sum(ha)) 
 
-write_csv(tdat, here::here(results))
+
+# WETLANDS----------------
+# add constant value over all years for managed wetlands 
+#  (from original CVJV estimates)
+totalwetlands <- 74835.2959
+seasonalwetlands <- 67849.1269
+semipermwetlands <- 6896.1698
+
+base <- tdat %>%
+  filter(year >= 2013) %>%
+  spread(key = crop_class, value = ha) %>%
+  mutate(wetlands = totalwetlands,
+         seas = seasonalwetlands,
+         perm = semipermwetlands) %>%
+  gather(corn:perm, key = 'landcover', value = 'ha')
+
+write_csv(base, here::here(results))
