@@ -39,6 +39,10 @@ This repo is for a study of the contribution of wetland incentives programs in t
      * Predict proportion open water by day of year with confidence intervals for each crop class and year
 * Assume same proportion accessible as original CVJV analysis
 
+##### Compilation across land cover types
+* DRAFT - Compile daily estimates of habitat available, accessible, added, and returned in all land cover types in all 4 years
+
+
 #### Energy density & energy needs
 * Assume same energy densities by crop class as in original CVJV analysis
 * Assume same population objectives, baseline population size, and daily energy needs as original CVJV analysis
