@@ -186,11 +186,19 @@ ggplot(ts_vardd, aes(yday, added)) + geom_line() +
 
 ## - combined:
 ts <- bind_rows(ts_fall, ts_vardd) %>%
-  complete(landcover, bioyear, yday = 1:320, fill = list(available = 0, added = 0, returned = 0)) 
+  complete(landcover, bioyear, yday = 1:319, 
+           fill = list(available = 0, added = 0, returned = 0)) %>%
+  mutate(group = recode(bioyear, 
+                        '2013' = '2013-14',
+                        '2014' = '2014-15',
+                        '2015' = '2015-16',
+                        '2016' = '2016-17')) %>%
+  ungroup() %>%
+  select(landcover, group, yday, available, added, returned)
 
 ggplot(ts, aes(yday, added, linetype = landcover)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
   geom_line(aes(y = available), col = 'blue') +
-  facet_wrap(~bioyear)
+  facet_wrap(~group)
 
 write_csv(ts, here::here(whep_ts))
