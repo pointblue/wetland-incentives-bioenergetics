@@ -133,7 +133,7 @@ mdat <- dat %>%
          yend = case_when(endm <= 6 ~ yend + 184,
                           endm >= 7 ~ yend - 181))
 
-df <- expand.grid(yday = c(1:320),
+df <- expand.grid(yday = c(1:319),
                   bioyear = c(2013:2016))
 ts <- pmap_dfr(list(df$yday, df$bioyear),
                function(y, byear) {
@@ -150,28 +150,27 @@ ts <- pmap_dfr(list(df$yday, df$bioyear),
 
 # data frame of daily change in area available, accessible, newly added and returned
 change <- ts %>%
-  complete(bioyear, yday = 1:320, fill = list(group = 'available', ha = 0)) %>%
+  complete(bioyear, yday = 1:319, fill = list(group = 'available', ha = 0)) %>%
   spread(key = group, value = ha) %>% 
   arrange(bioyear, yday) %>%
   mutate(available = case_when(!is.na(available) & !is.na(returned) ~ returned + available,
                                is.na(available) & !is.na(added) ~ added,
                                is.na(available) & !is.na(returned) ~ returned,
                                TRUE ~ available),
-         accessible = available) %>%
-  select(bioyear, yday, available, accessible, added, returned)
-  
-write_csv(change, here::here(br_ts))
-
-change %>% 
-  mutate(label = recode(bioyear, 
+         accessible = available,
+         group = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
                         '2016' = '2016-17')) %>%
-  ggplot(aes(x = yday, y = available), color = 'black') + geom_line() +
+  select(group, yday, available, accessible, added, returned)
+  
+write_csv(change, here::here(br_ts))
+
+ggplot(change, aes(x = yday, y = available), color = 'black') + geom_line() +
   geom_point(aes(y = added), color = 'green') + 
   geom_point(aes(y = available - returned), color = 'red') +
-  facet_wrap(~label) + ylab('ha') + xlab('day of year (1 = 1 July)') 
+  facet_wrap(~group) + ylab('ha') + xlab('day of year (1 = 1 July)') 
 # red points are dates when new acres were added; black line shows existing 
 # (previously enrolled acres)
 
