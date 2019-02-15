@@ -139,3 +139,76 @@ accessible %>%
   summarize(time = time[area == max(area)],
             area = max(area))
 # ranges days 216-229; 71318 - 102847 ha
+
+# PLOTS-------------------
+pal = scales::viridis_pal()(8)
+ymax = 310
+scale = 1000
+ylab = 'total open water (ha, thousands)'
+theme = theme(legend.position = c(0.01,1))
+theme2 = theme(legend.position = 'none')
+scalex = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                            labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                       'Feb', 'Mar', 'Apr', 'May'))
+scalex2 = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                            labels = rep('', 11))
+
+# open water: (order variables in stack from top to bottom)
+a <- plot_bioenergmod(available %>% filter(group == '2013-14') %>% 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
+                               seas, perm), 
+                      ylab = ylab, ymax = ymax, scale = scale, palette = pal) +
+  scalex2 + theme
+
+
+b <- plot_bioenergmod(available %>% filter(group == '2014-15') %>% 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
+                               seas, perm), 
+                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
+  scalex2 + theme2
+
+c <- plot_bioenergmod(available %>% filter(group == '2015-16') %>% 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
+                               seas, perm), 
+                      ylab = ylab, ymax = ymax, scale = scale, palette = pal) +
+  scalex + theme2
+
+d <- plot_bioenergmod(available %>% filter(group == '2016-17') %>% 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
+                               seas, perm), 
+                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
+  scalex + theme2
+
+cowplot::plot_grid(a, b, c, d)
+
+
+
+# accessible habitat:
+ylab2 = 'accessible habitat (ha, thousands)'
+
+e <- plot_bioenergmod(accessible %>% filter(group == '2013-14') %>% 
+                        select(time, br, other, corn, rice, 
+                               seas, perm), 
+                      ylab = ylab2, ymax = ymax, scale = scale, palette = pal) +
+  scalex2 + theme
+
+f <- plot_bioenergmod(accessible %>% filter(group == '2014-15') %>% 
+                        select(time, br, other, corn, rice, 
+                               seas, perm), 
+                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
+  scalex2 + theme2
+
+g <- plot_bioenergmod(accessible %>% filter(group == '2015-16') %>% 
+                        select(time, br, other, corn, rice, 
+                               seas, perm), 
+                      ylab = ylab2, ymax = ymax, scale = scale, palette = pal) +
+  scalex + theme2
+
+h <- plot_bioenergmod(accessible %>% filter(group == '2016-17') %>% 
+                        select(time, br, other, corn, rice, 
+                               seas, perm), 
+                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
+  scalex + theme2
+
+cowplot::plot_grid(e, f, g, h)
+
