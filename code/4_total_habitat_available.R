@@ -10,7 +10,7 @@ library(tidyverse)
 library(bioenergmod) # devtools::install_github("kdybala/bioenergmod")
 
 # INPUTS
-annual_acres <- 'data/NASS_totals_cvjv.csv'
+annual_acres <- 'data/landcover_totals_cvjv.csv'
 floodcurves <- 'output/open_water_annual.csv'
 depthcurves <- 'data/cvjv_orig/depth_curves.csv'
 br_ts <- 'data/BR_timeseries.csv'
@@ -26,13 +26,10 @@ habitat_prop.accessible <- 'output/habitat_prop.accessible.csv'
 # CALCULATE HABITAT AVAILABILITY--------
 
 base <- read_csv(here::here(annual_acres)) %>% 
-  filter(!(landcover %in% c('seas', 'perm'))) %>%
-  rename(habitat = landcover, area = ha)
+  filter(!(habitat %in% c('seas', 'perm')))
 
 flood <- read_csv(here::here(floodcurves)) %>%
-  rename(habitat = landcover) %>%
-  mutate(habitat = recode(habitat, wetland = 'wetlands'),
-         prop.perm = as.numeric(prop.perm))
+  mutate(prop.perm = as.numeric(prop.perm))
 
 depth <- read_csv(here::here(depthcurves)) %>%
   filter(habitat != 'corn') %>%
@@ -67,8 +64,8 @@ available <- bind_rows(change13$openwater %>% mutate(group = '2013-14'),
   bind_rows(change16$openwater %>% mutate(group = '2016-17')) %>%
   full_join(br %>% select(group, time = yday, br = available), 
             by = c('time', 'group')) %>%
-  full_join(whep %>% select(landcover, group, time = yday, available) %>% 
-              spread(key = landcover, value = available),
+  full_join(whep %>% select(habitat, group, time = yday, available) %>% 
+              spread(key = habitat, value = available),
             by = c('time', 'group'))
 
 accessible <- bind_rows(change13$accessible %>% mutate(group = '2013-14'),
@@ -85,8 +82,8 @@ added <- bind_rows(change13$added %>% mutate(group = '2013-14'),
   bind_rows(change16$added %>% mutate(group = '2016-17')) %>%
   full_join(br %>% select(group, time = yday, br = added), 
             by = c('time', 'group')) %>%
-  full_join(whep %>% select(landcover, group, time = yday, added) %>% 
-              spread(key = landcover, value = added),
+  full_join(whep %>% select(habitat, group, time = yday, added) %>% 
+              spread(key = habitat, value = added),
             by = c('time', 'group'))
 
 returned <- bind_rows(change13$returned %>% mutate(group = '2013-14'),
@@ -95,8 +92,8 @@ returned <- bind_rows(change13$returned %>% mutate(group = '2013-14'),
   bind_rows(change16$returned %>% mutate(group = '2016-17')) %>%
   full_join(br %>% select(group, time = yday, br = returned), 
             by = c('time', 'group')) %>%
-  full_join(whep %>% select(landcover, group, time = yday, returned) %>% 
-              spread(key = landcover, value = returned),
+  full_join(whep %>% select(habitat, group, time = yday, returned) %>% 
+              spread(key = habitat, value = returned),
             by = c('time', 'group'))
 
 prop.accessible <- bind_rows(change13$prop.accessible %>% mutate(group = '2013-14'),
@@ -212,3 +209,15 @@ h <- plot_bioenergmod(accessible %>% filter(group == '2016-17') %>%
 
 cowplot::plot_grid(e, f, g, h)
 
+
+plot_bioenergmod(added %>% filter(group == '2013-14') %>% 
+                   select(time, br, other, corn, rice, 
+                          seas, perm), 
+                 ylab = ylab2, ymax = 4.1, scale = scale, palette = pal) +
+  scalex2 + theme + xlim(2, 319)
+                         
+plot_bioenergmod(returned %>% filter(group == '2013-14') %>% 
+                   select(time, br, other, corn, rice, 
+                          seas, perm), 
+                 ylab = ylab2, ymax = 6.1, scale = scale, palette = pal) +
+  scalex2 + theme + xlim(2, 319)
