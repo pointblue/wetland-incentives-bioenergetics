@@ -151,7 +151,7 @@ ts_fall <- expand.grid(yday = c(1:92), bioyear = c(2013:2016)) %>%
          lagreturn = replace_na(lagreturn, 0),
          available = cumsum(added) - cumsum(lagreturn)) %>%
   select(-lagreturn) %>%
-  mutate(landcover = 'whep_fall')
+  mutate(habitat = 'whep_fall')
 
 ggplot(ts_fall, aes(yday, added)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
@@ -176,7 +176,7 @@ ts_vardd <- expand.grid(yday = c(124:243), bioyear = c(2013:2016)) %>%
          lagreturn = replace_na(lagreturn, 0),
          available = cumsum(added) - cumsum(lagreturn)) %>%
   select(-lagreturn) %>%
-  mutate(landcover = 'whep_vardd')
+  mutate(habitat = 'whep_vardd')
 
 ggplot(ts_vardd, aes(yday, added)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
@@ -186,17 +186,17 @@ ggplot(ts_vardd, aes(yday, added)) + geom_line() +
 
 ## - combined:
 ts <- bind_rows(ts_fall, ts_vardd) %>%
-  complete(landcover, bioyear, yday = 1:319, 
-           fill = list(available = 0, added = 0, returned = 0)) %>%
+  ungroup() %>%
   mutate(group = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
                         '2016' = '2016-17')) %>%
-  ungroup() %>%
-  select(landcover, group, yday, available, added, returned)
+  complete(group, habitat, yday = 1:319, 
+           fill = list(available = 0, added = 0, returned = 0)) %>%
+  select(habitat, group, yday, available, added, returned)
 
-ggplot(ts, aes(yday, added, linetype = landcover)) + geom_line() + 
+ggplot(ts, aes(yday, added, linetype = habitat)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
   geom_line(aes(y = available), col = 'blue') +
   facet_wrap(~group)
