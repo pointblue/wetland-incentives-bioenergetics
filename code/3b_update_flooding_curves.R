@@ -199,13 +199,15 @@ by_year_wetsplit <- by_year %>%
                                yday > 34 & yday <= 107 ~ 
                                  (minperm * totalwetlands)/(fit * totalwetlands),
                                yday >= 124 ~ 
-                                 semipermwetlands/ (fit * totalwetlands),
+                                 semipermwetlands/(fit * totalwetlands),
                                yday > 107 & yday < 124 ~
                                  NA_real_,
                                TRUE ~ 0),
          spline = spline(x = yday, y = prop.perm, method = 'natural', 
                          xout = c(1:319))$y,
          prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
+                               TRUE ~ prop.perm),
+         prop.perm = case_when(prop.perm > 1 ~ 1,
                                TRUE ~ prop.perm),
          minperm = NULL,
          spline = NULL) %>%
@@ -228,6 +230,8 @@ overall_wetsplit <- overall %>%
                          xout = c(1:319))$y,
          prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
                                TRUE ~ prop.perm),
+         prop.perm = case_when(prop.perm > 1 ~ 1,
+                               TRUE ~ prop.perm),
          minperm = NULL,
          spline = NULL) %>%
   ungroup() %>%
@@ -239,8 +243,7 @@ axes = list(scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244
                                labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
                                           'Feb', 'Mar', 'Apr', 'May')),
             xlab(NULL),
-            ylab('Proportion open water'),
-            ylim(0, 1))
+            ylab('Proportion open water'))
 
 ggplot(by_year_wetsplit %>% filter(habitat == 'wetlands'), 
        aes(yday, fit, ymin = lcl, ymax = ucl)) + 
