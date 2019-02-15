@@ -38,7 +38,9 @@ dat <- read_csv(here::here(tracker), col_types = cols()) %>%
   mutate(ClassName = recode(ClassName,
                             'Field Crop' = 'Other',
                             'Row Crop' = 'Other',
-                            'Grains' = 'Other')) %>%
+                            'Grains' = 'Other',
+                            'Wetland' = 'Wetlands'),
+         ClassName = tolower(ClassName)) %>%
   mutate_at(vars(DataSource:Mosaic), as.factor) %>% 
   mutate_at(vars(MosaicDateStart:MosaicDateEnd), as.Date, format = '%m/%d/%Y') 
   
@@ -64,9 +66,9 @@ sdat <- dat %>%
             nflooded = sum(ObservedAreaWater) / 900) %>%
   ungroup() %>%
   # bias correction
-  mutate(nflooded2 = case_when(ClassName == 'Wetland' ~ nflooded * 1.11,
-                               ClassName == 'Rice' ~ nflooded * 0.96,
-                               ClassName == 'Corn' ~ nflooded * 0.95,
+  mutate(nflooded2 = case_when(ClassName == 'wetlands' ~ nflooded * 1.11,
+                               ClassName == 'rice' ~ nflooded * 0.96,
+                               ClassName == 'corn' ~ nflooded * 0.95,
                                TRUE ~ nflooded)) %>%
   # add mid-point of mosaic date range:
   mutate(MosaicDateMid = MosaicDateStart + (MosaicDateEnd - MosaicDateStart)/2,
@@ -78,50 +80,39 @@ sdat <- dat %>%
          bioyear = case_when(month <=6 ~ bioyear - 1,
                              TRUE ~ bioyear)) %>%
   filter(bioyear >= 2013 & bioyear <= 2016 & yday <= 319) %>%
-  mutate(label = recode(bioyear, 
+  mutate(group = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
-                        '2016' = '2016-17'),
-         wateryear = recode(bioyear,
-                            '2013' = 'critical',
-                            '2014' = 'critical',
-                            '2015' = 'below normal',
-                            '2016' = 'wet'),
-         ClassName = tolower(ClassName)) 
+                        '2016' = '2016-17')) 
 
-ggplot(sdat, aes(yday, nflooded/nsampled, color = label)) +
+ggplot(sdat, aes(yday, nflooded/nsampled, color = group)) +
   geom_point() + facet_wrap(~ClassName) +
   geom_point(aes(y = nflooded2/nsampled), shape = 21)
 
-ggplot(sdat %>% filter(ClassName == 'wetland'), 
-       aes(yday, nflooded2/nsampled, color = label)) +
-  geom_smooth(aes(fill = label)) + geom_point() 
-
-ggplot(sdat %>% filter(ClassName == 'wetland'), 
-       aes(yday, nflooded2/nsampled, color = wateryear)) +
-  geom_smooth(aes(fill = wateryear)) + geom_point() 
+ggplot(sdat %>% filter(ClassName == 'wetlands'), 
+       aes(yday, nflooded2/nsampled, color = group)) +
+  geom_smooth(aes(fill = group)) + geom_point() 
 
 
 # SUBTRACT INCENTIVE ACRES------------
 br <- read_csv(here::here(br_ts)) %>%
-  select(bioyear, yday, available) %>%
+  select(group, yday, available) %>%
   filter(available > 0) %>%
   rename(br = available) %>%
   # convert from ha to 900m2 pixels
   mutate(br = (br * 10000)/900)
 
 whep <- read_csv(here::here(whep_ts)) %>%
-  select(bioyear, yday, available, landcover) %>%
+  select(group, yday, available, landcover) %>%
   filter(available > 0) %>%
   mutate(available = (available * 10000)/900) %>%
   spread(key = landcover, value = available, fill = 0)
 
 mdat <- sdat %>% 
-  select(ClassName, bioyear, yday, ntotal, nsampled, nflooded, nflooded2, label, 
-         wateryear) %>%
-  left_join(br, by = c('bioyear', 'yday')) %>%
-  left_join(whep, by = c('bioyear', 'yday')) %>%
+  select(ClassName, bioyear, group, yday, ntotal, nsampled, nflooded, nflooded2) %>%
+  left_join(br, by = c('group', 'yday')) %>%
+  left_join(whep, by = c('group', 'yday')) %>%
   mutate(br = case_when(is.na(br) ~ 0,
                         TRUE ~ br),
          whep_fall = case_when(is.na(whep_fall) ~ 0,
@@ -131,7 +122,7 @@ mdat <- sdat %>%
          nflooded3 = case_when(ClassName == 'rice' ~ nflooded2 - br - whep_fall - whep_vardd,
                                TRUE ~ nflooded2))
 
-ggplot(mdat, aes(yday, nflooded2/nsampled, color = label)) +
+ggplot(mdat, aes(yday, nflooded2/nsampled, color = group)) +
   geom_point() + facet_wrap(~ClassName) +
   # geom_point(aes(y = nflooded2/nsampled), shape = 21) +
   geom_point(aes(y = nflooded3/nsampled), shape = 21)
@@ -143,54 +134,35 @@ by_class <- mdat %>% split(.$ClassName)
 
 by_year <- by_class %>% 
   map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
-                      year = 'bioyear', minprop = 0.4, by = 'label', 
+                      year = 'bioyear', minprop = 0.4, by = 'group', 
                       plot = FALSE)) %>%
-  mutate(landcover = rep(levels(as.factor(mdat$ClassName)), 
-                         each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
-
-by_water_year <- by_class %>%
-  map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
-                      year = 'bioyear', minprop = 0.4, by = 'wateryear', 
-                      plot = FALSE)) %>%
-  mutate(landcover = rep(levels(as.factor(mdat$ClassName)), 
-                         each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
+  mutate(habitat = rep(levels(as.factor(mdat$ClassName)), 
+                       each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
 
 overall <- by_class %>%
   map_dfr(~ fit_gamm4(df = ., nwater = 'nflooded2', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, plot = FALSE)) %>%
-  mutate(landcover = rep(levels(as.factor(mdat$ClassName)), 
-                         each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
+  mutate(habitat = rep(levels(as.factor(mdat$ClassName)), 
+                       each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
 
-ggplot(by_year %>% filter(landcover == 'wetland'), 
-       aes(yday, fit)) +
+ggplot(by_year %>% filter(habitat == 'wetlands'), aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
   geom_point(data = mdat %>% filter(ClassName == 'wetland'),
-             aes(y = nflooded3/nsampled, color = label), shape = 21)
+             aes(y = nflooded3/nsampled, color = group), shape = 21)
 
-ggplot(by_water_year %>% filter(landcover == 'wetland'), aes(yday, fit)) +
-  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
-  geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(ClassName == 'wetland'),
-             aes(y = nflooded3/nsampled, color = wateryear), shape = 21) +
-  # add overall/average curve for comparison:
-  geom_ribbon(data = overall %>% filter(landcover == 'wetland'), 
-              aes(ymin = lcl, ymax = ucl), fill = 'gray50', alpha = 0.5) +
-  geom_line(data = overall %>% filter(landcover == 'wetland'), color = 'black')
- 
-ggplot(by_year %>% filter(landcover == 'rice'), 
-       aes(yday, fit)) +
+ggplot(by_year %>% filter(habitat == 'rice'), aes(yday, fit)) +
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
   geom_point(data = mdat %>% filter(ClassName == 'rice'),
-             aes(y = nflooded3/nsampled, color = label), shape = 21) +
+             aes(y = nflooded3/nsampled, color = group), shape = 21) +
   geom_point(data = mdat %>% filter(ClassName == 'rice'),
-             aes(y = nflooded2/nsampled, color = label), shape = 19)
+             aes(y = nflooded2/nsampled, color = group), shape = 19)
 
 
 ## mid-winter peak values:
 by_year %>% 
-  group_by(landcover, group) %>%
+  group_by(habitat, group) %>%
   summarize(yday = yday[which(fit == max(fit[which(yday < 250)]))], #avoid late peaks in rice
             peak = max(fit),
             lcl = lcl[which(fit == max(fit))],
@@ -221,7 +193,7 @@ totalwetlands <- 74835.2959
 semipermwetlands <- 6896.1698
 
 by_year_wetsplit <- by_year %>%
-  group_by(group, landcover) %>%
+  group_by(group, habitat) %>%
   mutate(minperm = fit[yday == 34],
          prop.perm = case_when(yday <= 34 ~ 1,
                                yday > 34 & yday <= 107 ~ 
@@ -238,33 +210,11 @@ by_year_wetsplit <- by_year %>%
          minperm = NULL,
          spline = NULL) %>%
   ungroup() %>%
-  mutate(prop.perm = case_when(landcover != 'wetland' ~ NA_real_,
+  mutate(prop.perm = case_when(habitat != 'wetlands' ~ NA_real_,
                                TRUE ~ prop.perm))
-
-by_water_year_wetsplit <- by_water_year %>%
-  group_by(group, landcover) %>%
-  mutate(minperm = fit[yday == 34],
-         prop.perm = case_when(yday <= 34 ~ 1,
-                               yday > 34 & yday <= 107 ~ 
-                                 (minperm * totalwetlands)/(fit * totalwetlands),
-                               yday >= 124 ~ 
-                                 semipermwetlands/ (fit * totalwetlands),
-                               yday > 107 & yday < 124 ~
-                                 NA_real_,
-                               TRUE ~ 0),
-         spline = spline(x = yday, y = prop.perm, method = 'natural', 
-                         xout = c(1:319))$y,
-         prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
-                               TRUE ~ prop.perm),
-         minperm = NULL,
-         spline = NULL) %>%
-  ungroup() %>%
-  mutate(prop.perm = case_when(landcover != 'wetland' ~ NA_real_,
-                               TRUE ~ prop.perm))
-
 
 overall_wetsplit <- overall %>%
-  group_by(landcover) %>%
+  group_by(habitat) %>%
   mutate(minperm = fit[yday == 34],
          prop.perm = case_when(yday <= 34 ~ 1,
                                yday > 34 & yday <= 107 ~ 
@@ -281,37 +231,28 @@ overall_wetsplit <- overall %>%
          minperm = NULL,
          spline = NULL) %>%
   ungroup() %>%
-  mutate(prop.perm = case_when(landcover != 'wetland' ~ NA_real_,
+  mutate(prop.perm = case_when(habitat != 'wetlands' ~ NA_real_,
                                TRUE ~ prop.perm))
 
 ## check curves:
-ggplot(by_year_wetsplit %>% filter(landcover == 'wetland'), 
-       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
-  geom_ribbon(fill = 'gray80') + geom_line() + ylim(0,1) +
-  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                'Feb', 'Mar', 'Apr', 'May')) +
-  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
-  xlab(NULL) + ylab('Proportion open water') + facet_wrap(~group)
-ggplot(by_water_year_wetsplit %>% filter(landcover == 'wetland'), 
-       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
-  geom_ribbon(fill = 'gray80') + geom_line() + ylim(0,1) +
-  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                'Feb', 'Mar', 'Apr', 'May')) +
-  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
-  xlab(NULL) + ylab('Proportion open water') + facet_wrap(~group)
-ggplot(overall_wetsplit %>% filter(landcover == 'wetland'), 
-       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
-  geom_ribbon(fill = 'gray80') + geom_line() + ylim(0,1) +
-  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                'Feb', 'Mar', 'Apr', 'May')) +
-  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
-  xlab(NULL) + ylab('Proportion open water')
+axes = list(scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                               labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                          'Feb', 'Mar', 'Apr', 'May')),
+            xlab(NULL),
+            ylab('Proportion open water'),
+            ylim(0, 1))
 
+ggplot(by_year_wetsplit %>% filter(habitat == 'wetlands'), 
+       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() +
+  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
+  axes + facet_wrap(~group)
 
+ggplot(overall_wetsplit %>% filter(habitat == 'wetlands'), 
+       aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() + 
+  geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
+  axes
 
 write_csv(by_year_wetsplit, here::here(floodcurves))
-write_csv(by_water_year_wetsplit, here::here(floodcurves_wateryear))
 write_csv(overall_wetsplit, here::here(floodcurves_overall))
