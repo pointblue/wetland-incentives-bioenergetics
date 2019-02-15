@@ -259,3 +259,4 @@ ggplot(overall_wetsplit %>% filter(habitat == 'wetlands'),
 
 write_csv(by_year_wetsplit, here::here(floodcurves))
 write_csv(overall_wetsplit, here::here(floodcurves_overall))
+  
