@@ -25,7 +25,7 @@ agdist <- 'data/cvjv_orig/ag_distribution_basins.csv'
 # OUTPUTS
 rawdat <- 'data/NASS_raw_statewide.csv'
 agstats <- 'data/NASS_totals_statewide.csv'
-results <- 'data/NASS_totals_cvjv.csv'
+results <- 'data/landcover_totals_cvjv.csv'
 
 
 # NASS QUICKSTATS -------------
@@ -129,6 +129,6 @@ base <- tdat %>%
   mutate(wetlands = totalwetlands,
          seas = seasonalwetlands,
          perm = semipermwetlands) %>%
-  gather(corn:perm, key = 'landcover', value = 'ha')
+  gather(corn:perm, key = 'habitat', value = 'area')
 
 write_csv(base, here::here(results))
