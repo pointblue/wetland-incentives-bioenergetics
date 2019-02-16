@@ -73,8 +73,10 @@ accessible <- bind_rows(change13$accessible %>% mutate(group = '2013-14'),
   bind_rows(change15$accessible %>% mutate(group = '2015-16')) %>%
   bind_rows(change16$accessible %>% mutate(group = '2016-17')) %>%
   full_join(br %>% select(group, time = yday, br = accessible), 
-            by = c('time', 'group')) 
-## Note: estimates for accessibility in WHEP fields not yet available
+            by = c('time', 'group')) %>%
+  full_join(whep %>% select(habitat, group, time = yday, available) %>% 
+              spread(key = habitat, value = available),
+            by = c('time', 'group'))
 
 added <- bind_rows(change13$added %>% mutate(group = '2013-14'),
                    change14$added %>% mutate(group = '2014-15')) %>%
@@ -100,9 +102,12 @@ prop.accessible <- bind_rows(change13$prop.accessible %>% mutate(group = '2013-1
                              change14$prop.accessible %>% mutate(group = '2014-15')) %>%
   bind_rows(change15$prop.accessible %>% mutate(group = '2015-16')) %>%
   bind_rows(change16$prop.accessible %>% mutate(group = '2016-17')) %>%
-  mutate(br = 1) #assume 100% accessible whenever flooded
-## Note: estimates for accessibility in WHEP fields not yet available
-
+  mutate(br = 1, #assume 100% accessible whenever flooded
+         whep_fall = 1,
+         whep_vardd = whep %>% filter(habitat == 'whep_vardd') %>% 
+           mutate(prop = accessible/available) %>% pull(prop),
+         whep_vardd = case_when(is.nan(whep_vardd) ~ 1,
+                                TRUE ~ whep_vardd))
 
 write_csv(available, here::here(habitat_available))
 write_csv(accessible, here::here(habitat_accessible))
@@ -119,23 +124,34 @@ write_csv(prop.accessible, here::here(habitat_prop.accessible))
 
 # peak open water by year
 available %>% 
-  gather(corn:rice, br, key = 'habitat', value = 'area') %>%
+  gather(corn:seas, br:whep_vardd, key = 'habitat', value = 'area') %>%
   group_by(group, time) %>%
   summarize(area = sum(area)) %>%
   group_by(group) %>%
   summarize(time = time[area == max(area)],
             area = max(area))
-# ranges days 181-204; 150354 - 242628 ha
+# ranges days 181-204; 197936 - 291247 ha
 
-# peak accessible
+# peak accessible by year
 accessible %>% 
-  gather(corn:rice, br, key = 'habitat', value = 'area') %>%
+  gather(corn:seas, br:whep_vardd, key = 'habitat', value = 'area') %>%
   group_by(group, time) %>%
   summarize(area = sum(area)) %>%
   group_by(group) %>%
   summarize(time = time[area == max(area)],
             area = max(area))
-# ranges days 216-229; 71318 - 102847 ha
+# ranges days 216-229; 90015 - 130772 ha
+
+# peak accessible without incentive programs:
+accessible %>% 
+  select(-br, -whep_fall, -whep_vardd) %>%
+  gather(corn:seas, key = 'habitat', value = 'area') %>%
+  group_by(group, time) %>%
+  summarize(area = sum(area)) %>%
+  group_by(group) %>%
+  summarize(time = time[area == max(area)],
+            area = max(area))
+# ranges days 215-236; 74360 - 107118
 
 # PLOTS-------------------
 pal = scales::viridis_pal()(8)
@@ -184,25 +200,25 @@ cowplot::plot_grid(a, b, c, d)
 ylab2 = 'accessible habitat (ha, thousands)'
 
 e <- plot_bioenergmod(accessible %>% filter(group == '2013-14') %>% 
-                        select(time, br, other, corn, rice, 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
                                seas, perm), 
                       ylab = ylab2, ymax = ymax, scale = scale, palette = pal) +
   scalex2 + theme
 
 f <- plot_bioenergmod(accessible %>% filter(group == '2014-15') %>% 
-                        select(time, br, other, corn, rice, 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
                                seas, perm), 
                       ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
   scalex2 + theme2
 
 g <- plot_bioenergmod(accessible %>% filter(group == '2015-16') %>% 
-                        select(time, br, other, corn, rice, 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
                                seas, perm), 
                       ylab = ylab2, ymax = ymax, scale = scale, palette = pal) +
   scalex + theme2
 
 h <- plot_bioenergmod(accessible %>% filter(group == '2016-17') %>% 
-                        select(time, br, other, corn, rice, 
+                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
                                seas, perm), 
                       ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
   scalex + theme2
@@ -211,13 +227,13 @@ cowplot::plot_grid(e, f, g, h)
 
 
 plot_bioenergmod(added %>% filter(group == '2013-14') %>% 
-                   select(time, br, other, corn, rice, 
+                   select(time, br, whep_fall, whep_vardd, other, corn, rice, 
                           seas, perm), 
-                 ylab = ylab2, ymax = 4.1, scale = scale, palette = pal) +
+                 ylab = ylab2, scale = scale, palette = pal) +
   scalex2 + theme + xlim(2, 319)
                          
 plot_bioenergmod(returned %>% filter(group == '2013-14') %>% 
-                   select(time, br, other, corn, rice, 
+                   select(time, br, whep_fall, whep_vardd, other, corn, rice, 
                           seas, perm), 
-                 ylab = ylab2, ymax = 6.1, scale = scale, palette = pal) +
+                 ylab = ylab2, scale = scale, palette = pal) +
   scalex2 + theme + xlim(2, 319)
