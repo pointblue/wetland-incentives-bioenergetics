@@ -10,6 +10,7 @@ library(tidyverse)
 
 # INPUT DATA
 whepdata <- 'data/WHEP_summary.xlsx'
+depthcurves <- 'data/cvjv_orig/depth_curves.csv'
 
 # OUTPUT DATA
 whep_ts <- 'data/WHEP_timeseries.csv'
@@ -117,70 +118,82 @@ mdat <- dat %>%
 ## rather than applying a simple assumption as for Bird Returns,
 ##  estimate a proportion open water under each practice
 
-## - WHEP_fall: distribute evenly over period 1 July - 15 Sep + 2 week drawdown
-##    The latest date new acres could be added is Sep 2 (yday 64) to allow 2 weeks of 
-##    flooding by Sept 15
+## - WHEP_fall: stagger open water evenly over period 1 July - 15 Sep, 
+##    with 2 weeks of "shallow" flooding + 2 week drawdown = 1 month of flooding
+##    for each acre, beginning as late as 2 Sept (yday 64) to finish by 15 Sept
+##    and start drawdown
+##   -- assume 100% accessible because supposed to be "shallow" flooding?
 ##    Note: no data for fall 2013 (because in FY2013)
 
-ts_fall <- expand.grid(yday = c(1:92), bioyear = c(2013:2016)) %>%
+ts_fall <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
+  mutate(habitat = 'whep_fall') %>%
   as.tibble() %>%
+  # add total acres enrolled for reference
   left_join(tdat %>% filter(practice == 'WHEP_fall') %>% select(bioyear, ha)) %>%
   filter(!is.na(ha)) %>%
-  mutate(added = case_when(yday <= 64 ~ ha/64,
+  #stagger addition evenly over 64 days of program, and returns begin after 1 month
+  mutate(added = case_when(yday <= 64 ~ ha/64, 
                            TRUE ~ 0),
-         returned = case_when(yday > 14 & yday <= 28 ~ ha/64/14,
-                              yday > 28 ~ ha/64,
-                              # yday > 77 & yday <92 ~ ha/64/14,
-                              # yday > 28 & yday <=77 ~ cumsum(ha/64/14),
-                              # yday > 77 ~ rev(cumsum(rep(ha/64/14))),
+         returned = case_when(yday > 28 & yday <= 92 ~ ha/64,
                               TRUE ~ 0)) %>%
   group_by(bioyear) %>%
-  mutate(rampup = case_when(yday > 14 & yday <= 28 ~ returned,
-                            TRUE ~ 0),
-         rampup = cumsum(rampup),
-         returned = case_when(yday > 14 & yday <= 28 ~ rampup,
-                              TRUE ~ returned),
-         rampup = NULL) %>%
-  mutate(taper = case_when(yday > 78 ~ ha/64/14,
-                           TRUE ~ 0),
-         taper = cumsum(taper),
-         returned = case_when(yday > 77 ~ returned - taper,
-                           TRUE ~ returned),
-         taper = NULL) %>%
   mutate(lagreturn = lag(returned, 1),
          lagreturn = replace_na(lagreturn, 0),
-         available = cumsum(added) - cumsum(lagreturn)) %>%
-  select(-lagreturn) %>%
-  mutate(habitat = 'whep_fall')
+         available = cumsum(added) - cumsum(lagreturn),
+         accessible = available) %>%
+  select(-lagreturn)
 
 ggplot(ts_fall, aes(yday, added)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
   geom_line(aes(y = available), col = 'blue') +
   facet_wrap(~bioyear)
+##--> these are such tiny areas, consider excluding from analysis
 
+## - WHEP VARIABLE DRAWDOWN: 
+##     -- distribute flood-up linearly over the first ~2 weeks of Nov 
+##          (supposed to be flooded up 1 Nov, but often not on time?),
+##     -- distribute draw-down with 1/4 of area starting on each of
+##          1 Feb (yday 215), 8 Feb, 15 Feb, and 21 Feb, each taking ~ 2 weeks 
+##          to drain, so 1/4 returned on 15 Feb, 22 Feb, 1 Mar, 8 Mar
+##  [[From Sesser et al. 2018: "Fields often remained puddled and saturated up to 
+##    2 weeks after the water was allowed to drain from the field."]]
+##     -- adjust original CVJV depth curves to apply to these timings
 
-## - WHEP VARIABLE DRAWDOWN: distribute flood-up over the first ~2 weeks of Nov,
-##     and drawdown over 4 weeks of Feb
+## original CVJV depth curves compared to timing of variable drawdown practice:
+read_csv(here::here(depthcurves)) %>% filter(habitat == 'rice') %>%
+  ggplot(aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() +
+  geom_vline(aes(xintercept = 124), col = 'red') + #start date of Vardd
+  geom_vline(aes(xintercept = 215), col = 'red') + #start date of drawdown
+  geom_vline(aes(xintercept = 215 + 35), col = 'blue') #presumed end date
+##--> can assume full depth at start (i.e. no inverts accessible yet) and apply 
+##     same tail in spring?
 
-ts_vardd <- expand.grid(yday = c(124:243), bioyear = c(2013:2016)) %>%
+ts_vardd <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
   as.tibble() %>%
   left_join(tdat %>% filter(practice == 'WHEP_vardd') %>% select(bioyear, ha)) %>%
-  mutate(added = case_when(yday < 124 + 14 ~ ha / 14,
+  mutate(habitat = 'whep_vardd',
+         added = case_when(yday >= 124 & yday < 124 + 7 ~ ha / 7,
                            TRUE ~ 0),
-         returned = case_when(yday > 215 & yday <= 215 + 7 ~ ha/4/7 + ha/4/14 + ha/4/21 + ha/4/28,
-                              yday > 215 + 7 & yday <= 215 + 14 ~ ha/4/14 + ha/4/21 + ha/4/28,
-                              yday > 215 + 14 & yday <= 215 + 21 ~ ha/4/21 + ha/4/28,
-                              yday > 215 + 21 ~ ha/4/28,
+         returned = case_when(yday == 215 + 14 ~ ha/4,
+                              yday == 215 + 21 ~ ha/4,
+                              yday == 215 + 28 ~ ha/4,
+                              yday == 215 + 35 ~ ha/4,
                               TRUE ~ 0)) %>%
   mutate(lagreturn = lag(returned, 1),
          lagreturn = replace_na(lagreturn, 0),
          available = cumsum(added) - cumsum(lagreturn)) %>%
   select(-lagreturn) %>%
-  mutate(habitat = 'whep_vardd')
+  left_join(read_csv(here::here(depthcurves)) %>% filter(habitat == 'rice') %>%
+              select(yday, prop.accessible = fit),
+            by = c('yday')) %>%
+  mutate(accessible = available * prop.accessible,
+         prop.accessible = NULL)
 
 ggplot(ts_vardd, aes(yday, added)) + geom_line() + 
   geom_line(aes(y = returned), col = 'red') +
   geom_line(aes(y = available), col = 'blue') +
+  geom_line(aes(y = accessible), col = 'purple') +
   facet_wrap(~bioyear)
 
 
@@ -193,12 +206,12 @@ ts <- bind_rows(ts_fall, ts_vardd) %>%
                         '2015' = '2015-16',
                         '2016' = '2016-17')) %>%
   complete(group, habitat, yday = 1:319, 
-           fill = list(available = 0, added = 0, returned = 0)) %>%
-  select(habitat, group, yday, available, added, returned)
+           fill = list(available = 0, accessible = 0, added = 0, returned = 0)) %>%
+  select(habitat, group, yday, available, accessible, added, returned)
 
-ggplot(ts, aes(yday, added, linetype = habitat)) + geom_line() + 
-  geom_line(aes(y = returned), col = 'red') +
-  geom_line(aes(y = available), col = 'blue') +
+ggplot(ts, aes(yday, available, color = habitat)) + geom_line() + 
+  facet_wrap(~group)
+ggplot(ts, aes(yday, accessible, color = habitat)) + geom_line() + 
   facet_wrap(~group)
 
 write_csv(ts, here::here(whep_ts))
