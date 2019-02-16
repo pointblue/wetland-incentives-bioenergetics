@@ -31,9 +31,9 @@ This repo is for a study of the contribution of wetland incentives programs in t
      * Variable drawdown: distribute area enrolled in over 2 weeks in Nov for flood up, and over 4 weeks in Feb for staggered drawdown (with 1/4 of area drawn down during 1, 2, 3, or 4 weeks)
      * Boards-in: not included to date
      * Do not assume credit for any lingering flooding after enrollment that may occur
-* IN PROGRESS - Estimate proportion accessible by day of year during enrollment:
-     * Fall flooding: ?? 100%? 
-     * Variable drawdown: Base on rice depth curves plus adjustments from variable drawdown study?
+* DRAFT - Estimate proportion accessible by day of year during enrollment:
+     * Fall flooding: assume 100% accessible because "shallow" flooding?
+     * Variable drawdown: Apply original rice depth curves
 
 ##### Wetlands & crops (potential habitat)
 * DONE - Compile annual statewide crop acreages from NASS through 2017, using original CVJV land cover data to estimate total acreage of each crop class within the CVJV primary focus area

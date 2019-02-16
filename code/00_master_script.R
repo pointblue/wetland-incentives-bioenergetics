@@ -43,13 +43,13 @@ source(here::here('code/1b_BR_spatial.R'))
 
 
 # 2. WHEP
-# Compile time series of habitat available from fields enrolled 
+# Compile time series of habitat available and accessible from fields enrolled 
 # in WHEP programs. Distribute availability of fields across possible date
 # ranges of each program.
-# Still to do: add in estimates of habitat accessible (based on rice depth curves)
 #
 # INPUTS:
 # - 'data/WHEP_summary.xlsx' (raw estimates of acres enrolled by year)
+# - 'data/cvjv_orig/depth_curves.csv' (original CVJV depth curves)
 # OUTPUT:
 # - 'data/WHEP_timeseries.csv' (area of new or existing fields enrolled each
 #     day of the shorebird nonbreeding season)
