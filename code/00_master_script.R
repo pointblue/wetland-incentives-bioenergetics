@@ -121,3 +121,21 @@ source(here::here('code/3b_update_flooding_curves.R'))
 
 source(here::here('code/4_total_habitat_available.R'))
 
+
+# 5. bioenergmod
+# Run bioenergetics models
+#
+# PACKAGES: bioenergmod
+# INPUTS:
+# - 'data/cvjv_orig/daily_energy_requirement.csv'
+# - 'data/cvjv_orig/energy_content.csv'
+# - 'output/habitat_available.csv'
+# - 'output/habitat_accessible.csv'
+# - 'output/habitat_added.csv'
+# - 'output/habitat_returned.csv'
+# - 'output/habitat_prop.accessible.csv'
+# OUTPUTS
+#
+
+source(here::here('code/5_bioenergmod.R'))
+

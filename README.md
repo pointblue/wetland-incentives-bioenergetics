@@ -47,3 +47,8 @@ This repo is for a study of the contribution of wetland incentives programs in t
 
 -   Assume same energy densities by crop class as in original CVJV analysis
 -   Assume same population objectives, baseline population size, and daily energy needs as original CVJV analysis
+
+#### Run bioenergetics model
+
+-   DRAFT - Run deterministic models for each year, with and without acreage from incentive programs
+-   Re-run models with Monte Carlo simulations to estimate error/uncertainty
