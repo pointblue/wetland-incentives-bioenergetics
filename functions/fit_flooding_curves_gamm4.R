@@ -58,12 +58,14 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
   newdat$fit <- plogis(pred$fit)
   newdat$lcl <- plogis(pred$fit - 2 * pred$se.fit)
   newdat$ucl <- plogis(pred$fit + 2 * pred$se.fit)
+
+  Xp = predict(res$gam, newdat, type = 'lpmatrix')
+  br = rmvn(10000, coef(res$gam), res$gam$Vp)
+
   newdat$nwater <- NULL
   newdat$nsampled <- NULL
   newdat$prop.sampled <- NULL
   newdat$zday <- NULL
-
-  # res <- list(mod = res, sampledat = df, pred = newdat)
   
   if (plot == TRUE) {
     require(ggplot2)
@@ -100,7 +102,7 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
     print(p)      
   }
   
-  return(newdat)
+  return(list(pred = newdat, Xp = Xp, br = br))
     
   # } 
   # else if (precip == TRUE) {
