@@ -22,6 +22,7 @@ whep_ts <- 'data/WHEP_timeseries.csv'
 # OUTPUTS
 floodcurves <- 'output/open_water_annual.csv'
 models <- 'output/flooding_curve_models.RData'
+resamples <- 'output/flooding_curve_resamples.RData'
 
 # RAW DATA-------------
 # from water tracker automated processing; cloud-filled!
@@ -214,5 +215,65 @@ ggplot(by_year_wetsplit %>% filter(habitat == 'wetlands'),
   geom_line(aes(y = prop.perm), color='red', size = 1.5) + 
   axes + facet_wrap(~group)
 
+
+# RESAMPLES--------------
+# generate resamples of proportion open water from GAMMs for use with Monte 
+#   Carlo simulations; result should be a named list with elements for each
+#   landcover type; each list contains estimates for each time step (rows) and
+#   simulation (columns)
+
+floodsim <- by_year %>%
+  map(function(x) {
+    sim <- plogis(x$Xp %*% t(x$br))
+  })
+
+# visualize as an example:
+apply(floodsim$rice, 1, quantile, c(0.025, 0.5, 0.975)) %>% t() %>% 
+  as.data.frame() %>% 
+  bind_cols(by_year$rice$pred %>% select(yday, group)) %>% 
+  rename(lcl = '2.5%', median = '50%', ucl = '97.5%') %>% 
+  ggplot(aes(yday, median, ymin = lcl, ymax = ucl, fill = group, color = group)) + 
+  geom_ribbon(alpha = 0.5) + geom_line()
+
+## split wetlands in the resamples too:
+floodsim$prop.perm <- floodsim$wetlands %>% as.tibble() %>%
+  gather(key = 'iteration', value = 'fit') %>%
+  mutate(yday = rep(rep(c(1:319), 4), 10000),
+         group = rep(rep(c('2013-14', '2014-15', '2015-16', '2016-17'), each = 319), 10000)) %>%
+  group_by(iteration, group) %>%
+  mutate(minperm = fit[yday == 34],
+         prop.perm = case_when(yday <= 34 ~ 1,
+                               yday > 34 & yday <= 107 ~ 
+                                 (minperm * totalwetlands)/(fit * totalwetlands),
+                               yday >= 124 ~ 
+                                 semipermwetlands/(fit * totalwetlands),
+                               yday > 107 & yday < 124 ~
+                                 NA_real_,
+                               TRUE ~ 0),
+         spline = spline(x = yday, y = prop.perm, method = 'natural', 
+                         xout = c(1:319))$y,
+         prop.perm = case_when(yday > 107 & yday < 124 ~ spline,
+                               TRUE ~ prop.perm),
+         prop.perm = case_when(prop.perm > 1 ~ 1,
+                               TRUE ~ prop.perm),
+         minperm = NULL,
+         spline = NULL, 
+         fit = NULL) %>%
+  ungroup() %>%
+  spread(key = 'iteration', value = 'prop.perm') %>%
+  arrange(group, yday) %>%
+  select(-yday, -group) %>%
+  as.matrix()
+
+# visualize to double-check:
+apply(floodsim$prop.perm, 1, quantile, c(0.025, 0.5, 0.975)) %>% t() %>% 
+  as.data.frame() %>% 
+  bind_cols(by_year$rice$pred %>% select(yday, group)) %>% 
+  rename(lcl = '2.5%', median = '50%', ucl = '97.5%') %>% 
+  ggplot(aes(yday, median, ymin = lcl, ymax = ucl, fill = group, color = group)) + 
+  geom_ribbon(alpha = 0.5) + geom_line()
+
+
 write_csv(by_year_wetsplit, here::here(floodcurves))
-save(by_year, file = models)
+save(by_year, file = here::here(models))
+save(floodsim, file = here::here(resamples))
