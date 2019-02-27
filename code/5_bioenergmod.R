@@ -45,23 +45,16 @@ ggplot(needs, aes(yday)) +
 
 energydens <- read_csv(here::here(energy_density)) %>%
   filter(habitat != 'corn') %>%
-  mutate(habitat = recode(habitat, corn_north = 'corn')) %>%
-  # add values for br and whep equivalent to rice:
-  gather(value:ucl, key = 'var', value = 'value') %>%
-  unite('var', habitat, var, sep = '.') %>%
-  spread(key = var, value = value) %>%
-  mutate(br.value = rice.value,
-         br.lcl = rice.lcl,
-         br.ucl = rice.ucl,
-         whep_vardd.value = rice.value,
-         whep_vardd.lcl = rice.lcl,
-         whep_vardd.ucl = rice.ucl,
-         whep_fall.value = rice.value,
-         whep_fall.lcl = rice.lcl,
-         whep_fall.ucl = rice.ucl) %>%
-  gather(key = var, value = value) %>%
-  separate(var, into = c('habitat', 'type'), sep = '\\.') %>%
-  spread(key = type, value = value)
+  mutate(habitat = recode(habitat, corn_north = 'corn'),
+         habitat = factor(habitat, levels = c('perm', 'seas', 'rice', 'corn', 
+                                              'other', 'whep_vardd', 
+                                              'whep_fall', 'br')))
+
+# add missing values for br and whep equivalent to rice:
+energydens <- energydens %>%
+  complete(habitat, fill = list(value = energydens$value[energydens$habitat == 'rice'], 
+                                lcl = energydens$lcl[energydens$habitat == 'rice'], 
+                                ucl = energydens$ucl[energydens$habitat == 'rice']))
 
 available <- read_csv(here::here(habitat_available)) %>%
   split(.$group) %>%
