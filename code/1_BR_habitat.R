@@ -19,7 +19,7 @@ br_totals <- 'data/BR_totals.csv'
 # PROCESS SPATIAL DATA--------------
 # remove individual names and simplify fields
 
-shp <- st_read(here::here(brfields), 'CONFIDENTIAL_br_fieldsMaster') %>%
+shp <- st_read(here::here(brfields), 'CONFIDENTIAL_br_fieldsMaster_20190226') %>%
   rename(d_sprg_2014 = d_sprg_201,
          d_fall_2014 = d_fall_201,
          d_wntr_2015 = d_wntr_201,
@@ -84,14 +84,14 @@ write_csv(dat, here::here(br_enrollment))
 dat %>% select(polygonID:GIS_Ac) %>% 
   distinct() %>% 
   summarize(GIS_Ac = sum(GIS_Ac)/2.47105)
-# 13,890 ha
+# 15,218 ha
 
 # total acreage enrolled by year, season, and date range
 # NOTE: there are still some date ranges that need to be filled in
 dat %>%
   group_by(year, season, dates, opt) %>%
   summarize(GIS_Ac = sum(GIS_Ac)) %>% 
-  print(n = 36)
+  print(n = 45)
 
 # summarize number of times each field enrolled
 dat %>%
@@ -103,13 +103,6 @@ dat %>%
   spread(key = season, value = n, fill = 0) %>%
   summary()
 # 1 - 5 times total
-
-# which seasons are fields enrolled in?
-dat %>% 
-  select(-dates, -opt) %>%
-  unite('season', season, year) %>%
-  spread(key = season, value = program)
-#--> many enrolled in multiple seasons
 
 
 # TIME SERIES---------------
@@ -158,18 +151,28 @@ change <- ts %>%
                                is.na(available) & !is.na(returned) ~ returned,
                                TRUE ~ available),
          accessible = available,
+         prop.accessible = 1,
          group = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
-                        '2016' = '2016-17')) %>%
-  select(group, yday, available, accessible, added, returned)
+                        '2016' = '2016-17'),
+         added = case_when(is.na(added) ~ 0,
+                           TRUE ~ added),
+         returned = case_when(is.na(returned) ~ 0,
+                              TRUE ~ returned),
+         habitat = 'br') %>%
+  select(habitat, group, yday, available, accessible, added, returned, prop.accessible)
   
 write_csv(change, here::here(br_ts))
 
 ggplot(change, aes(x = yday, y = available), color = 'black') + geom_line() +
-  geom_point(aes(y = added), color = 'green') + 
-  geom_point(aes(y = available - returned), color = 'red') +
+  geom_point(data = change %>% mutate(added = case_when(added == 0 ~ NA_real_,
+                                                        TRUE ~ added)),
+                                      aes(y = added), color = 'green') + 
+  geom_point(data = change %>% mutate(returned = case_when(returned == 0 ~ NA_real_,
+                                                           TRUE ~ returned)),
+             aes(y = available - returned), color = 'red') +
   facet_wrap(~group) + ylab('ha') + xlab('day of year (1 = 1 July)') 
 # red points are dates when new acres were added; black line shows existing 
 # (previously enrolled acres)

@@ -29,6 +29,24 @@ polygonID,UniqueID,GIS_Ac,season,year,dates,opt,program
 226,co1946,156.381339527,spring,2014,Feb 1 - Mar 28,8 week,enrolled
 227,co6325,125.104416345,spring,2014,Feb 1 - Mar 28,8 week,enrolled
 228,co2290,123.16339536,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+233,su4215,165.655458131,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+234,co6982,165.655458131,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+235,su4214,171.233998395,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+236,co6984,171.233998395,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+237,co6106,172.665161436,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+238,co6108,75.4783145469,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+239,co2282,109.173742673,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+240,co2281,120.366623923,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+241,co1974,220.158747326,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+243,co1969,146.404713112,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+245,co1970,149.520845696,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+247,co1959,155.261986483,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+248,co2438,120.038513722,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+249,co1958,154.543719046,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+250,co1956,152.120847729,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+251,co1942,229.69447111,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+252,co6450,33.101679784,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
+253,co1937,92.2981991761,spring,2014,Mar 10 - Apr 4,Mar B (RD 108),enrolled
 257,tnc122,35.9784345121,spring,2014,Feb 1 - Mar 28,8 week,enrolled
 261,co1804,161.116477269,spring,2014,Feb 1 - Feb 28,4 week,enrolled
 269,co6281,371.839941472,spring,2014,Feb 1 - Feb 28,4 week,enrolled
@@ -56,6 +74,7 @@ polygonID,UniqueID,GIS_Ac,season,year,dates,opt,program
 323,tnc19,30.1870176922,spring,2014,Feb 1 - Feb 28,4 week,enrolled
 324,tnc20,21.5552199833,spring,2014,Feb 1 - Feb 28,4 week,enrolled
 325,tnc21,2.99733869341,spring,2014,Feb 1 - Feb 28,4 week,enrolled
+362,yo3447,412.235835066,spring,2014,NA,NA,enrolled
 370,co1798,120.088478674,spring,2014,Feb 1 - Feb 28,4 week,enrolled
 371,co1799,115.582690134,spring,2014,Feb 1 - Feb 28,4 week,enrolled
 372,co1800,117.600485168,spring,2014,Feb 1 - Feb 28,4 week,enrolled
@@ -164,10 +183,17 @@ polygonID,UniqueID,GIS_Ac,season,year,dates,opt,program
 169,yu1669,106.568066734,fall,2014,NA,NA,enrolled
 183,su2574,33.4181611403,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
 223,su4268,35.2481800572,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+232,yo3458,111.385692321,fall,2014,Sep 1 - Sep 14,Sep A (RD108),enrolled
+244,co2283,153.474264292,fall,2014,Sep 1 - Sep 14,Sep A (RD108),enrolled
+245,co1970,149.520845696,fall,2014,Sep 1 - Sep 14,Sep A (RD108),enrolled
+246,yo5706,146.760089098,fall,2014,Sep 1 - Sep 14,Sep A (RD108),enrolled
+255,co2401,112.312203261,fall,2014,Sep 1 - Sep 14,Sep A (RD108),enrolled
+256,co2394,152.098491633,fall,2014,Sep 1 - Sep 14,Sep A (RD108),enrolled
 258,tnc120,26.5536391095,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
 259,tnc121,23.6681971943,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
 260,su2388,33.4997160081,fall,2014,Sep 16 - Sep 30,Sep B,enrolled
 261,co1804,161.116477269,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+267,yo3463,153.38046377,fall,2014,NA,NA,enrolled
 282,su954,65.4150147512,fall,2014,NA,NA,enrolled
 283,su953,166.633482153,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
 284,su946,124.861290085,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
@@ -179,6 +205,11 @@ polygonID,UniqueID,GIS_Ac,season,year,dates,opt,program
 332,yu2005,45.7379456399,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
 333,yu2010,50.3439933357,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
 340,co186,17.9401350764,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
+362,yo3447,412.235835066,fall,2014,NA,NA,enrolled
+363,yo3453,29.3990320086,fall,2014,NA,NA,enrolled
+364,yo3454,175.223716119,fall,2014,NA,NA,enrolled
+365,yo3455,167.312383881,fall,2014,NA,NA,enrolled
+366,yo3464,127.529600424,fall,2014,NA,NA,enrolled
 388,tnc29,20.9642100566,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
 389,tnc30,12.1577105398,fall,2014,Oct 18 - Oct 31,Oct B,enrolled
 425,yu340,64.0231139975,fall,2014,Oct 4 - Oct 17,Oct A,enrolled
@@ -496,58 +527,58 @@ polygonID,UniqueID,GIS_Ac,season,year,dates,opt,program
 950,gl6929,17.0334432737,spring,2016,Feb 1 - Mar 28,8 week,enrolled
 951,gl6930,15.7073340367,spring,2016,Feb 1 - Mar 28,8 week,enrolled
 979,gl6926,23.1243487857,spring,2016,Feb 1 - Mar 28,8 week,enrolled
-9,su642,41.2545982928,fall,2016,NA,NA,enrolled
-10,su637,58.7949076155,fall,2016,NA,NA,enrolled
-41,tnc3,79.2081940804,fall,2016,NA,NA,enrolled
-56,yo5453,125.327026077,fall,2016,NA,NA,enrolled
-87,su3429,140.346714123,fall,2016,NA,NA,enrolled
-95,bu2472,57.2838626674,fall,2016,NA,NA,enrolled
-96,bu5971,77.0005979023,fall,2016,NA,NA,enrolled
-101,bu3382,92.8925830211,fall,2016,NA,NA,enrolled
-104,bu5123,149.409148591,fall,2016,NA,NA,enrolled
-153,yu2464,70.7327629713,fall,2016,NA,NA,enrolled
-154,yu894,21.0832391668,fall,2016,NA,NA,enrolled
-193,yo3053,109.242806573,fall,2016,NA,NA,enrolled
-194,yo3054,178.803229886,fall,2016,NA,NA,enrolled
-195,yo3055,211.054301601,fall,2016,NA,NA,enrolled
-282,su954,65.4150147512,fall,2016,NA,NA,enrolled
-283,su953,166.633482153,fall,2016,NA,NA,enrolled
-339,tnc22,13.6363386429,fall,2016,NA,NA,enrolled
-388,tnc29,20.9642100566,fall,2016,NA,NA,enrolled
-389,tnc30,12.1577105398,fall,2016,NA,NA,enrolled
-390,tnc31,36.4265679745,fall,2016,NA,NA,enrolled
-428,tnc32,31.7201570415,fall,2016,NA,NA,enrolled
-429,tnc33,4.70455113374,fall,2016,NA,NA,enrolled
-430,tnc34,12.7298406529,fall,2016,NA,NA,enrolled
-431,tnc35,4.83704063957,fall,2016,NA,NA,enrolled
-432,tnc36,6.24850119348,fall,2016,NA,NA,enrolled
-433,tnc37,4.09651197737,fall,2016,NA,NA,enrolled
-469,bu3387,90.242206517,fall,2016,NA,NA,enrolled
-470,bu3386,89.5373390029,fall,2016,NA,NA,enrolled
-602,bu816,107.072248842,fall,2016,NA,NA,enrolled
-603,su1124,81.1501733304,fall,2016,NA,NA,enrolled
-604,su1125,37.9597132525,fall,2016,NA,NA,enrolled
-606,bu1672,114.797647051,fall,2016,NA,NA,enrolled
-607,bu1670,105.161911859,fall,2016,NA,NA,enrolled
-609,su1383,148.744995878,fall,2016,NA,NA,enrolled
-610,su4539,68.9474458765,fall,2016,NA,NA,enrolled
-613,yo3060,169.749251948,fall,2016,NA,NA,enrolled
-618,su641,44.4713065447,fall,2016,NA,NA,enrolled
-619,su4061,87.7904645478,fall,2016,NA,NA,enrolled
-624,bu2043,104.628469331,fall,2016,NA,NA,enrolled
-625,bu5807,102.320646022,fall,2016,NA,NA,enrolled
-626,tnc53,101.586452613,fall,2016,NA,NA,enrolled
-655,co187,31.8512498529,fall,2016,NA,NA,enrolled
-657,bu2465,112.704243176,fall,2016,NA,NA,enrolled
-661,yo1105,48.3961873565,fall,2016,NA,NA,enrolled
-662,yo1129,144.744477677,fall,2016,NA,NA,enrolled
-663,yo3998,103.054913734,fall,2016,NA,NA,enrolled
-664,yo3999,148.073103316,fall,2016,NA,NA,enrolled
-665,yo4002,59.3616039783,fall,2016,NA,NA,enrolled
-666,tnc109,84.3297302278,fall,2016,NA,NA,enrolled
-667,tnc110,82.0279100888,fall,2016,NA,NA,enrolled
-670,tnc138,51.1432965293,fall,2016,NA,NA,enrolled
-714,tnc55,209.427516295,fall,2016,NA,NA,enrolled
+9,su642,41.2545982928,fall,2016,Sep 1 - Sep 28,NA,enrolled
+10,su637,58.7949076155,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+41,tnc3,79.2081940804,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+56,yo5453,125.327026077,fall,2016,Sep 1 - Sep 28,NA,enrolled
+87,su3429,140.346714123,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+95,bu2472,57.2838626674,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+96,bu5971,77.0005979023,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+101,bu3382,92.8925830211,fall,2016,Oct 1 - Oct 28,NA,enrolled
+104,bu5123,149.409148591,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+153,yu2464,70.7327629713,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+154,yu894,21.0832391668,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+193,yo3053,109.242806573,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+194,yo3054,178.803229886,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+195,yo3055,211.054301601,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+282,su954,65.4150147512,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+283,su953,166.633482153,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+339,tnc22,13.6363386429,fall,2016,Sep 14 - Sep 28,Sep B,enrolled
+388,tnc29,20.9642100566,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+389,tnc30,12.1577105398,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+390,tnc31,36.4265679745,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+428,tnc32,31.7201570415,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+429,tnc33,4.70455113374,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+430,tnc34,12.7298406529,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+431,tnc35,4.83704063957,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+432,tnc36,6.24850119348,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+433,tnc37,4.09651197737,fall,2016,Oct 1 - Oct 14,Oct A,enrolled
+469,bu3387,90.242206517,fall,2016,Oct 1 - Oct 28,NA,enrolled
+470,bu3386,89.5373390029,fall,2016,Oct 1 - Oct 28,NA,enrolled
+602,bu816,107.072248842,fall,2016,Aug 17 - Sep 14,NA,enrolled
+603,su1124,81.1501733304,fall,2016,Sep 1 - Sep 28,NA,enrolled
+604,su1125,37.9597132525,fall,2016,Sep 1 - Sep 28,NA,enrolled
+606,bu1672,114.797647051,fall,2016,Sep 1 - Sep 28,NA,enrolled
+607,bu1670,105.161911859,fall,2016,Sep 1 - Sep 28,NA,enrolled
+609,su1383,148.744995878,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+610,su4539,68.9474458765,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+613,yo3060,169.749251948,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+618,su641,44.4713065447,fall,2016,Sep 1 - Sep 28,NA,enrolled
+619,su4061,87.7904645478,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+624,bu2043,104.628469331,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+625,bu5807,102.320646022,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+626,tnc53,101.586452613,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
+655,co187,31.8512498529,fall,2016,Aug 17 - Sep 14,NA,enrolled
+657,bu2465,112.704243176,fall,2016,Aug 17 - Sep 14,NA,enrolled
+661,yo1105,48.3961873565,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+662,yo1129,144.744477677,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+663,yo3998,103.054913734,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+664,yo3999,148.073103316,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+665,yo4002,59.3616039783,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+666,tnc109,84.3297302278,fall,2016,Aug 17 - Sep 14,NA,enrolled
+667,tnc110,82.0279100888,fall,2016,Aug 17 - Sep 14,NA,enrolled
+670,tnc138,51.1432965293,fall,2016,Aug 17 - Aug 30,Aug B,enrolled
+714,tnc55,209.427516295,fall,2016,Oct 15 - Oct 28,Oct B,enrolled
 21,co4691,25.3438621658,spring,2017,Feb 1 - Feb 28,4 week,enrolled
 27,pl12,16.1715434246,spring,2017,Feb 1 - Mar 14,6 week,enrolled
 32,co5487,31.1793765249,spring,2017,Feb 1 - Mar 14,6 week,enrolled
