@@ -18,6 +18,7 @@ whep_ts <- 'data/WHEP_timeseries.csv'
 
 # OUTPUTS
 habitat_change <- 'output/habitat_change.RData'
+plot_habitat <- 'figs/habitat_by_year.png'
 
 
 # CALCULATE HABITAT AVAILABILITY--------
@@ -72,7 +73,7 @@ save(change_all, file = here::here(habitat_change))
 # HABITAT AVAILABILITY STATS-----------------
 
 # peak open water by year
-change_all %>% 
+peak_open <- change_all %>% 
   map_dfr(~ .x[['openwater']] %>% 
         gather(-time, key = 'habitat', value = 'area') %>%
         group_by(time) %>%
@@ -84,7 +85,7 @@ change_all %>%
 # ranges days 180-200; 198545 - 291430 ha
 
 # peak accessible by year
-change_all %>% 
+peak_accessible <- change_all %>% 
   map_dfr(~ .x[['accessible']] %>% 
             gather(-time, key = 'habitat', value = 'area') %>%
             group_by(time) %>%
@@ -114,82 +115,98 @@ ymax = 310
 scale = 1000
 ylab = 'total open water (ha, thousands)'
 ylab2 = 'accessible habitat (ha, thousands)'
-theme = theme(legend.position = c(0.01,1))
-theme2 = theme(legend.position = 'none')
+theme = theme_classic() + 
+  theme(legend.position = c(0,1), legend.justification = c(0,1),
+        legend.background = element_rect(fill = "transparent"))
+theme2 = theme_classic() + theme(legend.position = 'none')
 scalex = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
                             labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                       'Feb', 'Mar', 'Apr', 'May'))
+                                       'Feb', 'Mar', 'Apr', 'May'),
+                            expand = c(0, 0))
 scalex2 = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                            labels = rep('', 11))
+                            labels = NULL, 
+                            expand = c(0, 0))
+scaley = scale_y_continuous(limits = c(0, ymax))
+scaley2 = scale_y_continuous(labels = NULL, limits = c(0, ymax))
+levels = c('br', 'whep_fall', 'whep_vardd', 'rice', 'corn', 'other', 'seas', 'perm')
 
 # open water: (order variables in stack from top to bottom)
 
-a <- plot_bioenergmod(change_all$`2013-14`$openwater %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = ylab, ymax = ymax, scale = scale, palette = pal) +
-  scalex2 + theme
+a <- change_all$`2013-14`$openwater %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex2 + scaley + theme + labs(x = NULL, y = NULL, title = '2013-14') +
+  guides(fill = guide_legend(ncol = 2)) +
+  geom_vline(data = peak_open %>% filter(group == '2013-14'), aes(xintercept = time))
 
+b <- change_all$`2014-15`$openwater %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2014-15') +
+  geom_vline(data = peak_open %>% filter(group == '2014-15'), aes(xintercept = time))
 
-b <- plot_bioenergmod(change_all$`2014-15`$openwater %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
-  scalex2 + theme2
+c <- change_all$`2015-16`$openwater %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2015-16') +
+  geom_vline(data = peak_open %>% filter(group == '2015-16'), aes(xintercept = time))
 
-c <- plot_bioenergmod(change_all$`2015-16`$openwater %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = ylab, ymax = ymax, scale = scale, palette = pal) +
-  scalex + theme2
+d <- change_all$`2016-17`$openwater %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex + scaley + theme2 + labs(x = NULL, y = NULL, title = '2016-17') +
+  geom_vline(data = peak_open %>% filter(group == '2016-17'), aes(xintercept = time))
 
-d <- plot_bioenergmod(change_all$`2016-17`$openwater %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
-  scalex + theme2
-
-cowplot::plot_grid(a, b, c, d)
+cowplot::plot_grid(a, b, c, d, nrow = 4)
 
 
 
 # accessible habitat:
+ymax = 125
+scaley = scale_y_continuous(limits = c(0, ymax))
 
-e <- plot_bioenergmod(change_all$`2013-14`$accessible %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = ylab2, ymax = ymax, scale = scale, palette = pal) +
-  scalex2 + theme
+e <- change_all$`2013-14`$accessible %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2013-14') +
+  guides(fill = guide_legend(ncol = 2)) +
+  geom_vline(data = peak_accessible %>% filter(group == '2013-14'), aes(xintercept = time))
 
-f <- plot_bioenergmod(change_all$`2014-15`$accessible %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
-  scalex2 + theme2
+f <- change_all$`2014-15`$accessible %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2014-15') +
+  geom_vline(data = peak_accessible %>% filter(group == '2014-15'), aes(xintercept = time))
 
-g <- plot_bioenergmod(change_all$`2015-16`$accessible %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = ylab2, ymax = ymax, scale = scale, palette = pal) +
-  scalex + theme2
+g <- change_all$`2015-16`$accessible %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2015-16') +
+  geom_vline(data = peak_accessible %>% filter(group == '2015-16'), aes(xintercept = time))
 
-h <- plot_bioenergmod(change_all$`2016-17`$accessible %>% 
-                        select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                               seas, perm), 
-                      ylab = NULL, ymax = ymax, scale = scale, palette = pal) +
-  scalex + theme2
+h <- change_all$`2016-17`$accessible %>% 
+  gather(-time, key = 'habitat', value = 'value') %>%
+  mutate(habitat = factor(habitat, levels = levels)) %>%
+  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
+  scale_fill_manual(values = pal) +
+  scalex + scaley + theme2 + labs(x = NULL, y = NULL, title = '2016-17') +
+  geom_vline(data = peak_accessible %>% filter(group == '2016-17'), aes(xintercept = time))
 
-cowplot::plot_grid(e, f, g, h)
 
+cowplot::plot_grid(a, e, b, f, c, g, d, h, nrow = 4, ncol = 2)
+ggsave(here::here(plot_habitat))
 
-plot_bioenergmod(change_all$`2013-14`$added %>% 
-                   select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                          seas, perm), 
-                 ylab = ylab2, scale = scale, palette = pal) +
-  scalex2 + theme + xlim(2, 319)
-                         
-plot_bioenergmod(change_all$`2013-14`$returned %>% 
-                   select(time, br, whep_fall, whep_vardd, other, corn, rice, 
-                          seas, perm), 
-                 ylab = ylab2, scale = scale, palette = pal) +
-  scalex2 + theme + xlim(2, 319)
