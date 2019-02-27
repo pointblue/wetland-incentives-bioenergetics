@@ -34,13 +34,6 @@ dat <- read_csv(here::here(tracker), col_types = cols()) %>%
   filter(BasinName != 'Suisun') %>%
   # drop crop classes we aren't using:
   filter(ClassName %in% c('Corn', 'Rice', 'Field Crop', 'Grains', 'Row Crop', 'Wetland')) %>%
-  # group row, field, and grains into "Other"
-  mutate(ClassName = recode(ClassName,
-                            'Field Crop' = 'Other',
-                            'Row Crop' = 'Other',
-                            'Grains' = 'Other',
-                            'Wetland' = 'Wetlands'),
-         ClassName = tolower(ClassName)) %>%
   mutate_at(vars(DataSource:Mosaic), as.factor) %>% 
   mutate_at(vars(MosaicDateStart:MosaicDateEnd), as.Date, format = '%m/%d/%Y') 
   
@@ -49,28 +42,53 @@ dat <- read_csv(here::here(tracker), col_types = cols()) %>%
 # summarize open water data by crop class over all basins (except Suisun) in
 #  each individual central valley mosaic
 
-sdat <- dat %>%
-  # first back-calculate total area from percent observed and observed area
-  mutate(ObservedAreaWater = case_when(ObservedArea==0 & is.na(ObservedAreaWater) ~ 0,
-                                       TRUE ~ ObservedAreaWater),
-         TotalArea = case_when(ObservedArea == 0 ~ 0,
-                               TRUE ~ ObservedArea / (PercentObserved/100))) %>%
+# first find the estimated total area of each crop in each basin:
+totals <- dat %>% 
   # drop non-existent Tulare Rice:
   filter(Name != 'Tulare Rice') %>%
+  group_by(BasinName, ClassName) %>%
+  summarize(TotalArea = max(ObservedArea),
+            Percent = max(PercentObserved, na.rm = T)) %>% 
+  # adjust upward for few that were never 100% observed:
+  mutate(TotalArea = TotalArea / (Percent/100),
+         Percent = Percent / (Percent/100))
+
+sdat <- dat %>%
+  # drop non-existent Tulare Rice:
+  filter(Name != 'Tulare Rice') %>%
+  
   # drop unsuitable corn in Tulare and San Joaquin basins:
   filter(!(Name %in% c('Tulare Corn', 'San Joaquin Corn'))) %>%
+  
+  # add crop-specific totals:
+  left_join(totals %>% select(-Percent), by = c('BasinName', 'ClassName')) %>%
+  
+  # group row, field, and grains into "Other"
+  mutate(ClassName = recode(ClassName,
+                            'Field Crop' = 'other',
+                            'Row Crop' = 'other',
+                            'Grains' = 'other',
+                            'Wetland' = 'wetlands'),
+         ClassName = tolower(ClassName)) %>%
+  
+  # replace NAs with 0
+  mutate(ObservedAreaWater = case_when(ObservedArea == 0 & is.na(ObservedAreaWater) ~ 0,
+                                       TRUE ~ ObservedAreaWater)) %>%
+  
+  # summarize by crop class and mosaic date (convert to # of 30x30m pixels):
   group_by(ClassName, Mosaic, MosaicDateStart, MosaicDateEnd) %>%
-  # summarize and conver to number of pixels (30x30m)
   summarize(ntotal = sum(TotalArea) / 900,
             nsampled = sum(ObservedArea) / 900,
             nflooded = sum(ObservedAreaWater) / 900) %>%
   ungroup() %>%
-  # bias correction
+  
+  # bias correction (from Reiter et al. paper)
   mutate(nflooded2 = case_when(ClassName == 'wetlands' ~ nflooded * 1.11,
                                ClassName == 'rice' ~ nflooded * 0.96,
                                ClassName == 'corn' ~ nflooded * 0.95,
                                TRUE ~ nflooded)) %>%
-  # add mid-point of mosaic date range:
+  
+  # add mid-point of mosaic date range, assign day of year and bioyear labels:
   mutate(MosaicDateMid = MosaicDateStart + (MosaicDateEnd - MosaicDateStart)/2,
          month = as.numeric(format(MosaicDateMid, '%m')),
          yday = as.numeric(format(MosaicDateMid, '%j')),
@@ -79,6 +97,7 @@ sdat <- dat %>%
          bioyear = as.numeric(format(MosaicDateMid, '%Y')),
          bioyear = case_when(month <=6 ~ bioyear - 1,
                              TRUE ~ bioyear)) %>%
+  
   filter(bioyear >= 2013 & bioyear <= 2016 & yday <= 319) %>%
   mutate(group = recode(bioyear, 
                         '2013' = '2013-14',
@@ -90,62 +109,69 @@ ggplot(sdat, aes(yday, nflooded/nsampled, color = group)) +
   geom_point() + facet_wrap(~ClassName) +
   geom_point(aes(y = nflooded2/nsampled), shape = 21)
 
-ggplot(sdat %>% filter(ClassName == 'wetlands'), 
-       aes(yday, nflooded2/nsampled, color = group)) +
-  geom_smooth(aes(fill = group)) + geom_point() 
+ggplot(sdat, aes(yday, nflooded2/nsampled, color = group)) +
+  geom_smooth(aes(fill = group)) + geom_point() + facet_wrap(~ClassName)
 
 
 # SUBTRACT INCENTIVE ACRES------------
-br <- read_csv(here::here(br_ts), col_types = cols()) %>%
-  select(group, yday, available) %>%
-  filter(available > 0) %>%
-  rename(br = available) %>%
-  # convert from ha to 900m2 pixels
-  mutate(br = (br * 10000)/900)
-
-whep <- read_csv(here::here(whep_ts), col_types = cols()) %>%
-  select(group, yday, available, habitat) %>%
-  filter(available > 0) %>%
-  mutate(available = (available * 10000)/900) %>%
-  spread(key = habitat, value = available, fill = 0)
+incentives <- bind_rows(read_csv(here::here(br_ts), col_types = cols()), 
+                        read_csv(here::here(whep_ts), col_types = cols())) %>%
+  select(group, yday, incentives = available) %>%
+  group_by(group, yday) %>% 
+  summarize(incentives = sum(incentives) * 10000 / 900) # convert to m2, then 30x30m pixels
 
 mdat <- sdat %>% 
-  select(ClassName, bioyear, group, yday, ntotal, nsampled, nflooded, nflooded2) %>%
-  left_join(br, by = c('group', 'yday')) %>%
-  left_join(whep, by = c('group', 'yday')) %>%
-  mutate(br = case_when(is.na(br) ~ 0,
-                        TRUE ~ br),
-         whep_fall = case_when(is.na(whep_fall) ~ 0,
-                               TRUE ~ whep_fall),
-         whep_vardd = case_when(is.na(whep_vardd) ~ 0,
-                                TRUE ~ whep_vardd),
-         nflooded3 = case_when(ClassName == 'rice' ~ nflooded2 - br - whep_fall - whep_vardd,
-                               TRUE ~ nflooded2))
+  select(habitat = ClassName, bioyear, group, yday, ntotal, nsampled, nflooded, nflooded2) %>%
+  left_join(incentives, by = c('group', 'yday')) %>%
+  mutate(nflooded3 = case_when(habitat == 'rice' ~ nflooded2 - incentives,
+                               TRUE ~ nflooded2),
+         habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn', 'other')))
 
+# check that only rice was affected
 ggplot(mdat, aes(yday, nflooded2/nsampled, color = group)) +
-  geom_point() + facet_wrap(~ClassName) +
-  # geom_point(aes(y = nflooded2/nsampled), shape = 21) +
+  geom_point() + facet_wrap(~habitat) +
   geom_point(aes(y = nflooded3/nsampled), shape = 21)
 
 
 # FIT GAMMS-------------
+# proportion flooded by day of year, excluding incentive acres
 
-by_year <- mdat %>% split(.$ClassName) %>% 
+by_year <- mdat %>% split(.$habitat) %>% 
   map(~ fit_gamm4(df = ., nwater = 'nflooded3', dayofyear = 'yday',
                       year = 'bioyear', minprop = 0.4, by = 'group', 
                       plot = FALSE)) 
 
 # extract predicted values:
 by_year_pred <- by_year %>%
-  map_dfr(function(x) {x$pred}) %>%
-  mutate(habitat = rep(levels(as.factor(mdat$ClassName)), 
-                       each = nrow(.)/length(levels(as.factor(mdat$ClassName)))))
+  map_dfr(function(x) {x$pred}, .id = 'habitat') %>%
+  mutate(habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn', 'other')))
 
-ggplot(by_year_pred %>% filter(habitat == 'wetlands'), aes(yday, fit)) +
+ggplot(by_year_pred, aes(yday, fit)) + facet_wrap(~habitat, nrow = 4) + 
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(ClassName == 'wetland'),
-             aes(y = nflooded3/nsampled, color = group), shape = 21)
+  geom_point(data = mdat,
+             aes(y = nflooded3/nsampled, color = group), shape = 21) +
+  ylim(0, 1) +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May'))
+# compared to CVJV estimates: 
+# - wetlands curves all peak a bit lower than previously estimated
+# - rice curves vary a lot between years, but look fairly similar overall
+# - corn is very similar
+# - "other" is much higher than before... is this real or an artifact of the cloud-fill model?
+
+ggplot(by_year_pred %>% filter(habitat == 'other'), aes(yday, fit)) +
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = mdat %>% filter(habitat == 'other'),
+             aes(y = nflooded3/nsampled, color = group), shape = 21) +
+  facet_wrap(~habitat, nrow = 4) + ylim(0, 1) +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May'),
+                     expand = c(0, 0))
+
 
 ## mid-winter peak values:
 by_year_pred %>% 
@@ -154,10 +180,10 @@ by_year_pred %>%
             peak = max(fit),
             lcl = lcl[which(fit == max(fit))],
             ucl = ucl[which(fit == max(fit))])
-# wetlands: 202-229, 0.604-0.646
-# rice: 200-215, 0.424-0.609
-# corn: 197-207, 0.242-0.260
-# other: 174-191, 0.105-0.138
+# wetlands: 202-229, 0.604-0.646 (compared to 0.81 on day 199 in previous CVJV work)
+# rice: 199-214, 0.396-0.612 (compared to 0.69 on day 188)
+# corn: 197-207, 0.242-0.260 (compared to 0.22 on day 223)
+# other: 174-191, 0.105-0.138 (compared to 0.03)
 
 # SPLIT WETLANDS----------
 # estimate percent of flooded wetlands that are semi-permanent vs. seasonal
