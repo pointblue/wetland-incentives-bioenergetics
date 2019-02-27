@@ -207,11 +207,17 @@ ts <- bind_rows(ts_fall, ts_vardd) %>%
                         '2016' = '2016-17')) %>%
   complete(group, habitat, yday = 1:319, 
            fill = list(available = 0, accessible = 0, added = 0, returned = 0)) %>%
-  select(habitat, group, yday, available, accessible, added, returned)
+  mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 1,
+                                     habitat == 'whep_vardd' ~ accessible / available),
+         prop.accessible = case_when(is.nan(prop.accessible) ~ 1,
+                                     TRUE ~ prop.accessible)) %>%
+  select(habitat, group, yday, available, accessible, added, returned, prop.accessible)
 
 ggplot(ts, aes(yday, available, color = habitat)) + geom_line() + 
   facet_wrap(~group)
 ggplot(ts, aes(yday, accessible, color = habitat)) + geom_line() + 
+  facet_wrap(~group)
+ggplot(ts, aes(yday, prop.accessible, color = habitat)) + geom_line() + 
   facet_wrap(~group)
 
 write_csv(ts, here::here(whep_ts))
