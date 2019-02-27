@@ -55,3 +55,8 @@ This repo is for a study of the contribution of wetland incentives programs in t
 #### Run bioenergetics model
 * DRAFT - Run deterministic models for each year, with and without acreage from incentive programs
 * Re-run models with Monte Carlo simulations to estimate error/uncertainty
+
+#### Summarize results
+* Annual variation in magnitude and timing of energy shortfalls
+* Differences in energy shortfalls with addition of incentive programs
+* Proportion of energy consumed in incentive acres
