@@ -89,11 +89,12 @@ source(here::here('code/3_crops_and_wetlands.R'))
 # OUTPUTS:
 # - 'output/open_water_annual.csv' (year- and crop-specific estimates of 
 #     proportion open water by day of year)
-# - 'output/open_water_by_wateryear.csv' (water-year and crop-specific
-#     estimates of proportion open water by day of year -- 13-14 and 14-15 are
-#     grouped here)
-# - 'output/open_water_overall.csv' (crop-specific estimates of proportion open
-#     water by day of year, for all years combined)
+# - 'output/flooding_curve_models.RData' (additional outputs from GAMM model 
+#     structures)
+# - 'output/flooding_curve_resamples.RData' (simulated estimates of open water
+#     for use with Monte Carlo simulations) --NOTE: large file not on GitHub
+#     but easily recreated
+
 
 source(here::here('code/3b_update_flooding_curves.R'))
 
@@ -113,14 +114,12 @@ source(here::here('code/3b_update_flooding_curves.R'))
 # - 'data/BR_timeseries.csv' #time series of bird returns habitat added/returned
 # - 'data/WHEP_timeseries.csv' #time series of whep habitat added/returned
 # OUTPUTS:
-# - 'output/habitat_available.csv'
-# - 'output/habitat_accessible.csv'
-# - 'output/habitat_added.csv'
-# - 'output/habitat_returned.csv'
-# - 'output/habitat_prop.accessible.csv'
+# - 'output/habitat_change.RData'
+# - 'figs/habitat_by_year.png'
 
 source(here::here('code/4_total_habitat_available.R'))
 
+# RUN MODEL--------------------
 
 # 5. bioenergmod
 # Run bioenergetics models
@@ -134,8 +133,29 @@ source(here::here('code/4_total_habitat_available.R'))
 # - 'output/habitat_added.csv'
 # - 'output/habitat_returned.csv'
 # - 'output/habitat_prop.accessible.csv'
-# OUTPUTS
+# OUTPUTS: TBD
 #
 
 source(here::here('code/5_bioenergmod.R'))
+
+# 6. monte carlo
+# Re-run bioenergetics models with resampled parameters to estimate uncertainty
+# in flood curves and depth curves (for non-incentive-flooded acres), and 
+# energy content per flooded acre (for all); assuming perfect information for
+# change in habitat available from incentive acres
+# 
+# PACKAGES: bioenergmod
+# INPUTS: 
+# - 'output/flooding_curve_resamples.RData'
+# - 'data/cvjv_orig/resamples_depth.RData'
+# - 'data/cvjv_orig/energy_content.csv'
+# - 'data/landcover_totals_cvjv.csv'
+# - 'data/cvjv_orig/daily_energy_requirement.csv'
+# - 'data/BR_timeseries.csv'
+# - 'data/WHEP_timeseries.csv'
+# FUNCTIONS: bioenergmod_mc_custom.R
+# OUTPUTS: TBD
+#
+
+source(here::here('code/6_monte_carlo.R'))
 
