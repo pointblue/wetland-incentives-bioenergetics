@@ -265,6 +265,9 @@ floodsim$prop.perm <- floodsim$wetlands %>% as.tibble() %>%
   select(-yday, -group) %>%
   as.matrix()
 
+# fix dimnames
+dimnames(floodsim$prop.perm) <- dimnames(floodsim$wetlands)
+
 # visualize to double-check:
 apply(floodsim$prop.perm, 1, quantile, c(0.025, 0.5, 0.975)) %>% t() %>% 
   as.data.frame() %>% 
@@ -272,7 +275,6 @@ apply(floodsim$prop.perm, 1, quantile, c(0.025, 0.5, 0.975)) %>% t() %>%
   rename(lcl = '2.5%', median = '50%', ucl = '97.5%') %>% 
   ggplot(aes(yday, median, ymin = lcl, ymax = ucl, fill = group, color = group)) + 
   geom_ribbon(alpha = 0.5) + geom_line()
-
 
 write_csv(by_year_wetsplit, here::here(floodcurves))
 save(by_year, file = here::here(models))
