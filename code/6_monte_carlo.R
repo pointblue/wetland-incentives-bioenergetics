@@ -35,8 +35,6 @@ str(floodsim)
 # named list:
 # corn, other, rice, wetlands: matrix of 1276 (4 years x 319 days) x 10000 resamples
 
-# fix dimnames
-dimnames(floodsim$prop.perm) <- dimnames(floodsim$wetlands)
 
 # HABITAT ACCESSIBLE---------------
 # use original CVJV resamples (since we're not updating these models)
@@ -87,31 +85,18 @@ base <- read_csv(here::here(annual_acres), col_types = cols()) %>%
 
 needs <- read_csv(here::here(objectives), col_types = cols())
 
-br <- read_csv(here::here(br_ts), col_types = cols()) %>%
-  mutate(added = case_when(is.na(added) ~ 0,
-                           TRUE ~ added),
-         returned = case_when(is.na(returned) ~ 0,
-                              TRUE ~ returned),
-         habitat = 'br', 
-         prop.accessible = 1)
-
-whep <- read_csv(here::here(whep_ts), col_types = cols()) %>%
-  mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 1,
-                                     habitat == 'whep_vardd' ~ accessible / available),
-         prop.accessible = case_when(is.nan(prop.accessible) ~ 1,
-                                     TRUE ~ prop.accessible))
-
-incentives <- bind_rows(br, whep)
+incentives <- bind_rows(read_csv(here::here(br_ts), col_types = cols()), 
+                        read_csv(here::here(whep_ts), col_types = cols()))
 
 # run for each year & scenario & set of objectives, separately:
 # (custom function to calculate habitat change from )
 
-mc1314 <- bioenergmod_mc_custom(nsim = 2, energyneed = needs$DER.obj,
-                                tothabitat = base %>% filter(year == 2013),
-                                energysim = energysim, floodsim = floodsim,
-                                accessiblesim = depthsim, wetsplit = TRUE,
-                                mintime = 1, maxtime = 319, grp = '2013-14',
-                                addon = incentives)
+test <- bioenergmod_mc_custom(nsim = 2, energyneed = needs$DER.obj,
+                              tothabitat = base %>% filter(year == 2013),
+                              energysim = energysim, floodsim = floodsim,
+                              accessiblesim = depthsim, wetsplit = TRUE,
+                              mintime = 1, maxtime = 319, grp = '2013-14',
+                              addon = incentives)
 
 
 
