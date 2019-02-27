@@ -8,11 +8,7 @@ library(bioenergmod) # devtools::install_github("kdybala/bioenergmod")
 # INPUTS
 objectives <- 'data/cvjv_orig/daily_energy_requirement.csv'
 energy_density <- 'data/cvjv_orig/energy_content.csv'
-habitat_available <- 'output/habitat_available.csv'
-habitat_accessible <- 'output/habitat_accessible.csv'
-habitat_added <- 'output/habitat_added.csv'
-habitat_returned <- 'output/habitat_returned.csv'
-habitat_prop.accessible <- 'output/habitat_prop.accessible.csv'
+habitat_change <- 'output/habitat_change.RData'
 
 # OUTPUTS
 
@@ -41,7 +37,7 @@ ggplot(needs, aes(yday)) +
   geom_line(aes(y = DER.obs2/1000000), color = 'red', linetype = 'dashed') +
   ylab('Daily energy requirement (kJ, millions)')
 
-# ENERGY AVAILABLE------------
+# ENERGY DENSITY------------
 
 energydens <- read_csv(here::here(energy_density)) %>%
   filter(habitat != 'corn') %>%
@@ -56,82 +52,66 @@ energydens <- energydens %>%
                                 lcl = energydens$lcl[energydens$habitat == 'rice'], 
                                 ucl = energydens$ucl[energydens$habitat == 'rice']))
 
-available <- read_csv(here::here(habitat_available)) %>%
-  split(.$group) %>%
-  map(~ (.x %>% select(-group)))
+# HABITAT AVAILABLE AND ACCESSIBLE--------------
 
-accessible <- read_csv(here::here(habitat_accessible)) %>%
-  split(.$group) %>%
-  map(~ (.x %>% select(-group)))
+load(here::here(habitat_change))
+str(change_all, max.level = 2)
 
-added <- read_csv(here::here(habitat_added)) %>% 
-  mutate(br = case_when(is.na(br) ~ 0,
-                        TRUE ~ br)) %>%
-  split(.$group) %>%
-  map(~ (.x %>% select(-group)))
-
-returned <- read_csv(here::here(habitat_returned)) %>% 
-  mutate(br = case_when(is.na(br) ~ 0,
-                        TRUE ~ br)) %>%
-  split(.$group) %>%
-  map(~ (.x %>% select(-group)))
-
-prop.accessible <- read_csv(here::here(habitat_prop.accessible)) %>%
-  split(.$group) %>%
-  map(~ (.x %>% select(-group)))
 
 
 # BASIC DETERMINISTIC MODEL-------------------
 
 ## with population objectives:
-obj_det <- pmap(list(available, accessible, added, returned, prop.accessible),
-                ~ run_bioenergmod_loop(energyneed = needs$DER.obj, 
-                                       energydens = energydens,
-                                       habitat.available = ..1,
-                                       habitat.accessible = ..2,
-                                       habitat.added = ..3,
-                                       habitat.returned = ..4,
-                                       prop.accessible = ..5))
+obj_det <- map(change_all, 
+               ~ run_bioenergmod_loop(habitat.available = .x$openwater,
+                                      habitat.accessible = .x$accessible,
+                                      habitat.added = .x$added,
+                                      habitat.returned = .x$returned,
+                                      prop.accessible = .x$prop.accessible,
+                                      energyneed = needs$DER.obj,
+                                      energydens = energydens))
 
 ## with baseline/"current" population size:
-obs_det <- pmap(list(available, accessible, added, returned, prop.accessible),
-                ~ run_bioenergmod_loop(energyneed = needs$DER.obs, 
-                                       energydens = energydens,
-                                       habitat.available = ..1,
-                                       habitat.accessible = ..2,
-                                       habitat.added = ..3,
-                                       habitat.returned = ..4,
-                                       prop.accessible = ..5))
+obs_det <- map(change_all, 
+               ~ run_bioenergmod_loop(habitat.available = .x$openwater,
+                                      habitat.accessible = .x$accessible,
+                                      habitat.added = .x$added,
+                                      habitat.returned = .x$returned,
+                                      prop.accessible = .x$prop.accessible,
+                                      energyneed = needs$DER.obs,
+                                      energydens = energydens))
 
 
 ## repeat without incentive acres:
 ## - with population objectives:
-obj_det2 <- pmap(list(available %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      accessible %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      added %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      returned %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      prop.accessible %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall)))),
-                ~ run_bioenergmod_loop(energyneed = needs$DER.obj, 
-                                       energydens = energydens,
-                                       habitat.available = ..1,
-                                       habitat.accessible = ..2,
-                                       habitat.added = ..3,
-                                       habitat.returned = ..4,
-                                       prop.accessible = ..5))
+obj_det2 <- map(change_all, 
+                ~ run_bioenergmod_loop(habitat.available = .x$openwater %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       habitat.accessible = .x$accessible %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       habitat.added = .x$added %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       habitat.returned = .x$returned %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       prop.accessible = .x$prop.accessible %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       energyneed = needs$DER.obj,
+                                       energydens = energydens))
 
-## with baseline/"current" population size:
-obs_det2 <- pmap(list(available %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      accessible %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      added %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      returned %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall))), 
-                      prop.accessible %>% map(~ (.x %>% select(-br, -whep_vardd, -whep_fall)))),
-                ~ run_bioenergmod_loop(energyneed = needs$DER.obs, 
-                                       energydens = energydens,
-                                       habitat.available = ..1,
-                                       habitat.accessible = ..2,
-                                       habitat.added = ..3,
-                                       habitat.returned = ..4,
-                                       prop.accessible = ..5))
+## - with baseline/"current" population size:
+obs_det2 <- map(change_all, 
+                ~ run_bioenergmod_loop(habitat.available = .x$openwater %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       habitat.accessible = .x$accessible %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       habitat.added = .x$added %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       habitat.returned = .x$returned %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       prop.accessible = .x$prop.accessible %>%
+                                         select(-br, -whep_vardd, -whep_fall),
+                                       energyneed = needs$DER.obs,
+                                       energydens = energydens))
 
 # PLOT ACCESSIBLE ENERGY----------------
 
@@ -139,18 +119,15 @@ obs_det2 <- pmap(list(available %>% map(~ (.x %>% select(-br, -whep_vardd, -whep
 levels <- c('perm', 'seas', 'other', 'corn', 'rice', 'whep_vardd', 'whep_fall', 'br')
 
 ## compile values across years:
-obj_accessible <- map_dfr(.x = names(obj_det),
-                          .f = function(x) {
-                            res <- obj_det[[x]][['energy.accessible']] %>%
-                              mutate(group = x)}) %>%
+
+obj_accessible <- map_dfr(obj_det, ~.x[['energy.accessible']], 
+                          .id = 'group') %>%
   gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
   mutate(habitat = factor(habitat, levels = rev(levels))) %>%
   left_join(needs %>% select(yday, DER.obj), by = c('time' = 'yday'))
 
-obs_accessible <- map_dfr(.x = names(obs_det),
-                          .f = function(x) {
-                            res <- obs_det[[x]][['energy.accessible']] %>%
-                              mutate(group = x)}) %>%
+obs_accessible <- map_dfr(obs_det, ~.x[['energy.accessible']], 
+                          .id = 'group') %>%
   gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
   mutate(habitat = factor(habitat, levels = rev(levels))) %>%
   left_join(needs %>% select(yday, DER.obs), by = c('time' = 'yday'))
@@ -186,15 +163,9 @@ scale2 = 1000000
 ylab2 = 'Energy shortfall: kJ (millions)'
 ymax2 = 250
 
-obj_energy <- map_dfr(.x = names(obj_det),
-                      .f = function(x) {
-                        res <- obj_det[[x]][['energy']] %>%
-                          mutate(group = x)}) %>%
-  full_join(map_dfr(.x = names(obj_det2),
-                    .f = function(x) {
-                      res <- obj_det2[[x]][['energy']] %>%
-                        mutate(group = x) %>%
-                        select(time, group, shortfall2 = shortfall)}),
+obj_energy <- map_dfr(obj_det, ~.x[['energy']], .id = 'group') %>%
+  full_join(map_dfr(obj_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
+                    .id = 'group'),
             by = c('time', 'group')) %>%
   select(time, group, shortfall, shortfall2) %>%
   gather(shortfall:shortfall2, key = 'scenario', value = 'value') %>%
@@ -223,17 +194,12 @@ ggplot(obj_short, aes(group, value/scale, group = scenario, fill = scenario)) +
   labs(x = '', y = ylab2) + theme_bw() + theme +
   scale_fill_viridis_d(begin = 0.1, end = 0.85)
 
+
 # ENERGY SHORTFALLS: Baseline---------------
 
-obs_energy <- map_dfr(.x = names(obs_det),
-                      .f = function(x) {
-                        res <- obs_det[[x]][['energy']] %>%
-                          mutate(group = x)}) %>%
-  full_join(map_dfr(.x = names(obs_det2),
-                    .f = function(x) {
-                      res <- obs_det2[[x]][['energy']] %>%
-                        mutate(group = x) %>%
-                        select(time, group, shortfall2 = shortfall)}),
+obs_energy <- map_dfr(obs_det, ~.x[['energy']], .id = 'group') %>%
+  full_join(map_dfr(obs_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
+                    .id = 'group'),
             by = c('time', 'group')) %>%
   select(time, group, shortfall, shortfall2) %>%
   gather(shortfall:shortfall2, key = 'scenario', value = 'value') %>%
