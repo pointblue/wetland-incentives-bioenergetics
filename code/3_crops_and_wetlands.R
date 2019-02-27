@@ -7,7 +7,7 @@
 
 # PACKAGES
 # devtools::install_github('emraher/rnass')
-library(rnass) 
+# library(rnass) 
 library(tidyverse)
 
 # API
@@ -17,7 +17,7 @@ library(tidyverse)
 # FUNCTIONS
 # custom function to extract the specific crop types we need for this project
 #  for a given year
-source(here::here('functions/extract_nass.R'))
+# source(here::here('functions/extract_nass.R'))
 
 # INPUTS
 agdist <- 'data/cvjv_orig/ag_distribution_basins.csv'
@@ -43,7 +43,7 @@ read_csv(here::here(rawdat)) %>%
   scale_x_continuous(breaks = seq(2007, 2017, 1)) # remember these are state-wide totals
 
 # group together the other field and row crops, and summarize by year
-sdat <- read_csv(here::here(rawdat)) %>% 
+sdat <- read_csv(here::here(rawdat), col_types = cols()) %>% 
   select(commodity_desc, 
          year, 
          acres = Value) %>%
@@ -80,7 +80,7 @@ write_csv(sdat, here::here(agstats))
 # based on average spatial distribution of crops in CA (same spatial distribution
 # assumed for CVJV non-breeding shorebirds paper)
 
-dist <- read_csv(here::here(agdist)) %>%
+dist <- read_csv(here::here(agdist), col_types = cols()) %>%
   filter(TREND_CATE %in% c('Grass/Pasture', 'Field Crop', 'Row Crop', 'Alfalfa',
                            'Grains', 'Corn', 'Rice')) %>%
   rename(basin = Primary_Ba,
@@ -91,7 +91,7 @@ dist <- read_csv(here::here(agdist)) %>%
          crop_class = gsub(' ', '', crop_class),
          crop_class = recode(crop_class, 'grass/pasture' = 'pasture')) 
 
-mdat <- read_csv(here::here(agstats)) %>%
+mdat <- read_csv(here::here(agstats), col_types = cols()) %>%
   left_join(dist, by = 'crop_class') %>%
   mutate(ha = acres * prop / 2.47105) %>%
   select(crop_class, ID, basin, year, ha) %>%
@@ -114,6 +114,13 @@ mdat %>%
 tdat <- mdat %>% 
   group_by(crop_class, year) %>%
   summarize(ha = sum(ha)) 
+
+ggplot(tdat, aes(year, ha/1000, color = crop_class)) + 
+  geom_line() + geom_point() + xlab(NULL) + 
+  scale_x_continuous(breaks = c(2007:2017), labels = c(2007:2017))
+# "other" declining between 2011 and 2015, bounces back a bit in 2016-17
+# rice fairly steady, but dips in 2014-15, and again in 2017
+# corn declining slowly since 2012
 
 
 # WETLANDS----------------
