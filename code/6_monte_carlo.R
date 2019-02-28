@@ -71,7 +71,7 @@ energysim <- energydens %>%
   mutate(logvalue = log(value/1000),
          logsd = (log(value/1000) - log(lcl/1000)) / 2) %>% 
   split(.$habitat) %>%
-  map(function(x) {exp(rnorm(10000, mean = x$logvalue, sd = x$logsd))})
+  map(function(x) {exp(rnorm(10000, mean = x$logvalue, sd = x$logsd)) * 1000})
 str(energysim)
 # named list: 
 # perm, seas, rice, corn, other, whep_vardd, whep_fall, br: 
@@ -98,7 +98,30 @@ test <- bioenergmod_mc_custom(nsim = 2, energyneed = needs$DER.obj,
                               mintime = 1, maxtime = 319, grp = '2013-14',
                               addon = incentives)
 
+### energy shortfall----------
+scale = 1000000
+es <- test$energy %>% apply(MARGIN = c(1, 2), mean) %>% as.data.frame() 
+
+ggplot(es, aes(time, shortfall/scale)) + geom_line() + ylim(0, 250) + 
+  geom_line(aes(y = DER/scale), linetype = 'dashed')
 
 
+### energy consumed----------
+ec <- test$energy.consumed[, 2:9, ] %>% apply(MARGIN = c(1, 2), mean) %>%
+  as.data.frame() %>%
+  mutate(total = rowSums(.),
+         yday = c(1:319),
+         DER = needs$DER.obj,
+         wetlands = perm + seas) %>%
+  select(-perm, -seas) 
 
+ggplot(ec, aes(yday, total/scale)) + geom_area() + geom_line(aes(y = DER/scale))
+
+# proportion of all calories consumed in each habitat type
+ec %>% select(-total, -DER) %>% 
+  gather(corn:whep_vardd, wetlands, key = 'habitat', value = 'value') %>% 
+  group_by(habitat) %>%
+  summarize(value = sum(value)) %>%
+  ggplot(aes(1, value/sum(value), fill = habitat)) + geom_col() +
+  ylab('proportion') + xlab(NULL)
 
