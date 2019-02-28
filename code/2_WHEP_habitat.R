@@ -143,10 +143,13 @@ ts_fall <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
          accessible = available) %>%
   select(-lagreturn)
 
-ggplot(ts_fall, aes(yday, added)) + geom_line() + 
-  geom_line(aes(y = returned), col = 'red') +
-  geom_line(aes(y = available), col = 'blue') +
-  facet_wrap(~bioyear)
+ggplot(ts_fall %>% select(-accessible) %>% 
+         gather(added:available, key = 'var', value = 'value'), 
+       aes(yday, value, color = var)) + geom_line() + 
+  facet_wrap(~bioyear, nrow = 3) + 
+  scale_x_continuous(breaks = c(1, 32, 63, 93), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct'),
+                     limits = c(0, 93)) + ylab('ha')
 ##--> these are such tiny areas, consider excluding from analysis
 
 ## - WHEP VARIABLE DRAWDOWN: 
@@ -161,11 +164,17 @@ ggplot(ts_fall, aes(yday, added)) + geom_line() +
 
 ## original CVJV depth curves compared to timing of variable drawdown practice:
 read_csv(here::here(depthcurves)) %>% filter(habitat == 'rice') %>%
+  mutate(fit = case_when(yday<63 ~ NA_real_,
+                         TRUE ~ fit)) %>%
   ggplot(aes(yday, fit, ymin = lcl, ymax = ucl)) + 
-  geom_ribbon(fill = 'gray80') + geom_line() +
+  geom_ribbon(fill = 'gray80') + geom_line() + xlab(NULL) + ylab('proportion <4"') +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May'),
+                     expand = c(0, 0)) +
   geom_vline(aes(xintercept = 124), col = 'red') + #start date of Vardd
-  geom_vline(aes(xintercept = 215), col = 'red') + #start date of drawdown
-  geom_vline(aes(xintercept = 215 + 35), col = 'blue') #presumed end date
+  geom_vline(aes(xintercept = 216), col = 'red') + #start date of drawdown
+  geom_vline(aes(xintercept = 216 + 43), col = 'blue') #presumed end date
 ##--> can assume full depth at start (i.e. no inverts accessible yet) and apply 
 ##     same tail in spring?
 
