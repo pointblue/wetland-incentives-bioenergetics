@@ -110,7 +110,19 @@ change_all %>%
 # ranges days 213-236; 71167 - 105394
 
 # PLOTS-------------------
-pal = scales::viridis_pal()(8)
+pointblue.palette <-
+  c('#4495d1',
+    '#74b743',
+    '#f7941d',
+    '#005baa',
+    '#bfd730',
+    '#a7a9ac',
+    '#666666',
+    '#456d28', #add a few more complementary colors
+    '#b74374', 
+    '#5e2a84',
+    '#d2c921')
+
 ymax = 310
 scale = 1000
 ylab = 'total open water (ha, thousands)'
@@ -128,9 +140,11 @@ scalex2 = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 
                             expand = c(0, 0))
 scaley = scale_y_continuous(limits = c(0, ymax))
 scaley2 = scale_y_continuous(labels = NULL, limits = c(0, ymax))
-levels = c('br', 'whep_fall', 'whep_vardd', 'rice', 'corn', 'other', 'seas', 'perm')
 
-# open water: (order variables in stack from top to bottom)
+# order variables in stack from top to bottom (and match colors)
+levels = c('br', 'whep_fall', 'whep_vardd', 'rice', 'corn', 'other', 'seas', 'perm')
+pal = c(pointblue.palette[c(10, 11, 9, 3)], 'yellow', pointblue.palette[c(2, 1, 4)])
+
 
 a <- change_all$`2013-14`$openwater %>% 
   gather(-time, key = 'habitat', value = 'value') %>%
