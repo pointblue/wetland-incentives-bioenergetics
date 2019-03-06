@@ -113,13 +113,12 @@ obs_det2 <- map(change_all,
                                        energyneed = needs$DER.obs,
                                        energydens = energydens))
 
-# PLOT ACCESSIBLE ENERGY----------------
+# ACCESSIBLE ENERGY----------------
 
 ## control the order of stacked area plots:
 levels <- c('perm', 'seas', 'other', 'corn', 'rice', 'whep_vardd', 'whep_fall', 'br')
 
 ## compile values across years:
-
 obj_accessible <- map_dfr(obj_det, ~.x[['energy.accessible']], 
                           .id = 'group') %>%
   gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
@@ -132,7 +131,37 @@ obs_accessible <- map_dfr(obs_det, ~.x[['energy.accessible']],
   mutate(habitat = factor(habitat, levels = rev(levels))) %>%
   left_join(needs %>% select(yday, DER.obs), by = c('time' = 'yday'))
 
-pal = scales::viridis_pal()(8)
+## peak accessible by year
+peak_obj_accessible <- obj_accessible %>% 
+  group_by(group, time) %>%
+  summarize(energy = sum(value)) %>% # total energy by day of year
+  group_by(group) %>%
+  summarize(time = time[energy == max(energy)],
+            energy = max(energy))
+
+peak_obs_accessible <- obs_accessible %>% 
+  group_by(group, time) %>%
+  summarize(energy = sum(value)) %>% # total energy by day of year
+  group_by(group) %>%
+  summarize(time = time[energy == max(energy)],
+            energy = max(energy))
+
+## plot
+pointblue.palette <-
+  c('#4495d1',
+    '#74b743',
+    '#f7941d',
+    '#005baa',
+    '#bfd730',
+    '#a7a9ac',
+    '#666666',
+    '#456d28', #add a few more complementary colors
+    '#b74374', 
+    '#5e2a84',
+    '#d2c921')
+
+pal = c(pointblue.palette[c(10, 11, 9, 3)], 'yellow', pointblue.palette[c(2, 1, 4)])
+
 ymax = 8
 der = needs$DER.obj
 scale = 1000000000 #billion
@@ -143,25 +172,30 @@ scalex = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154,
                             labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 
                                        'Jan', 'Feb', 'Mar', 'Apr', 'May'))
 
-ggplot(obj_accessible, aes(time, value/scale)) + facet_wrap(~group) +
+ggplot(obj_accessible, aes(time, value/scale)) + facet_wrap(~group, nrow = 4) +
   geom_area(aes(fill = habitat)) + 
   geom_line(aes(y = DER.obj/scale)) +
+  geom_vline(data = peak_obj_accessible, aes(xintercept = time)) +
   labs(y = ylab, x = NULL) + ylim(0, ymax) +
   scale_fill_manual(values = pal) +
   scalex + theme_bw() + theme
 
-ggplot(obs_accessible, aes(time, value/scale)) + facet_wrap(~group) +
+ggplot(obs_accessible, aes(time, value/scale)) + facet_wrap(~group, nrow = 4) +
   geom_area(aes(fill = habitat)) + 
   geom_line(aes(y = DER.obs/scale)) +
+  geom_vline(data = peak_obs_accessible, aes(xintercept = time)) +
   labs(y = ylab, x = NULL) + ylim(0, ymax) +
   scale_fill_manual(values = pal) +
   scalex + theme_bw() + theme
 
 
-# ENERGY SHORTFALLS: Objectives---------------
+# ENERGY SHORTFALLS---------------
 scale2 = 1000000
 ylab2 = 'Energy shortfall: kJ (millions)'
 ymax2 = 250
+theme = theme_classic() + 
+  theme(legend.position = c(0,1), legend.justification = c(0,1),
+        legend.background = element_rect(fill = "transparent"))
 
 obj_energy <- map_dfr(obj_det, ~.x[['energy']], .id = 'group') %>%
   full_join(map_dfr(obj_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
@@ -174,29 +208,6 @@ obj_energy <- map_dfr(obj_det, ~.x[['energy']], .id = 'group') %>%
                            shortfall2 = 'without incentive programs'),
          scenario = factor(scenario, levels = c('without incentive programs', 'with incentive programs')))
 
-obj_short <- obj_energy %>% 
-  mutate(season = case_when(time <= 184 ~ 'fall',
-                            time > 184 ~ 'spring')) %>%
-  group_by(group, season, scenario) %>%
-  summarize(mid = mean(time[value > 0]),
-            value = sum(value))
-
-ggplot(obj_energy, aes(time, value/scale2, fill = scenario)) + 
-  geom_area(position = position_identity()) + 
-  facet_wrap(~group, nrow = 4) + 
-  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
-  labs(x = '', y = ylab2) +
-  ylim(0, ymax2) + scalex + theme_bw() + theme +
-  scale_fill_viridis_d(begin = 0.1, end = 0.85)
-
-ggplot(obj_short, aes(group, value/scale, group = scenario, fill = scenario)) +
-  geom_col(position = position_dodge()) + facet_wrap(~season) +
-  labs(x = '', y = ylab2) + theme_bw() + theme +
-  scale_fill_viridis_d(begin = 0.1, end = 0.85)
-
-
-# ENERGY SHORTFALLS: Baseline---------------
-
 obs_energy <- map_dfr(obs_det, ~.x[['energy']], .id = 'group') %>%
   full_join(map_dfr(obs_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
                     .id = 'group'),
@@ -208,23 +219,51 @@ obs_energy <- map_dfr(obs_det, ~.x[['energy']], .id = 'group') %>%
                            shortfall2 = 'without incentive programs'),
          scenario = factor(scenario, levels = c('without incentive programs', 'with incentive programs')))
 
-obs_short <- obs_energy %>%  
+ggplot(obj_energy, aes(time, value/scale2, fill = scenario)) + 
+  geom_area(position = position_identity()) + 
+  facet_wrap(~group, nrow = 4) + 
+  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
+  labs(x = '', y = ylab2) +
+  ylim(0, ymax2) + scalex + theme_bw() + theme +
+  scale_fill_manual(values = pointblue.palette[c(3,4)])
+
+ggplot(obs_energy, aes(time, value/scale2, fill = scenario)) + 
+  geom_area(position = position_identity()) + 
+  facet_wrap(~group, nrow = 4) + 
+  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
+  labs(x = '', y = ylab2) +
+  ylim(0, ymax2) + scalex + theme_bw() + theme +
+  scale_fill_manual(values = pointblue.palette[c(3,4)])
+
+# alternative bar graph:
+obj_short <- obj_energy %>% 
   mutate(season = case_when(time <= 184 ~ 'fall',
                             time > 184 ~ 'spring')) %>%
   group_by(group, season, scenario) %>%
   summarize(mid = mean(time[value > 0]),
             value = sum(value))
 
-ggplot(obs_energy, aes(time, value/scale2, fill = scenario)) + 
-  geom_area(position = position_identity()) + 
-  facet_wrap(~group, nrow = 4) + 
-  # geom_text(data = obs_short, aes(mid, 25, label = round(value/scale2, 0))) +
-  labs(x = '', y = ylab2) +
-  ylim(0, ymax2) + scalex + theme_bw() + theme +
-  scale_fill_viridis_d(begin = 0.1, end = 0.85)
+obs_short <- obs_energy %>% 
+  mutate(season = case_when(time <= 184 ~ 'fall',
+                            time > 184 ~ 'spring')) %>%
+  group_by(group, season, scenario) %>%
+  summarize(mid = mean(time[value > 0]),
+            value = sum(value))
 
-ggplot(obs_short, aes(group, value/scale, group = scenario, fill = scenario)) +
-  geom_col(position = position_dodge()) + facet_wrap(~season) +
-  labs(x = '', y = ylab2) + theme_bw() + theme +
-  scale_fill_viridis_d(begin = 0.1, end = 0.85)
+obj_short %>%
+  select(-mid) %>%
+  spread(key = scenario, value = value) %>%
+  mutate(diff = (`without incentive programs` - `with incentive programs`)/`without incentive programs`) %>%
+  ggplot(aes(group, diff)) +
+  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season) +
+  labs(x = '', y = '% reduction from incentive programs') + theme + ylim(0,1)
 
+obs_short %>%
+  select(-mid) %>%
+  spread(key = scenario, value = value) %>%
+  mutate(diff = (`without incentive programs` - `with incentive programs`)/`without incentive programs`,
+         diff = case_when(is.nan(diff) ~ NA_real_,
+                          TRUE ~ diff)) %>%
+  ggplot(aes(group, diff)) +
+  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season) +
+  labs(x = '', y = '% reduction from incentive programs') + theme + ylim(0,1)
