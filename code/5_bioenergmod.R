@@ -11,6 +11,9 @@ energy_density <- 'data/cvjv_orig/energy_content.csv'
 habitat_change <- 'output/habitat_change.RData'
 
 # OUTPUTS
+plot_energy_accessible <- 'figs/energy_accessible_by_year.png'
+plot_energy_shortfall <- 'figs/energy_shortfall_by_year.png'
+plot_energy_effect <- 'figs/energy_effect_by_year.png'
 
 
 
@@ -166,36 +169,43 @@ ymax = 8
 der = needs$DER.obj
 scale = 1000000000 #billion
 ylab = 'Accessible energy: kJ (billions)'
-theme = theme(panel.grid = element_line(color = NA))
+theme = theme_classic() + 
+  theme(panel.grid = element_line(color = NA),
+        strip.text = element_text(hjust = 0),
+        strip.background = element_blank())
 scalex = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 
                                        185, 216, 244, 275, 305), 
                             labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 
                                        'Jan', 'Feb', 'Mar', 'Apr', 'May'))
 
-ggplot(obj_accessible, aes(time, value/scale)) + facet_wrap(~group, nrow = 4) +
+a <- ggplot(obj_accessible, aes(time, value/scale)) + facet_wrap(~group, nrow = 4) +
   geom_area(aes(fill = habitat)) + 
   geom_line(aes(y = DER.obj/scale)) +
   geom_vline(data = peak_obj_accessible, aes(xintercept = time)) +
   labs(y = ylab, x = NULL) + ylim(0, ymax) +
   scale_fill_manual(values = pal) +
-  scalex + theme_bw() + theme
+  guides(fill = guide_legend(ncol = 3)) +
+  scalex + theme + theme(legend.position = 'none') + 
+  ggtitle('Population objectives')
 
-ggplot(obs_accessible, aes(time, value/scale)) + facet_wrap(~group, nrow = 4) +
+b <- ggplot(obs_accessible, aes(time, value/scale)) + facet_wrap(~group, nrow = 4) +
   geom_area(aes(fill = habitat)) + 
   geom_line(aes(y = DER.obs/scale)) +
   geom_vline(data = peak_obs_accessible, aes(xintercept = time)) +
-  labs(y = ylab, x = NULL) + ylim(0, ymax) +
+  labs(y = NULL, x = NULL) + 
+  scale_y_continuous(limits = c(0, ymax), labels = NULL) +
   scale_fill_manual(values = pal) +
-  scalex + theme_bw() + theme
+  scalex + theme +
+  ggtitle('Baseline population')
+
+cowplot::plot_grid(a, b, ncol = 2, rel_widths = c(0.45, 0.55))
+ggsave(here::here(plot_energy_accessible))
 
 
 # ENERGY SHORTFALLS---------------
 scale2 = 1000000
 ylab2 = 'Energy shortfall: kJ (millions)'
 ymax2 = 250
-theme = theme_classic() + 
-  theme(legend.position = c(0,1), legend.justification = c(0,1),
-        legend.background = element_rect(fill = "transparent"))
 
 obj_energy <- map_dfr(obj_det, ~.x[['energy']], .id = 'group') %>%
   full_join(map_dfr(obj_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
@@ -219,21 +229,27 @@ obs_energy <- map_dfr(obs_det, ~.x[['energy']], .id = 'group') %>%
                            shortfall2 = 'without incentive programs'),
          scenario = factor(scenario, levels = c('without incentive programs', 'with incentive programs')))
 
-ggplot(obj_energy, aes(time, value/scale2, fill = scenario)) + 
+c <- ggplot(obj_energy, aes(time, value/scale2, fill = scenario)) + 
   geom_area(position = position_identity()) + 
   facet_wrap(~group, nrow = 4) + 
   # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
-  labs(x = '', y = ylab2) +
-  ylim(0, ymax2) + scalex + theme_bw() + theme +
-  scale_fill_manual(values = pointblue.palette[c(3,4)])
+  labs(x = NULL, y = ylab2) +
+  ylim(0, ymax2) + scalex + theme + theme(legend.position = 'none') +
+  scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
+  ggtitle('Population objectives')
 
-ggplot(obs_energy, aes(time, value/scale2, fill = scenario)) + 
+d <- ggplot(obs_energy, aes(time, value/scale2, fill = scenario)) + 
   geom_area(position = position_identity()) + 
   facet_wrap(~group, nrow = 4) + 
   # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
-  labs(x = '', y = ylab2) +
-  ylim(0, ymax2) + scalex + theme_bw() + theme +
-  scale_fill_manual(values = pointblue.palette[c(3,4)])
+  labs(x = NULL, y = NULL) +
+  scale_y_continuous(limits = c(0, ymax2), labels = NULL) + scalex + theme +
+  scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
+  ggtitle('Baseline population')
+
+cowplot::plot_grid(c, d, ncol = 2, rel_widths = c(0.40, 0.60))
+ggsave(here::here(plot_energy_shortfall))
+
 
 # alternative bar graph:
 obj_short <- obj_energy %>% 
@@ -250,20 +266,26 @@ obs_short <- obs_energy %>%
   summarize(mid = mean(time[value > 0]),
             value = sum(value))
 
-obj_short %>%
+e <- obj_short %>%
   select(-mid) %>%
   spread(key = scenario, value = value) %>%
   mutate(diff = (`without incentive programs` - `with incentive programs`)/`without incentive programs`) %>%
   ggplot(aes(group, diff)) +
-  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season) +
-  labs(x = '', y = '% reduction from incentive programs') + theme + ylim(0,1)
+  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season, nrow = 2) +
+  labs(x = NULL, y = '% reduction from incentive programs', title = 'Population objectives') + 
+  theme + ylim(0,1)
 
-obs_short %>%
+f <- obs_short %>%
   select(-mid) %>%
   spread(key = scenario, value = value) %>%
   mutate(diff = (`without incentive programs` - `with incentive programs`)/`without incentive programs`,
          diff = case_when(is.nan(diff) ~ NA_real_,
                           TRUE ~ diff)) %>%
   ggplot(aes(group, diff)) +
-  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season) +
-  labs(x = '', y = '% reduction from incentive programs') + theme + ylim(0,1)
+  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season, nrow = 2) +
+  labs(x = NULL, y = NULL, title = 'Baseline population') + 
+  theme + 
+  scale_y_continuous(limits = c(0,1), labels = NULL)
+
+cowplot::plot_grid(e, f, ncol = 2, rel_widths = c(0.52, 0.48))
+ggsave(here::here(plot_energy_effect))

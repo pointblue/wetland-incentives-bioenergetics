@@ -133,7 +133,10 @@ source(here::here('code/4_total_habitat_available.R'))
 # - 'output/habitat_added.csv'
 # - 'output/habitat_returned.csv'
 # - 'output/habitat_prop.accessible.csv'
-# OUTPUTS: TBD
+# OUTPUTS: 
+# - 'figs/energy_accessible_by_year.png'
+# - 'figs/energy_shortfall_by_year.png'
+# - 'figs/energy_effect_by_year.png' # % reduction in shortfall from incentive programs
 #
 
 source(here::here('code/5_bioenergmod.R'))
