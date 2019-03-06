@@ -58,3 +58,4 @@ This repo is for a study of the contribution of wetland incentives programs in t
 -   Annual variation in magnitude and timing of energy shortfalls
 -   Differences in energy shortfalls with addition of incentive programs
 -   Proportion of energy consumed in incentive acres
+-   Total contribution of fall acres to spring shortfalls?
