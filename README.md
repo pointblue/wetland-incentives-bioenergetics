@@ -18,16 +18,16 @@ This repo is for a study of the contribution of wetland incentives programs in t
 
 ###### WHEP
 
--   DRAFT - Compile annual/seasonal incentive acreages by program type from Kristin/NRCS data downloads
--   If spatial data become available, overlay spatial data with original CVJV land cover data to check correspondence (waiting on potential spatial data)
--   DRAFT - Estimate proportion available by day of year during enrollment:
+-   DONE - Compile annual/seasonal incentive acreages by program type from Kristin/NRCS data downloads
+    -   If spatial data become available, overlay spatial data with original CVJV land cover data to check correspondence (waiting on potential spatial data)
+-   DONE - Estimate proportion available by day of year during enrollment:
     -   Fall flooding: distribute area enrolled over period between 1 July and 15 Sept, assuming two weeks of flooding and two weeks of gradual drawdown
     -   Variable drawdown: distribute area enrolled in over 2 weeks in Nov for flood up, and over 4 weeks in Feb for staggered drawdown (with 1/4 of area drawn down during 1, 2, 3, or 4 weeks)
     -   Boards-in: not included to date
     -   Do not assume credit for any lingering flooding after enrollment that may occur
 -   DRAFT - Estimate proportion accessible by day of year during enrollment:
     -   Fall flooding: assume 100% accessible because "shallow" flooding?
-    -   Variable drawdown: Apply original rice depth curves, perhaps with some adjustment?
+    -   Variable drawdown: Apply original rice depth curves; 2012-13 depth data show fairly similar pattern (if anything original curves are generous and overestimate proportion suitable)
 
 ###### Wetlands & crops (potential habitat)
 

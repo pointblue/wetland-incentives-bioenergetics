@@ -5,7 +5,7 @@ rmarkdown::render(here::here("Rmd/README.Rmd"),
                   output_file = here::here("README.md"))
 
 
-# HABITAT AVAILABILITY & ACCESSIBILITY--------
+# INCENTIVE PROGRAMS---------------
 
 # 1. BR habitat
 # Compile time series of habitat available and accessible from fields enrolled 
@@ -24,7 +24,6 @@ rmarkdown::render(here::here("Rmd/README.Rmd"),
 # - 'data/BR_totals.csv' (seasonal summary of total acreage enrolled)
 
 source(here::here('code/1_BR_habitat.R'))
-
 
 # 1b. BR spatial
 # Overlay BR fields with original CVJV land cover raster to check correspondence
@@ -57,6 +56,24 @@ source(here::here('code/1b_BR_spatial.R'))
 
 source(here::here('code/2_WHEP_habitat.R'))
 
+
+# 2b. WHEP_depth_modeling
+# Re-examine Kristin's depth data from variable drawdown fields in 2012-13 to 
+# estimate depth curves (though these data may not be representative) in 
+# comparison to original CVJV estimates for rice. (Does not change estimates
+# generated in previous script 2 - keep using original CVJV estimates.)
+#
+# PACKAGES: gamm4
+# INPUTS:
+# - 'data/cvjv_orig/compiled_depth_data.csv' (raw estimates of depth by date)
+# - 'data/cvjv_orig/depth_curves.csv' (original CVJV depth curves)
+# OUTPUT:
+# - 'output/whep_depth_models.csv' (predicted values for several alternative models)
+
+source(here::here('code/2b_WHEP_depth_modeling.R'))
+
+
+# OTHER HABITAT----------------
 
 # 3. Crops and wetland habitat
 # STEP 1: update area of potential habitat in each year through 2017
@@ -99,6 +116,8 @@ source(here::here('code/3_crops_and_wetlands.R'))
 source(here::here('code/3b_update_flooding_curves.R'))
 
 
+# RUN MODEL--------------------
+
 # 4. Total habitat available
 # Estimate total open water and accessible open water in all land cover types 
 # on each day of the nonbreeding season from updated flooding curves and 
@@ -119,7 +138,6 @@ source(here::here('code/3b_update_flooding_curves.R'))
 
 source(here::here('code/4_total_habitat_available.R'))
 
-# RUN MODEL--------------------
 
 # 5. bioenergmod
 # Run bioenergetics models
