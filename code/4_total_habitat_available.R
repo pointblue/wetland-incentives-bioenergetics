@@ -82,7 +82,7 @@ peak_open <- change_all %>%
         summarize(time = time[area == max(area)],
                   area = max(area)),
         .id = 'group')
-# ranges days 180-200; 198545 - 291430 ha
+# ranges days 168-201; 208117 - 294098 ha
 
 # peak accessible by year
 peak_accessible <- change_all %>% 
@@ -94,7 +94,7 @@ peak_accessible <- change_all %>%
             summarize(time = time[area == max(area)],
                       area = max(area)),
           .id = 'group')
-# ranges days 217-229; 84290 - 118732 ha
+# ranges days 217-229; 84334 - 118231 ha
 
 # peak accessible without incentive programs:
 change_all %>% 
@@ -107,7 +107,7 @@ change_all %>%
             summarize(time = time[area == max(area)],
                       area = max(area)),
           .id = 'group')
-# ranges days 213-236; 71167 - 105394
+# ranges days 213-235; 711070 - 104850
 
 # PLOTS-------------------
 pointblue.palette <-
@@ -222,5 +222,5 @@ h <- change_all$`2016-17`$accessible %>%
 
 
 cowplot::plot_grid(a, e, b, f, c, g, d, h, nrow = 4, ncol = 2)
-ggsave(here::here(plot_habitat))
+ggsave(here::here(plot_habitat), height = 8, width = 6.5, units = 'in', dpi = 350)
 
