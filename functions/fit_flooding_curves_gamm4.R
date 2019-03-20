@@ -1,28 +1,18 @@
 fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled', 
                      nwater = 'nflooded', ntotal = 'ntotal', year = 'year',
-                     minprop = NULL, plot = TRUE, k = 10, by = NULL) {
+                     weights = NULL, plot = TRUE, k = 10, by = NULL) {
   require(gamm4)
   
   # set up variables:
   df <- df %>%
     rename(yday = dayofyear, ntotal = ntotal, nsampled = nsampled, 
-           nwater = nwater, year = year) %>%
+           nwater = nwater, year = year, weights = weights) %>%
     mutate(zday = (yday - 150) / 100,
            nwater = as.integer(nwater),
            nsampled = as.integer(nsampled)) 
 
   # sampledat$precip.2wk = sampledat$precip.2wk/10 #convert tenths of mm to mm
   
-  # set minimum proportion sampled for interval to be included in data set
-  if (!is.null(minprop)) {
-    df <- df %>% 
-      mutate(weights = nsampled / ntotal) %>%
-      filter(weights >= minprop)
-  } else {
-    df <- df %>%
-      mutate(weights = NULL)
-  }
-
   # unique sample id
   df$id <- c(1:nrow(df)) 
   
@@ -102,7 +92,7 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
     print(p)      
   }
   
-  return(list(pred = newdat, Xp = Xp, br = br))
+  return(list(mod = res, pred = newdat, Xp = Xp, br = br))
     
   # } 
   # else if (precip == TRUE) {
