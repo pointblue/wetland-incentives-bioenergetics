@@ -33,7 +33,7 @@ fit_gamm4 = function(df, dayofyear = 'yday', nsampled = 'nsampled',
       rename(group = by) %>%
       mutate(group = as.factor(group))
     
-    res <- gamm4(cbind(nwater, nsampled - nwater) ~ group + s(zday, k = k, by = group), 
+    res <- gamm4(cbind(nwater, nsampled - nwater) ~ -1 + group + s(zday, k = k, by = group), 
                  random = ~(1 | id), 
                  family = binomial, data = df, weights = weights)
     

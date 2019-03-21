@@ -187,7 +187,7 @@ ggplot(sdat, aes(prop.cloudfree)) +
   facet_wrap(~ClassName, scales = 'free_y') + 
   geom_density()
 
-ggplot(sdat %>% filter(prop.sampled >= 0.75 & prop.cloudfree >= 0.40), 
+ggplot(sdat %>% filter(prop.sampled >= 0.5), 
        aes(yday, nflooded/nsampled, color = group, size = prop.cloudfree)) +
   geom_point(alpha = 0.5) + facet_wrap(~ClassName) 
 
@@ -218,7 +218,7 @@ ggplot(mdat, aes(yday, nflooded/nsampled, color = group)) +
 # proportion flooded by day of year, excluding incentive acres
 
 by_year <- mdat %>% 
-  filter(prop.sampled >= 0.7) %>% 
+  filter(prop.sampled >= 0.5) %>% 
   split(.$habitat) %>% 
   map(~ fit_gamm4(df = ., nwater = 'nflooded_free', dayofyear = 'yday',
                   year = 'bioyear', weights = 'prop.cloudfree', 
@@ -229,16 +229,21 @@ by_year_pred <- by_year %>%
   map_dfr(function(x) {x$pred}, .id = 'habitat') %>%
   mutate(habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn', 'other')))
 
+
+axes = list(scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                               labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                          'Feb', 'Mar', 'Apr', 'May')),
+            xlab(NULL),
+            ylab('Proportion open water'))
+
 ggplot(by_year_pred, aes(yday, fit)) + facet_wrap(~habitat, nrow = 4) + 
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat,
+  geom_point(data = mdat %>% filter(prop.sampled >= 0.5),
              aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
              shape = 21) +
-  ylim(0, 1) +
-  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                'Feb', 'Mar', 'Apr', 'May'))
+  ylim(0, 1) + axes
+  
 # compared to CVJV estimates: 
 # - wetlands curves all peak a bit lower than previously estimated
 # - rice curves vary a lot between years, but look fairly similar overall
@@ -250,11 +255,8 @@ ggplot(by_year_pred %>% filter(habitat == 'other'), aes(yday, fit)) +
   geom_line(aes(color = group)) +
   geom_point(data = mdat %>% filter(habitat == 'other'),
              aes(y = nflooded_free/nsampled, color = group), shape = 21) +
-  facet_wrap(~habitat, nrow = 4) + ylim(0, 1) +
-  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                'Feb', 'Mar', 'Apr', 'May'),
-                     expand = c(0, 0))
+  facet_wrap(~group, nrow = 4) + ylim(0, 1) + xlab(NULL) +
+  axes
 
 
 ## mid-winter peak values:
@@ -263,11 +265,13 @@ by_year_pred %>%
   summarize(yday = yday[which(fit == max(fit[which(yday < 250)]))], #avoid late peaks in rice
             peak = max(fit),
             lcl = lcl[which(fit == max(fit))],
-            ucl = ucl[which(fit == max(fit))])
-# wetlands: 203-229, 0.604-0.646 (compared to 0.81 on day 199 in previous CVJV work)
-# rice: 199-214, 0.396-0.612 (compared to 0.69 on day 188)
+            ucl = ucl[which(fit == max(fit))]) %>%
+  arrange(habitat, peak, yday)
+
+# wetlands: 203-229, 0.604-0.645 (compared to 0.81 on day 199 in previous CVJV work)
+# rice: 199-213, 0.397-0.617 (compared to 0.69 on day 188)
 # corn: 197-208, 0.241-0.249 (compared to 0.22 on day 223)
-# other: 167-195, 0.101-0.142 (compared to 0.03)
+# other: 174-194, 0.101-0.135 (compared to 0.03)
 
 # SPLIT WETLANDS----------
 # estimate percent of flooded wetlands that are semi-permanent vs. seasonal
@@ -313,12 +317,6 @@ by_year_wetsplit <- by_year_pred %>%
                                TRUE ~ prop.perm))
 
 ## check curves:
-axes = list(scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                               labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                          'Feb', 'Mar', 'Apr', 'May')),
-            xlab(NULL),
-            ylab('Proportion open water'))
-
 ggplot(by_year_wetsplit %>% filter(habitat == 'wetlands'), 
        aes(yday, fit, ymin = lcl, ymax = ucl)) + 
   geom_ribbon(fill = 'gray80') + geom_line() +
@@ -343,7 +341,7 @@ apply(floodsim$rice, 1, quantile, c(0.025, 0.5, 0.975)) %>% t() %>%
   bind_cols(by_year$rice$pred %>% select(yday, group)) %>% 
   rename(lcl = '2.5%', median = '50%', ucl = '97.5%') %>% 
   ggplot(aes(yday, median, ymin = lcl, ymax = ucl, fill = group, color = group)) + 
-  geom_ribbon(alpha = 0.5) + geom_line()
+  geom_ribbon(alpha = 0.5) + geom_line() + axes
 
 ## split wetlands in the resamples too:
 floodsim$prop.perm <- floodsim$wetlands %>% as.tibble() %>%
@@ -384,7 +382,7 @@ apply(floodsim$prop.perm, 1, quantile, c(0.025, 0.5, 0.975)) %>% t() %>%
   bind_cols(by_year$rice$pred %>% select(yday, group)) %>% 
   rename(lcl = '2.5%', median = '50%', ucl = '97.5%') %>% 
   ggplot(aes(yday, median, ymin = lcl, ymax = ucl, fill = group, color = group)) + 
-  geom_ribbon(alpha = 0.5) + geom_line()
+  geom_ribbon(alpha = 0.5) + geom_line() + axes
 
 write_csv(by_year_wetsplit, here::here(floodcurves))
 save(by_year, file = here::here(models))
