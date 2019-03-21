@@ -128,12 +128,16 @@ mdat <- dat %>%
 
 df <- expand.grid(yday = c(1:319),
                   bioyear = c(2013:2016))
+
+# for each day of each bioyear, identify whether a field was just added that day,
+#   is currently flooded ('available'), or went dry that day ('returned'); 
+#   --> assuming it takes 2 weeks from end of contract for field to fully dry
 ts <- pmap_dfr(list(df$yday, df$bioyear),
                function(y, byear) {
                  res <- mdat %>% 
-                   filter(ystart <= y & yend >= y & bioyear == byear) %>%
+                   filter(ystart <= y & yend >= y - 14 & bioyear == byear) %>%
                    mutate(group = case_when(ystart == y ~ 'added',
-                                            yend == y ~ 'returned',
+                                            yend + 14 == y ~ 'returned', # assume 2 weeks to dry out
                                             TRUE ~ 'available')) %>%
                    group_by(group) %>%
                    summarize(ha = sum(GIS_Ac) / 2.47105) %>%
