@@ -182,9 +182,9 @@ ts_vardd <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
   as.tibble() %>%
   left_join(tdat %>% filter(practice == 'WHEP_vardd') %>% select(bioyear, ha)) %>%
   mutate(habitat = 'whep_vardd',
-         added = case_when(yday >= 124 & yday < 124 + 7 ~ ha / 7,
+         added = case_when(yday == 124 ~ ha, #all added on Nov 1
                            TRUE ~ 0),
-         returned = case_when(yday == 215 + 14 ~ ha/4,
+         returned = case_when(yday == 215 + 14 ~ ha/4, #1/4 gone 2 weeks after boards pulled
                               yday == 215 + 21 ~ ha/4,
                               yday == 215 + 28 ~ ha/4,
                               yday == 215 + 35 ~ ha/4,
@@ -193,7 +193,8 @@ ts_vardd <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
          lagreturn = replace_na(lagreturn, 0),
          available = cumsum(added) - cumsum(lagreturn)) %>%
   select(-lagreturn) %>%
-  left_join(read_csv(here::here(depthcurves)) %>% filter(habitat == 'rice') %>%
+  left_join(read_csv(here::here(depthcurves), col_types = cols()) %>% 
+              filter(habitat == 'rice') %>%
               select(yday, prop.accessible = fit),
             by = c('yday')) %>%
   mutate(accessible = available * prop.accessible,
