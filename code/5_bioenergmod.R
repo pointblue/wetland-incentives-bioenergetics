@@ -123,15 +123,31 @@ save(results, file = here::here(bioenerg_results))
 
 
 # RESULTS EXTRACTION-----------
-energysum <- map_dfr(results, ~map_dfr(.x, ~.x[['energy']], .id = 'group'), .id = 'scenario')
+key <- tibble(scenario = c('obj_det', 'obj_det2', 'obs_det', 'obs_det2'),
+              incentives = c('all', 'none', 'all', 'none'),
+              population = c('objectives', 'objectives', 'baseline', 'baseline'))
+
+energysum <- map_dfr(results, 
+                     ~map_dfr(.x, ~.x[['energy']], .id = 'group'), 
+                     .id = 'scenario') %>%
+  left_join(key, by = 'scenario')
 write_csv(energysum, here::here(results_energy))
 
-accessible <- map_dfr(results, ~map_dfr(.x, ~.x[['energy.accessible']], .id = 'group'), .id = 'scenario')
+accessible <- map_dfr(results, 
+                      ~map_dfr(.x, ~.x[['energy.accessible']], .id = 'group'), 
+                      .id = 'scenario') %>%
+  left_join(key, by = 'scenario')
 write_csv(accessible, here::here(results_energy_accessible))
 
-consumed <- map_dfr(results, ~map_dfr(.x, ~.x[['energy.consumed']], .id = 'group'), .id = 'scenario')
+consumed <- map_dfr(results, 
+                    ~map_dfr(.x, ~.x[['energy.consumed']], .id = 'group'), 
+                    .id = 'scenario') %>%
+  left_join(key, by = 'scenario')
 write_csv(consumed, here::here(results_energy_consumed))
 
-lost <- map_dfr(results, ~map_dfr(.x, ~.x[['energy.lost']], .id = 'group'), .id = 'scenario')
+lost <- map_dfr(results, 
+                ~map_dfr(.x, ~.x[['energy.lost']], .id = 'group'), 
+                .id = 'scenario') %>%
+  left_join(key, by = 'scenario')
 write_csv(lost, here::here(results_energy_lost))
 
