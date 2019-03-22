@@ -11,6 +11,12 @@ energy_density <- 'data/cvjv_orig/energy_content.csv'
 habitat_change <- 'output/habitat_change.RData'
 
 # OUTPUTS
+bioenerg_results <- 'output/bioenergetics_results.RData'
+results_energy <- 'output/bioenergetics_results_energy.csv'
+results_energy_accessible <- 'output/bioenergetics_results_energy_accessible.csv'
+results_energy_consumed <- 'output/bioenergetics_results_energy_consumed.csv'
+results_energy_lost <- 'output/bioenergetics_results_energy_lost.csv'
+
 plot_energy_accessible <- 'figs/energy_accessible_by_year.png'
 plot_energy_shortfall <- 'figs/energy_shortfall_by_year.png'
 plot_energy_effect <- 'figs/energy_effect_by_year.png'
@@ -42,7 +48,7 @@ ggplot(needs, aes(yday)) +
 
 # ENERGY DENSITY------------
 
-energydens <- read_csv(here::here(energy_density)) %>%
+energydens <- read_csv(here::here(energy_density), col_types = cols()) %>%
   filter(habitat != 'corn') %>%
   mutate(habitat = recode(habitat, corn_north = 'corn'),
          habitat = factor(habitat, levels = c('perm', 'seas', 'rice', 'corn', 
@@ -116,16 +122,35 @@ obs_det2 <- map(change_all,
                                        energyneed = needs$DER.obs,
                                        energydens = energydens))
 
+results <- list(obj_det = obj_det, obj_det2 = obj_det2, obs_det = obs_det, obs_det2 = obs_det2)
+
+save(results, file = here::here(bioenerg_results))
+
+
+# RESULTS EXTRACTION-----------
+energysum <- map_dfr(results, ~map_dfr(.x, ~.x[['energy']], .id = 'group'), .id = 'scenario')
+write_csv(energysum, here::here(results_energy))
+
+accessible <- map_dfr(results, ~map_dfr(.x, ~.x[['energy.accessible']], .id = 'group'), .id = 'scenario')
+write_csv(accessible, here::here(results_energy_accessible))
+
+consumed <- map_dfr(results, ~map_dfr(.x, ~.x[['energy.consumed']], .id = 'group'), .id = 'scenario')
+write_csv(consumed, here::here(results_energy_consumed))
+
+lost <- map_dfr(results, ~map_dfr(.x, ~.x[['energy.lost']], .id = 'group'), .id = 'scenario')
+write_csv(lost, here::here(results_energy_lost))
+
+
 # ACCESSIBLE ENERGY----------------
 
 ## control the order of stacked area plots:
 levels <- c('perm', 'seas', 'other', 'corn', 'rice', 'whep_vardd', 'whep_fall', 'br')
 
-## compile values across years:
+## compile values across years, compare to energy needs
 obj_accessible <- map_dfr(obj_det, ~.x[['energy.accessible']], 
                           .id = 'group') %>%
   gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = rev(levels))) %>%
+  # mutate(habitat = factor(habitat, levels = rev(levels))) %>%
   left_join(needs %>% select(yday, DER.obj), by = c('time' = 'yday'))
 
 obs_accessible <- map_dfr(obs_det, ~.x[['energy.accessible']], 
