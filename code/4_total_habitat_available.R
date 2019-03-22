@@ -18,7 +18,7 @@ whep_ts <- 'data/WHEP_timeseries.csv'
 
 # OUTPUTS
 habitat_change <- 'output/habitat_change.RData'
-plot_habitat <- 'figs/habitat_by_year.png'
+habitat_stats <- 'output/habitat_peak_stats.csv'
 
 
 # CALCULATE HABITAT AVAILABILITY--------
@@ -72,155 +72,57 @@ save(change_all, file = here::here(habitat_change))
 
 # HABITAT AVAILABILITY STATS-----------------
 
-# peak open water by year
-peak_open <- change_all %>% 
-  map_dfr(~ .x[['openwater']] %>% 
-        gather(-time, key = 'habitat', value = 'area') %>%
-        group_by(time) %>%
-        summarize(area = sum(area)) %>% 
-        ungroup() %>%
-        summarize(time = time[area == max(area)],
-                  area = max(area)),
-        .id = 'group')
-# ranges days 168-201; 208117 - 294098 ha
+peaks <- bind_rows(
+  # peak open water
+  change_all %>% map_dfr(~ .x[['openwater']] %>% 
+                           gather(-time, key = 'habitat', value = 'area') %>%
+                           group_by(time) %>%
+                           summarize(area = sum(area)) %>% 
+                           ungroup() %>%
+                           summarize(type = 'open',
+                                     habitat = 'all',
+                                     time = time[area == max(area)],
+                                     area = max(area)),
+                         .id = 'group'),
+  # peak open water, without incentive programs
+  change_all %>% map_dfr(~ .x[['openwater']] %>% 
+                           select(-br, -whep_vardd, -whep_fall) %>%
+                           gather(-time, key = 'habitat', value = 'area') %>%
+                           group_by(time) %>%
+                           summarize(area = sum(area)) %>% 
+                           ungroup() %>%
+                           summarize(type = 'open',
+                                     habitat = 'free',
+                                     time = time[area == max(area)],
+                                     area = max(area)),
+                         .id = 'group'),
+  # peak accessible
+  change_all %>% map_dfr(~ .x[['accessible']] %>% 
+                           gather(-time, key = 'habitat', value = 'area') %>%
+                           group_by(time) %>%
+                           summarize(area = sum(area)) %>% 
+                           ungroup() %>%
+                           summarize(type = 'accessible',
+                                     habitat = 'all',
+                                     time = time[area == max(area)],
+                                     area = max(area)),
+                         .id = 'group'),
+  # peak accessible, without incentive programs
+  change_all %>% map_dfr(~ .x[['accessible']] %>% 
+                           select(-br, -whep_vardd, -whep_fall) %>%
+                           gather(-time, key = 'habitat', value = 'area') %>%
+                           group_by(time) %>%
+                           summarize(area = sum(area)) %>% 
+                           ungroup() %>%
+                           summarize(type = 'accessible',
+                                     habitat = 'free',
+                                     time = time[area == max(area)],
+                                     area = max(area)),
+                         .id = 'group')
+)
+write_csv(peaks, here::here(habitat_stats))
 
-# peak accessible by year
-peak_accessible <- change_all %>% 
-  map_dfr(~ .x[['accessible']] %>% 
-            gather(-time, key = 'habitat', value = 'area') %>%
-            group_by(time) %>%
-            summarize(area = sum(area)) %>% 
-            ungroup() %>%
-            summarize(time = time[area == max(area)],
-                      area = max(area)),
-          .id = 'group')
-# ranges days 217-229; 84334 - 118231 ha
-
-# peak accessible without incentive programs:
-change_all %>% 
-  map_dfr(~ .x[['accessible']] %>% 
-            select(-br, -whep_vardd, -whep_fall) %>%
-            gather(-time, key = 'habitat', value = 'area') %>%
-            group_by(time) %>%
-            summarize(area = sum(area)) %>% 
-            ungroup() %>%
-            summarize(time = time[area == max(area)],
-                      area = max(area)),
-          .id = 'group')
-# ranges days 213-235; 711070 - 104850
-
-# PLOTS-------------------
-pointblue.palette <-
-  c('#4495d1',
-    '#74b743',
-    '#f7941d',
-    '#005baa',
-    '#bfd730',
-    '#a7a9ac',
-    '#666666',
-    '#456d28', #add a few more complementary colors
-    '#b74374', 
-    '#5e2a84',
-    '#d2c921')
-
-ymax = 310
-scale = 1000
-ylab = 'total open water (ha, thousands)'
-ylab2 = 'accessible habitat (ha, thousands)'
-theme = theme_classic() + 
-  theme(legend.position = c(0,1), legend.justification = c(0,1),
-        legend.background = element_rect(fill = "transparent"))
-theme2 = theme_classic() + theme(legend.position = 'none')
-scalex = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                            labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                       'Feb', 'Mar', 'Apr', 'May'),
-                            expand = c(0, 0))
-scalex2 = scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                            labels = NULL, 
-                            expand = c(0, 0))
-scaley = scale_y_continuous(limits = c(0, ymax))
-scaley2 = scale_y_continuous(labels = NULL, limits = c(0, ymax))
-
-# order variables in stack from top to bottom (and match colors)
-levels = c('br', 'whep_fall', 'whep_vardd', 'rice', 'corn', 'other', 'seas', 'perm')
-pal = c(pointblue.palette[c(10, 11, 9, 3)], 'yellow', pointblue.palette[c(2, 1, 4)])
-
-
-a <- change_all$`2013-14`$openwater %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex2 + scaley + theme + labs(x = NULL, y = NULL, title = '2013-14') +
-  guides(fill = guide_legend(ncol = 2)) +
-  geom_vline(data = peak_open %>% filter(group == '2013-14'), aes(xintercept = time))
-
-b <- change_all$`2014-15`$openwater %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2014-15') +
-  geom_vline(data = peak_open %>% filter(group == '2014-15'), aes(xintercept = time))
-
-c <- change_all$`2015-16`$openwater %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2015-16') +
-  geom_vline(data = peak_open %>% filter(group == '2015-16'), aes(xintercept = time))
-
-d <- change_all$`2016-17`$openwater %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex + scaley + theme2 + labs(x = NULL, y = NULL, title = '2016-17') +
-  geom_vline(data = peak_open %>% filter(group == '2016-17'), aes(xintercept = time))
-
-cowplot::plot_grid(a, b, c, d, nrow = 4)
-
-
-
-# accessible habitat:
-ymax = 125
-scaley = scale_y_continuous(limits = c(0, ymax))
-
-e <- change_all$`2013-14`$accessible %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2013-14') +
-  guides(fill = guide_legend(ncol = 2)) +
-  geom_vline(data = peak_accessible %>% filter(group == '2013-14'), aes(xintercept = time))
-
-f <- change_all$`2014-15`$accessible %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2014-15') +
-  geom_vline(data = peak_accessible %>% filter(group == '2014-15'), aes(xintercept = time))
-
-g <- change_all$`2015-16`$accessible %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex2 + scaley + theme2 + labs(x = NULL, y = NULL, title = '2015-16') +
-  geom_vline(data = peak_accessible %>% filter(group == '2015-16'), aes(xintercept = time))
-
-h <- change_all$`2016-17`$accessible %>% 
-  gather(-time, key = 'habitat', value = 'value') %>%
-  mutate(habitat = factor(habitat, levels = levels)) %>%
-  ggplot(aes(time, value/scale)) + geom_area(aes(fill = habitat)) +
-  scale_fill_manual(values = pal) +
-  scalex + scaley + theme2 + labs(x = NULL, y = NULL, title = '2016-17') +
-  geom_vline(data = peak_accessible %>% filter(group == '2016-17'), aes(xintercept = time))
-
-
-cowplot::plot_grid(a, e, b, f, c, g, d, h, nrow = 4, ncol = 2)
-ggsave(here::here(plot_habitat), height = 8, width = 6.5, units = 'in', dpi = 350)
-
+# peak open water ranges days 182-200; 197448 - 292102 ha
+# peak open water without incentive programs ranges days 182-200; 183076 - 284500 ha
+# peak accessible ranges days 217-229; 83975 - 118180 ha
+# peak accessible without incentive programs ranges days 212-236; 70766 - 105050
