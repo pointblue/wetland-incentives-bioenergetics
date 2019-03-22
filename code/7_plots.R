@@ -18,7 +18,9 @@ plot_floodcurves <- 'figs/flood_curves.png'
 plot_habitat_open <- 'figs/habitat_open.png'
 plot_habitat_accessible <- 'figs/habitat_accessible.png'
 plot_energy_accessible <- 'figs/energy_accessible_by_year.png'
+plot_energy_consumed <- 'figs/energy_consumed_by_year.png'
 plot_energy_shortfall <- 'figs/energy_shortfall_by_year.png'
+plot_energy_shortfall_baseline <- 'figs/energy_shortfall_by_year_baseline.png'
 plot_energy_effect <- 'figs/energy_effect_by_year.png'
 
 # ALL PURPOSE PLOT STANDARDS------------
@@ -134,14 +136,12 @@ accessible <- read_csv(here::here(results_energy_accessible), col_types = cols()
   mutate(habitat = factor(habitat, levels = levels))
 
 peak_accessible <- accessible %>% 
-  group_by(scenario, group, time) %>%
+  group_by(scenario, group, time, incentives, population) %>%
   summarize(value = sum(value, na.rm = T)) %>% # total energy by day of year
   ungroup() %>%
-  group_by(scenario, group) %>%
+  group_by(scenario, group, incentives, population) %>%
   summarize(time = time[value == max(value, na.rm = T)],
-            value = max(value, na.rm = T)) %>%
-  mutate(incentives = case_when(scenario %in% c('obj_det', 'obs_det') ~ 'with incentive programs',
-                                TRUE ~ 'without incentive programs'))
+            value = max(value, na.rm = T))
 
 
 ggplot(accessible %>% filter(scenario == 'obj_det'), aes(time, value/scale)) + 
@@ -151,95 +151,88 @@ ggplot(accessible %>% filter(scenario == 'obj_det'), aes(time, value/scale)) +
   geom_line(aes(y = DER/scale)) +
   timeaxis + timetheme +
   ylab('Energy accessible (kJ, billions)') +
-  geom_vline(data = peak_accessible %>% filter(scenario %in% c('obj_det', 'obj_det2')), 
+  geom_vline(data = peak_accessible %>% filter(population == 'objectives'), 
              aes(xintercept = time, linetype = incentives))
 ggsave(here::here(plot_energy_accessible), height = 8, width = 6.5, units = 'in', dpi = 350)
 
+# ENERGY CONSUMED----------------
+scale = 1000000
+
+consumed <- read_csv(here::here(results_energy_consumed), col_types = cols()) %>%
+  gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
+  left_join(read_csv(here::here(results_energy), col_types = cols()) %>% 
+              select(scenario:DER),
+            by = c('scenario', 'group', 'time')) %>%
+  mutate(habitat = factor(habitat, levels = levels))
+
+total_consumed <- consumed %>% 
+  group_by(scenario, group, incentives, population, habitat) %>%
+  summarize(value = sum(value, na.rm = T)) %>%
+  mutate(total = sum(value),
+         prop = value / total)
+
+# ggplot(consumed %>% filter(scenario == 'obj_det'), aes(time, value/scale)) + 
+#   facet_wrap(~group, nrow = 4) +
+#   geom_area(aes(fill = habitat)) + 
+#   scale_fill_manual(values = pal) +
+#   geom_line(aes(y = DER/scale)) +
+#   timeaxis + timetheme +
+#   ylab('Energy consumed (kJ, millions)')
+
+ggplot(total_consumed %>% filter(scenario == 'obj_det'), 
+       aes(x = group, y = prop, fill = habitat)) + 
+  # facet_wrap(~group, nrow = 4) +
+  geom_col() +
+  scale_fill_manual(values = pal) +
+  labs(x = NULL, y = NULL) + 
+  timetheme + theme(panel.grid = element_blank()) + 
+  scale_y_continuous(expand = c(0,0))
+ggsave(here::here(plot_energy_consumed), height = 4, width = 6.5, units = 'in', dpi = 350)
+
 
 # ENERGY SHORTFALLS---------------
-scale2 = 1000000
-ylab2 = 'Energy shortfall: kJ (millions)'
-ymax2 = 250
+scale = 1000000 #millions
 
-obj_energy <- map_dfr(obj_det, ~.x[['energy']], .id = 'group') %>%
-  full_join(map_dfr(obj_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
-                    .id = 'group'),
-            by = c('time', 'group')) %>%
-  select(time, group, shortfall, shortfall2) %>%
-  gather(shortfall:shortfall2, key = 'scenario', value = 'value') %>%
-  mutate(scenario = recode(scenario,
-                           shortfall = 'with incentive programs',
-                           shortfall2 = 'without incentive programs'),
-         scenario = factor(scenario, levels = c('without incentive programs', 'with incentive programs')))
+energy <- read_csv(here::here(results_energy), col_types = cols()) %>%
+  mutate(incentives = factor(incentives, levels = c('none', 'all')))
 
-obs_energy <- map_dfr(obs_det, ~.x[['energy']], .id = 'group') %>%
-  full_join(map_dfr(obs_det2, ~.x[['energy']] %>% select(time, shortfall2 = shortfall), 
-                    .id = 'group'),
-            by = c('time', 'group')) %>%
-  select(time, group, shortfall, shortfall2) %>%
-  gather(shortfall:shortfall2, key = 'scenario', value = 'value') %>%
-  mutate(scenario = recode(scenario,
-                           shortfall = 'with incentive programs',
-                           shortfall2 = 'without incentive programs'),
-         scenario = factor(scenario, levels = c('without incentive programs', 'with incentive programs')))
-
-c <- ggplot(obj_energy, aes(time, value/scale2, fill = scenario)) + 
-  geom_area(position = position_identity()) + 
+# population objectives:
+ggplot(energy %>% filter(population == 'objectives'), aes(time, shortfall/scale)) + 
   facet_wrap(~group, nrow = 4) + 
-  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
-  labs(x = NULL, y = ylab2) +
-  ylim(0, ymax2) + scalex + theme + theme(legend.position = 'none') +
+  geom_area(aes(fill = incentives), position = position_identity()) + 
   scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
-  ggtitle('Population objectives')
+  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
+  labs(x = NULL, y = 'Energy shortfall (kJ, millions)') +
+  timeaxis + timetheme
+ggsave(here::here(plot_energy_shortfall), height = 8, width = 6.5, units = 'in', dpi = 350)
 
-d <- ggplot(obs_energy, aes(time, value/scale2, fill = scenario)) + 
-  geom_area(position = position_identity()) + 
+# compare baseline population size:
+ggplot(energy %>% filter(population == 'baseline'), aes(time, shortfall/scale)) + 
   facet_wrap(~group, nrow = 4) + 
-  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
-  labs(x = NULL, y = NULL) +
-  scale_y_continuous(limits = c(0, ymax2), labels = NULL) + scalex + theme +
+  geom_area(aes(fill = incentives), position = position_identity()) + 
   scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
-  ggtitle('Baseline population')
+  # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
+  labs(x = NULL, y = 'Energy shortfall (kJ, millions)') +
+  timeaxis + timetheme
+ggsave(here::here(plot_energy_shortfall_baseline), height = 8, width = 6.5, units = 'in', dpi = 350)
 
-cowplot::plot_grid(c, d, ncol = 2, rel_widths = c(0.40, 0.60))
-ggsave(here::here(plot_energy_shortfall))
-
-
-# alternative bar graph:
-obj_short <- obj_energy %>% 
+# % reduction in seasonal shortfalls contributed by incentive programs
+reduction <- energy %>% 
   mutate(season = case_when(time <= 184 ~ 'fall',
                             time > 184 ~ 'spring')) %>%
-  group_by(group, season, scenario) %>%
-  summarize(mid = mean(time[value > 0]),
-            value = sum(value))
+  group_by(scenario, group, incentives, population, season) %>%
+  summarize(value = sum(shortfall)) %>%
+  ungroup() %>%
+  select(-scenario) %>%
+  spread(key = incentives, value = value) %>%
+  mutate(diff = (none - all)/none * 100,
+         diff = case_when(is.nan(diff) ~ 0,
+                          TRUE ~ diff))
 
-obs_short <- obs_energy %>% 
-  mutate(season = case_when(time <= 184 ~ 'fall',
-                            time > 184 ~ 'spring')) %>%
-  group_by(group, season, scenario) %>%
-  summarize(mid = mean(time[value > 0]),
-            value = sum(value))
 
-e <- obj_short %>%
-  select(-mid) %>%
-  spread(key = scenario, value = value) %>%
-  mutate(diff = (`without incentive programs` - `with incentive programs`)/`without incentive programs`) %>%
-  ggplot(aes(group, diff)) +
-  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season, nrow = 2) +
-  labs(x = NULL, y = '% reduction from incentive programs', title = 'Population objectives') + 
-  theme + ylim(0,1)
-
-f <- obs_short %>%
-  select(-mid) %>%
-  spread(key = scenario, value = value) %>%
-  mutate(diff = (`without incentive programs` - `with incentive programs`)/`without incentive programs`,
-         diff = case_when(is.nan(diff) ~ NA_real_,
-                          TRUE ~ diff)) %>%
-  ggplot(aes(group, diff)) +
-  geom_col(position = position_dodge(), fill = 'gray50') + facet_wrap(~season, nrow = 2) +
-  labs(x = NULL, y = NULL, title = 'Baseline population') + 
-  theme + 
-  scale_y_continuous(limits = c(0,1), labels = NULL)
-
-cowplot::plot_grid(e, f, ncol = 2, rel_widths = c(0.52, 0.48))
-ggsave(here::here(plot_energy_effect))
+ggplot(reduction, aes(season, diff, fill = group)) +
+  facet_wrap(~population, nrow = 2) +
+  geom_col(position = position_dodge()) +
+  labs(x = NULL, y = '% reduction in energy shortfalls') + 
+  theme_minimal() + theme(strip.text = element_text(hjust = 0))
+ggsave(here::here(plot_energy_effect), height = 6, width = 6.5, units = 'in', dpi = 350)
