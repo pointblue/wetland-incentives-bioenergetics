@@ -18,6 +18,7 @@ whep_ts <- 'data/WHEP_timeseries.csv'
 
 # OUTPUTS
 habitat_change <- 'output/habitat_change.RData'
+habitat_daily <- 'output/habitat_daily_stats.csv'
 habitat_stats <- 'output/habitat_peak_stats.csv'
 
 
@@ -65,6 +66,12 @@ change_all <- pmap(list(change, incentives),
 
 save(change_all, file = here::here(habitat_change))
 
+habitat_avail <- bind_rows(
+  map_dfr(change_all, ~.x[['openwater']] %>% mutate(watertype = 'open'), .id = 'group'),
+  map_dfr(change_all, ~.x[['accessible']] %>% mutate(watertype = 'accessible'), .id = 'group')
+)
+write_csv(habitat_avail, here::here(habitat_daily))
+
 # --> Necessary? already marked as not suitable in the depth curves
 # ## assume rice, corn, and other crops are not accessible prior to 1 September (day 63)
 # change$added[1:62,c('other','corn_north','rice')] = 0
@@ -72,54 +79,22 @@ save(change_all, file = here::here(habitat_change))
 
 # HABITAT AVAILABILITY STATS-----------------
 
-peaks <- bind_rows(
-  # peak open water
-  change_all %>% map_dfr(~ .x[['openwater']] %>% 
-                           gather(-time, key = 'habitat', value = 'area') %>%
-                           group_by(time) %>%
-                           summarize(area = sum(area)) %>% 
-                           ungroup() %>%
-                           summarize(type = 'open',
-                                     habitat = 'all',
-                                     time = time[area == max(area)],
-                                     area = max(area)),
-                         .id = 'group'),
-  # peak open water, without incentive programs
-  change_all %>% map_dfr(~ .x[['openwater']] %>% 
-                           select(-br, -whep_vardd, -whep_fall) %>%
-                           gather(-time, key = 'habitat', value = 'area') %>%
-                           group_by(time) %>%
-                           summarize(area = sum(area)) %>% 
-                           ungroup() %>%
-                           summarize(type = 'open',
-                                     habitat = 'free',
-                                     time = time[area == max(area)],
-                                     area = max(area)),
-                         .id = 'group'),
-  # peak accessible
-  change_all %>% map_dfr(~ .x[['accessible']] %>% 
-                           gather(-time, key = 'habitat', value = 'area') %>%
-                           group_by(time) %>%
-                           summarize(area = sum(area)) %>% 
-                           ungroup() %>%
-                           summarize(type = 'accessible',
-                                     habitat = 'all',
-                                     time = time[area == max(area)],
-                                     area = max(area)),
-                         .id = 'group'),
-  # peak accessible, without incentive programs
-  change_all %>% map_dfr(~ .x[['accessible']] %>% 
-                           select(-br, -whep_vardd, -whep_fall) %>%
-                           gather(-time, key = 'habitat', value = 'area') %>%
-                           group_by(time) %>%
-                           summarize(area = sum(area)) %>% 
-                           ungroup() %>%
-                           summarize(type = 'accessible',
-                                     habitat = 'free',
-                                     time = time[area == max(area)],
-                                     area = max(area)),
-                         .id = 'group')
-)
+peaks <- habitat_avail %>%
+  gather(corn:whep_vardd, key = 'habitat', value = 'area') %>%
+  mutate(habtype = case_when(habitat %in% c('br', 'whep_fall', 'whep_vardd') ~ 'incentive_only',
+                             TRUE ~ 'none')) %>%
+  group_by(group, time, watertype, habtype) %>%
+  summarize(area = sum(area)) %>%
+  spread(key = habtype, value = area) %>%
+  mutate(all = incentive_only + none) %>%
+  ungroup() %>%
+  select(-incentive_only) %>%
+  gather(none:all, key = incentives, value = area) %>%
+  group_by(group, watertype, incentives) %>%
+  summarize(time = time[area == max(area)],
+            area = max(area)) %>%
+  arrange(watertype, incentives, group)
+
 write_csv(peaks, here::here(habitat_stats))
 
 # peak open water ranges days 182-200; 197448 - 292102 ha
