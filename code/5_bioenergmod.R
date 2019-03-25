@@ -20,7 +20,7 @@ results_energy_lost <- 'output/bioenergetics_results_energy_lost.csv'
 
 # ENERGY NEEDS------------
 
-needs <- read_csv(here::here(objectives))
+needs <- read_csv(here::here(objectives), col_types = cols())
 
 # Note: 
 # - observed = baseline/"current" estimated population size
@@ -47,8 +47,8 @@ energydens <- read_csv(here::here(energy_density), col_types = cols()) %>%
   filter(habitat != 'corn') %>%
   mutate(habitat = recode(habitat, corn_north = 'corn'),
          habitat = factor(habitat, levels = c('perm', 'seas', 'rice', 'corn', 
-                                              'other', 'whep_vardd', 
-                                              'whep_fall', 'br')))
+                                              'other', 'whep_vardd', 'whep_fall', 
+                                              'br_spring', 'br_fall')))
 
 # add missing values for br and whep equivalent to rice:
 energydens <- energydens %>%
@@ -90,34 +90,45 @@ obs_det <- map(change_all,
 ## - with population objectives:
 obj_det2 <- map(change_all, 
                 ~ run_bioenergmod_loop(habitat.available = .x$openwater %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        habitat.accessible = .x$accessible %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        habitat.added = .x$added %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring,
+                                                -whep_vardd, -whep_fall),
                                        habitat.returned = .x$returned %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        prop.accessible = .x$prop.accessible %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        energyneed = needs$DER.obj,
                                        energydens = energydens))
 
 ## - with baseline/"current" population size:
 obs_det2 <- map(change_all, 
                 ~ run_bioenergmod_loop(habitat.available = .x$openwater %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        habitat.accessible = .x$accessible %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        habitat.added = .x$added %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring,
+                                                -whep_vardd, -whep_fall),
                                        habitat.returned = .x$returned %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        prop.accessible = .x$prop.accessible %>%
-                                         select(-br, -whep_vardd, -whep_fall),
+                                         select(-br_fall, -br_spring, 
+                                                -whep_vardd, -whep_fall),
                                        energyneed = needs$DER.obs,
                                        energydens = energydens))
 
-results <- list(obj_det = obj_det, obj_det2 = obj_det2, obs_det = obs_det, obs_det2 = obs_det2)
+results <- list(obj_det = obj_det, obj_det2 = obj_det2, 
+                obs_det = obs_det, obs_det2 = obs_det2)
 
 save(results, file = here::here(bioenerg_results))
 
