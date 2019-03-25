@@ -6,7 +6,7 @@ library(tidyverse)
 
 # INPUTS
 floodcurves <- 'output/open_water_annual.csv'
-habitat_change <- 'output/habitat_change.RData'
+habitat_daily <- 'output/habitat_daily_stats.csv'
 habitat_stats <- 'output/habitat_peak_stats.csv'
 results_energy <- 'output/bioenergetics_results_energy.csv'
 results_energy_accessible <- 'output/bioenergetics_results_energy_accessible.csv'
@@ -37,10 +37,11 @@ pointblue.palette <-
     '#5e2a84',
     '#d2c921')
 
-pal = c(pointblue.palette[c(10, 11, 9, 3)], 'yellow', pointblue.palette[c(2, 1, 4)])
+pal = c(pointblue.palette[c(8, 10, 11, 9, 3)], 'yellow', pointblue.palette[c(2, 1, 4)])
 
 # order variables in stack from top to bottom (and match colors)
-levels = c('br', 'whep_fall', 'whep_vardd', 'rice', 'corn', 'other', 'seas', 'perm')
+levels = c('br_fall', 'br_spring', 'whep_fall', 'whep_vardd', 
+           'rice', 'corn', 'other', 'seas', 'perm')
 
 timeaxis = list(scale_x_continuous(breaks = c(1, 15.5, 32, 47.5, 63, 78, 
                                               93, 108.5, 124, 139, 154, 169.5, 
@@ -87,42 +88,38 @@ ggsave(here::here(plot_floodcurves), width = 6.5, height = 7.5, units = 'in')
 # HABITAT AVAILABILITY------------------
 scale = 1000
 
-load(here::here(habitat_change))
-habitat_open <- map_dfr(change_all, ~.x[['openwater']], .id = 'group')
-habitat_accessible <- map_dfr(change_all, ~.x[['accessible']], .id = 'group')
+habitat_avail <- read_csv(here::here(habitat_daily), col_types = cols())
 
-peaks <- read_csv(here::here(habitat_stats), col_types = cols()) %>%
-  mutate(habitat = recode(habitat, 
-                          all = 'with incentive programs', 
-                          free = 'without incentive programs'))
-
+peaks <- read_csv(here::here(habitat_stats), col_types = cols())
 
 # open water by year:
 
-habitat_open %>%
-  gather(-group, -time, key = 'habitat', value = 'value') %>%
+habitat_avail %>%
+  filter(watertype == 'open') %>%
+  gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
   mutate(habitat = factor(habitat, levels = levels)) %>%
   ggplot() + facet_wrap(~group, nrow = 4) +
   geom_area(aes(time, value/scale, fill = habitat)) +
   scale_fill_manual(values = pal) +
   timeaxis + timetheme + ylab('Open water (ha, thousands)') +
   # add line for peak value in each year
-  geom_vline(data = peaks %>% filter(type == 'open'), 
-             aes(xintercept = time, linetype = habitat))
+  geom_vline(data = peaks %>% filter(watertype == 'open'), 
+             aes(xintercept = time, linetype = incentives))
 ggsave(here::here(plot_habitat_open), width = 6.5, height = 7.5, units = 'in')
-
+  
 # accessible water by year:
 
-habitat_accessible %>%
-  gather(-group, -time, key = 'habitat', value = 'value') %>%
+habitat_avail %>%
+  filter(watertype == 'accessible') %>%
+  gather(corn:whep_vardd, key = 'habitat', value = 'value') %>%
   mutate(habitat = factor(habitat, levels = levels)) %>%
   ggplot() + facet_wrap(~group, nrow = 4) +
   geom_area(aes(time, value/scale, fill = habitat)) +
   scale_fill_manual(values = pal) +
   timeaxis + timetheme + ylab('Accessible open water (ha, thousands)') +
   # add line for peak value in each year
-  geom_vline(data = peaks %>% filter(type == 'accessible'), 
-             aes(xintercept = time, linetype = habitat))
+  geom_vline(data = peaks %>% filter(watertype == 'accessible'), 
+             aes(xintercept = time, linetype = incentives))
 ggsave(here::here(plot_habitat_accessible), height = 8, width = 6.5, units = 'in', dpi = 350)
 
 # ENERGY ACCESSIBLE-------------------
@@ -189,6 +186,23 @@ ggplot(total_consumed %>% filter(scenario == 'obj_det'),
   scale_y_continuous(expand = c(0,0))
 ggsave(here::here(plot_energy_consumed), height = 4, width = 6.5, units = 'in', dpi = 350)
 
+# total proportion of energy consumed in incentivized acres
+total_consumed %>%
+  filter(habitat %in% c('br_fall', 'br_spring', 'whep_fall', 'whep_vardd')) %>% 
+  group_by(scenario, group, incentives) %>% 
+  summarize(value = sum(value),
+            total = max(total),
+            prop = value / total)
+
+# impact of incentive programs on energy consumed in wetlands
+total_consumed %>% 
+  filter(habitat %in% c('seas', 'perm') & population == 'objectives') %>% 
+  group_by(scenario, incentives, population, group) %>% 
+  summarize(value = sum(value)) %>% 
+  ungroup() %>% 
+  select(-scenario) %>% 
+  spread(key = incentives, value = value) %>% 
+  mutate(prop = (all - none)/none)
 
 # ENERGY SHORTFALLS---------------
 scale = 1000000 #millions
