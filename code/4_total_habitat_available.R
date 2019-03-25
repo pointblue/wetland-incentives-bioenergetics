@@ -29,11 +29,11 @@ base <- read_csv(here::here(annual_acres), col_types = cols()) %>%
   filter(year != 2017) %>%
   split(.$year)
 
-flood <- read_csv(here::here(floodcurves)) %>%
+flood <- read_csv(here::here(floodcurves), col_types = cols()) %>%
   mutate(prop.perm = as.numeric(prop.perm)) %>%
   split(.$group)
 
-depth <- read_csv(here::here(depthcurves)) %>%
+depth <- read_csv(here::here(depthcurves), col_types = cols()) %>%
   filter(habitat != 'corn') %>%
   mutate(habitat = recode(habitat, corn_north = 'corn'))
 
@@ -81,7 +81,7 @@ write_csv(habitat_avail, here::here(habitat_daily))
 
 peaks <- habitat_avail %>%
   gather(corn:whep_vardd, key = 'habitat', value = 'area') %>%
-  mutate(habtype = case_when(habitat %in% c('br', 'whep_fall', 'whep_vardd') ~ 'incentive_only',
+  mutate(habtype = case_when(habitat %in% c('br_fall', 'br_spring', 'whep_fall', 'whep_vardd') ~ 'incentive_only',
                              TRUE ~ 'none')) %>%
   group_by(group, time, watertype, habtype) %>%
   summarize(area = sum(area)) %>%
@@ -97,7 +97,7 @@ peaks <- habitat_avail %>%
 
 write_csv(peaks, here::here(habitat_stats))
 
-# peak open water ranges days 182-200; 197448 - 292102 ha
+# peak open water ranges days 182-200; 197448 - 292102 ha; lowest in 2015-16 and highest in 2016-17
 # peak open water without incentive programs ranges days 182-200; 183076 - 284500 ha
-# peak accessible ranges days 217-229; 83975 - 118180 ha
-# peak accessible without incentive programs ranges days 212-236; 70766 - 105050
+# peak accessible ranges days 216-229; 83975 - 118180 ha; lowest in 2015-16 and highest in 2013-14 (due to incentive programs)
+# peak accessible without incentive programs ranges days 212-236; 70766 - 105050; lowest in 2015-16 and highest in 2016-17
