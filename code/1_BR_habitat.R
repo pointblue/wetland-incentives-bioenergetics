@@ -106,8 +106,7 @@ dat %>%
 
 
 # TIME SERIES---------------
-# proportion of all BR acres (ever) enrolled on each day of the shorebird
-# non-breeding season (where day 1 = 1 July) in each year
+# start and end dates of enrollment for each field in each season/year
 mdat <- dat %>% 
   # change date range text into start and end dates
   separate(dates, into = c('start', 'end'), sep = ' - ') %>%
@@ -126,12 +125,13 @@ mdat <- dat %>%
          yend = case_when(endm <= 6 ~ yend + 184,
                           endm >= 7 ~ yend - 181))
 
+# for each day of each bioyear, identify total area of fields just added that 
+#   day ('added'), currently flooded ('available'), or went dry that day 
+#   ('returned'); 
+#   --> assuming it takes 2 weeks from end of contract for field to fully dry
 df <- expand.grid(yday = c(1:319),
                   bioyear = c(2013:2016))
 
-# for each day of each bioyear, identify whether a field was just added that day,
-#   is currently flooded ('available'), or went dry that day ('returned'); 
-#   --> assuming it takes 2 weeks from end of contract for field to fully dry
 ts <- pmap_dfr(list(df$yday, df$bioyear),
                function(y, byear) {
                  res <- mdat %>% 
@@ -145,32 +145,43 @@ ts <- pmap_dfr(list(df$yday, df$bioyear),
                  }
                ) 
 
-# data frame of daily change in area available, accessible, newly added and returned
+# data frame of daily change in area available, accessible, newly added and 
+#   returned, treating fall and spring enrollments as separate land cover types
+#   (lump one winter season with spring)
 change <- ts %>%
-  complete(bioyear, yday = 1:319, fill = list(group = 'available', ha = 0)) %>%
+  mutate(habitat = case_when(yday < 185 ~ 'br_fall',
+                             yday >= 185 ~ 'br_spring')) %>%
+  complete(bioyear, habitat, yday = 1:319, 
+           fill = list(group = 'available', ha = 0)) %>%
   spread(key = group, value = ha) %>% 
-  arrange(bioyear, yday) %>%
+  arrange(habitat, bioyear, yday) %>%
+  # if returned or added, also consider it available that day; if returned
+  #   or added, and other acres already available that day, add them together
+  #  (Note: there are no days where all 3 are filled in, or where acres are both
+  #   added and returned on the same day)
   mutate(available = case_when(!is.na(available) & !is.na(returned) ~ returned + available,
+                               !is.na(available) & !is.na(added) ~ added + available,
                                is.na(available) & !is.na(added) ~ added,
                                is.na(available) & !is.na(returned) ~ returned,
-                               TRUE ~ available),
+                               is.na(added) & is.na(returned) ~ available),
+         added = case_when(is.na(added) ~ 0,
+                           TRUE ~ added),
+         returned = case_when(is.na(returned) ~ 0,
+                              TRUE ~ returned),
+         # assume all BR acres are fully accessible to shorebirds (shallow)
          accessible = available,
          prop.accessible = 1,
          group = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
-                        '2016' = '2016-17'),
-         added = case_when(is.na(added) ~ 0,
-                           TRUE ~ added),
-         returned = case_when(is.na(returned) ~ 0,
-                              TRUE ~ returned),
-         habitat = 'br') %>%
+                        '2016' = '2016-17')) %>%
   select(habitat, group, yday, available, accessible, added, returned, prop.accessible)
   
 write_csv(change, here::here(br_ts))
 
-ggplot(change, aes(x = yday, y = available), color = 'black') + geom_line() +
+ggplot(change, aes(x = yday, y = available), color = 'black') + 
+  geom_line(aes(color = habitat)) +
   geom_point(data = change %>% mutate(added = case_when(added == 0 ~ NA_real_,
                                                         TRUE ~ added)),
                                       aes(y = added), color = 'green') + 
