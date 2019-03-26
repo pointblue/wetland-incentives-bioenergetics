@@ -127,16 +127,48 @@ obs_det2 <- map(change_all,
                                        energyneed = needs$DER.obs,
                                        energydens = energydens))
 
-results <- list(obj_det = obj_det, obj_det2 = obj_det2, 
-                obs_det = obs_det, obs_det2 = obs_det2)
+## repeat with only fall incentive acres:
+## - with population objectives:
+obj_det3 <- map(change_all, 
+                ~ run_bioenergmod_loop(habitat.available = .x$openwater %>%
+                                         select(-br_spring, -whep_vardd),
+                                       habitat.accessible = .x$accessible %>%
+                                         select(-br_spring, -whep_vardd),
+                                       habitat.added = .x$added %>%
+                                         select(-br_spring, -whep_vardd),
+                                       habitat.returned = .x$returned %>%
+                                         select(-br_spring, -whep_vardd),
+                                       prop.accessible = .x$prop.accessible %>%
+                                         select(-br_spring, -whep_vardd),
+                                       energyneed = needs$DER.obj,
+                                       energydens = energydens))
+
+## - with baseline/"current" population size:
+obs_det3 <- map(change_all, 
+                ~ run_bioenergmod_loop(habitat.available = .x$openwater %>%
+                                         select(-br_spring, -whep_vardd),
+                                       habitat.accessible = .x$accessible %>%
+                                         select(-br_spring, -whep_vardd),
+                                       habitat.added = .x$added %>%
+                                         select(-br_spring, -whep_vardd),
+                                       habitat.returned = .x$returned %>%
+                                         select(-br_spring, -whep_vardd),
+                                       prop.accessible = .x$prop.accessible %>%
+                                         select(-br_spring, -whep_vardd),
+                                       energyneed = needs$DER.obs,
+                                       energydens = energydens))
+
+
+results <- list(obj_det = obj_det, obj_det2 = obj_det2, obj_det3 = obj_det3,
+                obs_det = obs_det, obs_det2 = obs_det2, obs_det3 = obs_det3)
 
 save(results, file = here::here(bioenerg_results))
 
 
 # RESULTS EXTRACTION-----------
-key <- tibble(scenario = c('obj_det', 'obj_det2', 'obs_det', 'obs_det2'),
-              incentives = c('all', 'none', 'all', 'none'),
-              population = c('objectives', 'objectives', 'baseline', 'baseline'))
+key <- tibble(scenario = c('obj_det', 'obj_det2', 'obj_det3', 'obs_det', 'obs_det2', 'obs_det3'),
+              incentives = c('all', 'none', 'fall only', 'all', 'none', 'fall only'),
+              population = c(rep('objectives', 3), rep('baseline', 3)))
 
 energysum <- map_dfr(results, 
                      ~map_dfr(.x, ~.x[['energy']], .id = 'group'), 
