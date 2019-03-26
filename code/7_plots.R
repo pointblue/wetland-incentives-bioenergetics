@@ -5,6 +5,7 @@
 library(tidyverse)
 
 # INPUTS
+base <- 'data/landcover_totals_cvjv.csv'
 floodcurves <- 'output/open_water_annual.csv'
 habitat_daily <- 'output/habitat_daily_stats.csv'
 habitat_stats <- 'output/habitat_peak_stats.csv'
@@ -14,6 +15,7 @@ results_energy_consumed <- 'output/bioenergetics_results_energy_consumed.csv'
 results_energy_lost <- 'output/bioenergetics_results_energy_lost.csv'
 
 # OUTPUTS
+plot_baseline <- 'figs/baseline_habitat.png'
 plot_floodcurves <- 'figs/flood_curves.png'
 plot_habitat_open <- 'figs/habitat_open.png'
 plot_habitat_accessible <- 'figs/habitat_accessible.png'
@@ -65,6 +67,21 @@ timetheme = theme_classic() +
         axis.ticks.x = element_line(color = c(rep(c('black', NA), 
                                                   length(timeaxis[[1]]$breaks - 1)/2), 
                                               'black')))
+
+# BASELINE HABITAT-----------
+scale = 1000
+cvjv = data.frame(habitat = c('corn', 'other', 'rice'),
+                  area = c(105613, 830293, 219082))
+
+read_csv(here::here(base), col_types = cols()) %>% 
+  filter(!habitat %in% c('seas', 'perm') & year < 2017) %>%
+  mutate(habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn', 'other'))) %>%
+  ggplot(aes(year, area/1000, color = habitat)) + geom_line(size = 1) + geom_point(size = 2) + 
+  scale_color_manual(values = pointblue.palette[c(4, 3, 11, 2)]) +
+  ylab('area planted (ha, thousands)') + xlab(NULL) +
+  # add average lines from CVJV
+  geom_hline(data = cvjv, aes(yintercept = area/scale), linetype = 'dashed')
+ggsave(here::here(plot_baseline), height = 4, width = 6.5, units = 'in', dpi = 350)
 
 # FLOODING CURVES-------
 floodpred <- read_csv(here::here(floodcurves), col_types = cols()) %>%
@@ -140,8 +157,8 @@ peak_accessible <- accessible %>%
   summarize(time = time[value == max(value, na.rm = T)],
             value = max(value, na.rm = T))
 
-
-ggplot(accessible %>% filter(scenario == 'obj_det'), aes(time, value/scale)) + 
+accessible %>% filter(scenario == 'obj_det') %>%
+  ggplot(aes(time, value/scale)) + 
   facet_wrap(~group, nrow = 4) +
   geom_area(aes(fill = habitat)) + 
   scale_fill_manual(values = pal) +
@@ -151,6 +168,35 @@ ggplot(accessible %>% filter(scenario == 'obj_det'), aes(time, value/scale)) +
   geom_vline(data = peak_accessible %>% filter(population == 'objectives'), 
              aes(xintercept = time, linetype = incentives))
 ggsave(here::here(plot_energy_accessible), height = 8, width = 6.5, units = 'in', dpi = 350)
+
+accessible %>% filter(scenario == 'obs_det2') %>%
+  ggplot(aes(time, value/scale)) + 
+  facet_wrap(~group, nrow = 4) +
+  geom_area(aes(fill = habitat)) + 
+  scale_fill_manual(values = pal) +
+  geom_line(aes(y = DER/scale)) +
+  timeaxis + timetheme +
+  ylab('Energy accessible (kJ, billions)') +
+  geom_vline(data = peak_accessible %>% filter(population == 'baseline'), 
+             aes(xintercept = time, linetype = incentives))
+
+# change in peak accessible by scenario & incentive programs:
+peak_accessible %>% 
+  ungroup() %>%
+  select(-scenario, -time) %>% 
+  spread(key = incentives, value = value) %>%
+  mutate(prop_all = (all - none)/none,
+         prop_fall = (`fall only` - none)/none) %>%
+  arrange(population, group) 
+
+# change in timing of peak accessible by scenario & incentive programs:
+#  -- fall programs do not affect this peak; vardd and br_spring advance peak 
+#     in 2013-14 and 2014-15 but delay peak in 2015-16 and 2016-17 (slightly)
+peak_accessible %>% 
+  ungroup() %>%
+  select(-scenario, -value) %>% 
+  spread(key = incentives, value = time) %>%
+  arrange(population, group) 
 
 # ENERGY CONSUMED----------------
 scale = 1000000
@@ -188,11 +234,15 @@ ggsave(here::here(plot_energy_consumed), height = 4, width = 6.5, units = 'in', 
 
 # total proportion of energy consumed in incentivized acres
 total_consumed %>%
+  ungroup() %>%
+  select(-scenario) %>%
   filter(habitat %in% c('br_fall', 'br_spring', 'whep_fall', 'whep_vardd')) %>% 
-  group_by(scenario, group, incentives) %>% 
+  group_by(population, group, incentives) %>% 
   summarize(value = sum(value),
             total = max(total),
-            prop = value / total)
+            prop = value / total) %>%
+  arrange(population, incentives, group) %>%
+  filter(population == 'objectives')
 
 # impact of incentive programs on energy consumed in wetlands
 total_consumed %>% 
@@ -202,19 +252,20 @@ total_consumed %>%
   ungroup() %>% 
   select(-scenario) %>% 
   spread(key = incentives, value = value) %>% 
-  mutate(prop = (all - none)/none)
+  mutate(prop_all = (all - none)/none,
+         prop_fall = (`fall only` - none)/none)
 
 # ENERGY SHORTFALLS---------------
 scale = 1000000 #millions
 
 energy <- read_csv(here::here(results_energy), col_types = cols()) %>%
-  mutate(incentives = factor(incentives, levels = c('none', 'all')))
+  mutate(incentives = factor(incentives, levels = c('none', 'fall only', 'all')))
 
 # population objectives:
 ggplot(energy %>% filter(population == 'objectives'), aes(time, shortfall/scale)) + 
   facet_wrap(~group, nrow = 4) + 
   geom_area(aes(fill = incentives), position = position_identity()) + 
-  scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
+  scale_fill_manual(values = pointblue.palette[c(3,2,4)]) + 
   # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
   labs(x = NULL, y = 'Energy shortfall (kJ, millions)') +
   timeaxis + timetheme
@@ -224,7 +275,7 @@ ggsave(here::here(plot_energy_shortfall), height = 8, width = 6.5, units = 'in',
 ggplot(energy %>% filter(population == 'baseline'), aes(time, shortfall/scale)) + 
   facet_wrap(~group, nrow = 4) + 
   geom_area(aes(fill = incentives), position = position_identity()) + 
-  scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
+  scale_fill_manual(values = pointblue.palette[c(3,2,4)]) + 
   # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
   labs(x = NULL, y = 'Energy shortfall (kJ, millions)') +
   timeaxis + timetheme
@@ -239,14 +290,27 @@ reduction <- energy %>%
   ungroup() %>%
   select(-scenario) %>%
   spread(key = incentives, value = value) %>%
-  mutate(diff = (none - all)/none * 100,
-         diff = case_when(is.nan(diff) ~ 0,
-                          TRUE ~ diff))
+  mutate(diff_all = (none - all)/none * 100,
+         diff_all = case_when(is.nan(diff_all) ~ 0,
+                          TRUE ~ diff_all),
+         diff_fall = (none - `fall only`)/none * 100,
+         diff_fall = case_when(is.nan(diff_fall) ~ 0,
+                               TRUE ~ diff_fall),
+         diff_spring = diff_all - diff_fall) %>%
+  arrange(population, season, group)
 
 
-ggplot(reduction, aes(season, diff, fill = group)) +
-  facet_wrap(~population, nrow = 2) +
-  geom_col(position = position_dodge()) +
+reduction %>%
+  select(group, population, season, diff_fall, diff_spring) %>%
+  gather(diff_fall:diff_spring, key = 'incentives', value = 'value') %>% 
+  mutate(incentives = factor(incentives, levels = c('diff_spring', 'diff_fall')),
+         incentives = recode(incentives, 
+                             diff_fall = 'fall programs', 
+                             diff_spring = 'spring programs')) %>%
+  ggplot(aes(group, value, fill = incentives)) +
+  scale_fill_manual(values = pointblue.palette[c(2,4)]) + 
+  facet_wrap(~population+season, nrow = 2) +
+  geom_col() +
   labs(x = NULL, y = '% reduction in energy shortfalls') + 
   theme_minimal() + theme(strip.text = element_text(hjust = 0))
 ggsave(here::here(plot_energy_effect), height = 6, width = 6.5, units = 'in', dpi = 350)
