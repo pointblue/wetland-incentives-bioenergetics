@@ -75,6 +75,23 @@ dat <- shp %>%
          dates = case_when(opt == 'Aug B' & is.na(dates) ~ 'Aug 15 - Aug 28',
                            TRUE ~ dates)) #fix typo
 
+dat %>% filter(is.na(dates)) #17 more rows with no dates; filled in later by Katie Andrews
+
+dat <- dat %>%
+  # believe not actually enrolled after all
+  filter(!(UniqueID %in% c('yu2472', 'yu2416', 'yu1668', 'su954', 'yu2473') & season == 'fall' & year == 2014)) %>%
+  # control fields (for surveys, not flooded)
+  filter(!(UniqueID %in% c('yo3453', 'yo3454', 'yo3455', 'yo3464') & season == 'fall' & year == 2014)) %>%
+  # add dates
+  mutate(dates = case_when(UniqueID %in% c('yu2465', 'yu2469', 'yu1670', 'yu1669', 'yo3463', 'yu2463', 'yo3447') & 
+                             season == 'fall' & year == '2014' ~ 'Oct 18 - Oct 31',
+                           TRUE ~ dates),
+         opt = case_when(UniqueID %in% c('yu2465', 'yu2469', 'yu1670', 'yu1669', 'yo3463', 'yu2463', 'yo3447') & 
+                           season == 'fall' & year == '2014' ~ 'Oct B',
+                         TRUE ~ opt))
+
+dat %>% filter(is.na(dates))  # just one spring enrollment (waiting on an update from Katie)
+
 write_csv(dat, here::here(br_enrollment))
 
 
