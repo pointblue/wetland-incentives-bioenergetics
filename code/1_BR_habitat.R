@@ -85,12 +85,14 @@ dat <- dat %>%
   # add dates
   mutate(dates = case_when(UniqueID %in% c('yu2465', 'yu2469', 'yu1670', 'yu1669', 'yo3463', 'yu2463', 'yo3447') & 
                              season == 'fall' & year == '2014' ~ 'Oct 18 - Oct 31',
+                           UniqueID == 'yo3447' & season == 'spring' & year == '2014' ~ 'Mar 10 - Apr 4',
                            TRUE ~ dates),
          opt = case_when(UniqueID %in% c('yu2465', 'yu2469', 'yu1670', 'yu1669', 'yo3463', 'yu2463', 'yo3447') & 
                            season == 'fall' & year == '2014' ~ 'Oct B',
+                         UniqueID == 'yo3447' & season == 'spring' & year == '2014' ~ 'Mar B',
                          TRUE ~ opt))
 
-dat %>% filter(is.na(dates))  # just one spring enrollment (waiting on an update from Katie)
+dat %>% filter(is.na(dates))  # none
 
 write_csv(dat, here::here(br_enrollment))
 
@@ -101,10 +103,9 @@ write_csv(dat, here::here(br_enrollment))
 dat %>% select(polygonID:GIS_Ac) %>% 
   distinct() %>% 
   summarize(GIS_Ac = sum(GIS_Ac)/2.47105)
-# 15,218 ha
+# 15,207 ha
 
 # total acreage enrolled by year, season, and date range
-# NOTE: there are still some date ranges that need to be filled in
 dat %>%
   group_by(year, season, dates, opt) %>%
   summarize(GIS_Ac = sum(GIS_Ac)) %>% 
