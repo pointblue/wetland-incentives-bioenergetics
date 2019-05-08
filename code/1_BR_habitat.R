@@ -163,6 +163,56 @@ ts <- pmap_dfr(list(df$yday, df$bioyear),
                  }
                ) 
 
+# COMPLIANCE---------------
+# depth stake data shows not quite 100% compliance with requirement to stay <10cm deep
+# estimated generalized depth curves from Greg Golet:
+# fall: 70% compliance up to Oct 14, 80% Oct 14-31, 90% thereafter 
+#   -->assume starts increasing to 80% on Oct 1
+# spring: 70% compliance Feb1-14, 80% Feb 15-21, 90% Feb 22-28, 100% thereafter 
+#   -->assume gradual increases from 70% on Feb1 to 80% on Feb15, etc.
+
+compliance <- tibble(date = c('2015-08-15', '2015-10-01', '2015-10-15', 
+                              '2015-11-01', '2015-11-30',
+                              '2017-01-01', '2017-02-01', '2017-02-15', 
+                              '2017-02-21', '2017-03-01', '2017-04-30'),
+                     prop.accessible = c(0.7, 0.7, 0.8, 0.9, 0.9, 
+                                         0.7, 0.7, 0.8, 0.9, 1, 1)) %>%
+  mutate(date = as.Date(date),
+         yday = as.numeric(format(date, '%j')),
+         yday = case_when(date >= '2017-01-01' ~ yday + 184,
+                          date < '2017-01-01' ~ yday - 181)) %>%
+  select(yday, prop.accessible) %>%
+  full_join(df %>% filter(bioyear == 2013) %>% select(yday), by = 'yday') %>%
+  arrange(yday)
+
+# linear interpolation along tails of depth curves
+flat <- approx(compliance$yday, compliance$prop.accessible,
+               xout = c(46:93, 124:153, 185:216, 244:304)) %>% as.data.frame()
+
+compliance_tails <- compliance %>%
+  left_join(flat, by = c('yday' = 'x')) %>%
+  mutate(prop.accessible = coalesce(prop.accessible, y)) %>%
+  select(-y)
+
+# interpolate depth curves between tails
+fall <- spline(compliance_tails$yday, compliance_tails$prop.accessible, 
+               method = 'natural', xmin = 93, xmax = 124, n = 32) %>% 
+  as.data.frame()
+
+spring <- spline(compliance_tails$yday, compliance_tails$prop.accessible, 
+                 method = 'natural', xmin = 216, xmax = 244, n = 29) %>% 
+  as.data.frame()
+
+compliance_filled <- compliance_tails %>%
+  left_join(bind_rows(fall, spring), by = c('yday' = 'x')) %>%
+  mutate(prop.accessible = coalesce(prop.accessible, y)) %>%
+  select(-y) 
+
+ggplot(compliance_filled, aes(yday, prop.accessible)) + geom_line() + ylim(0,1)
+
+rm(fall, spring, flat)
+
+# CHANGE-------------
 # data frame of daily change in area available, accessible, newly added and 
 #   returned, treating fall and spring enrollments as separate land cover types
 #   (lump one winter season with spring)
@@ -185,10 +235,9 @@ change <- ts %>%
          added = case_when(is.na(added) ~ 0,
                            TRUE ~ added),
          returned = case_when(is.na(returned) ~ 0,
-                              TRUE ~ returned),
-         # assume all BR acres are fully accessible to shorebirds (shallow)
-         accessible = available,
-         prop.accessible = 1,
+                              TRUE ~ returned)) %>%
+  left_join(compliance_filled, by = 'yday') %>%
+  mutate(accessible = available * prop.accessible,
          group = recode(bioyear, 
                         '2013' = '2013-14',
                         '2014' = '2014-15',
