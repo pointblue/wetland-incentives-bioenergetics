@@ -205,7 +205,8 @@ spring <- spline(compliance_tails$yday, compliance_tails$prop.accessible,
 
 compliance_filled <- compliance_tails %>%
   left_join(bind_rows(fall, spring), by = c('yday' = 'x')) %>%
-  mutate(prop.accessible = coalesce(prop.accessible, y)) %>%
+  mutate(prop.accessible = coalesce(prop.accessible, y),
+         prop.accessible = replace_na(prop.accessible, 1)) %>% #fill any values outside of BR program
   select(-y) 
 
 ggplot(compliance_filled, aes(yday, prop.accessible)) + geom_line() + ylim(0,1)
