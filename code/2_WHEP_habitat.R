@@ -92,33 +92,11 @@ tdat <- dat %>%
 write_csv(tdat, here::here(whep_totals))
 
 # TIME SERIES----------------
+# estimate for each practice separately:
 
-mdat <- dat %>% 
-  mutate(start = case_when(practice != 'WHEP_fall' ~ as.Date(paste0(bioyear, '-11-01')),
-                           TRUE ~ as.Date(paste0(fiscalyear, '-07-01'))),
-         end = case_when(practice == 'WHEP_boardsin' ~ as.Date(paste0(fiscalyear, '-02-01')),
-                         practice == 'WHEP_vardd' ~ as.Date(paste0(fiscalyear, '-02-28')),
-                         TRUE ~ as.Date(paste0(fiscalyear, '-09-30')))) %>%
-  # calculate day of (calendar) year
-  mutate(ystart = as.numeric(format(start, '%j')),
-         yend = as.numeric(format(end, '%j'))) %>%
-  # adjust for bioyear (Jul to Jun) -- no date ranges span Jun 30-Jul 1
-  mutate(startm = as.numeric(format(start, '%m')),
-         endm = as.numeric(format(end, '%m')),
-         ystart = case_when(startm <= 6 ~ ystart + 184,
-                            startm >= 7 ~ ystart - 181),
-         yend = case_when(endm <= 6 ~ yend + 184,
-                          endm >= 7 ~ yend - 181)) %>%
-  # fix leap year
-  mutate(ystart = case_when(bioyear == 2016 ~ ystart - 1,
-                            TRUE ~ ystart),
-         yend = case_when(bioyear == 2016 & yend < 184 ~ yend - 1,
-                          TRUE ~ yend))
 
-## rather than applying a simple assumption as for Bird Returns,
-##  estimate a proportion open water under each practice
-
-## - WHEP_fall: stagger open water evenly over period 1 July - 15 Sep, 
+# fall flooding-----------
+## stagger open water evenly over period 1 July - 15 Sep, 
 ##    with 2 weeks of "shallow" flooding + 2 week drawdown = 1 month of flooding
 ##    for each acre, beginning as late as 2 Sept (yday 64) to finish by 15 Sept
 ##    and start drawdown
@@ -129,7 +107,7 @@ ts_fall <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
   mutate(habitat = 'whep_fall') %>%
   as.tibble() %>%
   # add total acres enrolled for reference
-  left_join(tdat %>% filter(practice == 'WHEP_fall') %>% select(bioyear, ha)) %>%
+  left_join(dat %>% filter(practice == 'WHEP_fall') %>% select(bioyear, ha, label)) %>%
   filter(!is.na(ha)) %>%
   #stagger addition evenly over 64 days of program, and returns begin after 1 month
   mutate(added = case_when(yday <= 64 ~ ha/64, 
@@ -152,7 +130,15 @@ ggplot(ts_fall %>% select(-accessible) %>%
                      limits = c(0, 93)) + ylab('ha')
 ##--> these are such tiny areas, consider excluding from analysis
 
-## - WHEP VARIABLE DRAWDOWN: 
+
+## variable drawdown ----------- 
+# from Kristin: annual variability in start dates/water curtailments/compliance
+# best estimates: 
+#  2013-14: half of acreage enrolled is flooded 1 Nov, half 1 Dec
+#  2014-15: half start 1 Dec, half 15 Dec
+#  2015-16: half start 1 Nov, half 15 Nov
+#  2016-17: same as 2015-16
+
 ##     -- distribute flood-up linearly over the first ~2 weeks of Nov 
 ##          (supposed to be flooded up 1 Nov, but often not on time?),
 ##     -- distribute draw-down with 1/4 of area starting on each of
@@ -162,27 +148,14 @@ ggplot(ts_fall %>% select(-accessible) %>%
 ##    2 weeks after the water was allowed to drain from the field."]]
 ##     -- adjust original CVJV depth curves to apply to these timings
 
-## original CVJV depth curves compared to timing of variable drawdown practice:
-read_csv(here::here(depthcurves)) %>% filter(habitat == 'rice') %>%
-  mutate(fit = case_when(yday<63 ~ NA_real_,
-                         TRUE ~ fit)) %>%
-  ggplot(aes(yday, fit, ymin = lcl, ymax = ucl)) + 
-  geom_ribbon(fill = 'gray80') + geom_line() + xlab(NULL) + ylab('proportion <4"') +
-  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
-                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
-                                'Feb', 'Mar', 'Apr', 'May'),
-                     expand = c(0, 0)) +
-  geom_vline(aes(xintercept = 124), col = 'red') + #start date of Vardd
-  geom_vline(aes(xintercept = 216), col = 'red') + #start date of drawdown
-  geom_vline(aes(xintercept = 216 + 43), col = 'blue') #presumed end date
-##--> can assume full depth at start (i.e. no inverts accessible yet) and apply 
-##     same tail in spring?
-
 ts_vardd <- expand.grid(yday = c(1:319), bioyear = c(2013:2016)) %>%
   as.tibble() %>%
-  left_join(tdat %>% filter(practice == 'WHEP_vardd') %>% select(bioyear, ha)) %>%
+  left_join(dat %>% filter(practice == 'WHEP_vardd') %>% select(bioyear, ha, label)) %>%
   mutate(habitat = 'whep_vardd',
-         added = case_when(yday == 124 ~ ha, #all added on Nov 1
+         added = case_when(bioyear %in% c(2013, 2015, 2016) & yday == 124 ~ ha/2, #1st half added on Nov 1
+                           bioyear %in% c(2015, 2016) & yday == 138 ~ ha/2, #2nd half on Nov 15,
+                           bioyear %in% c(2013, 2014) & yday == 154 ~ ha/2, #2nd half for 2013, 1st half in 2014
+                           bioyear == 2014 & yday == 168 ~ ha/2, #2nd half in 2014
                            TRUE ~ 0),
          returned = case_when(yday == 215 + 14 ~ ha/4, #1/4 gone 2 weeks after boards pulled
                               yday == 215 + 21 ~ ha/4,
@@ -206,15 +179,28 @@ ggplot(ts_vardd, aes(yday, added)) + geom_line() +
   geom_line(aes(y = accessible), col = 'purple') +
   facet_wrap(~bioyear)
 
+## compare timing of original CVJV depth curves to variable drawdown practice:
+read_csv(here::here(depthcurves)) %>% filter(habitat == 'rice') %>%
+  mutate(fit = case_when(yday<63 ~ NA_real_,
+                         TRUE ~ fit)) %>%
+  ggplot(aes(yday, fit, ymin = lcl, ymax = ucl)) + 
+  geom_ribbon(fill = 'gray80') + geom_line() + xlab(NULL) + ylab('proportion <4"') +
+  scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
+                     labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
+                                'Feb', 'Mar', 'Apr', 'May'),
+                     expand = c(0, 0)) +
+  geom_vline(aes(xintercept = 124), col = 'red') + #start date of Vardd
+  geom_vline(aes(xintercept = 216), col = 'red') + #start date of drawdown
+  geom_vline(aes(xintercept = 216 + 43), col = 'blue') #presumed end date
+##--> can assume full depth at start (i.e. no inverts accessible yet) and apply 
+##     same tail in spring?
 
-## - combined:
+
+## combined-----------
 ts <- bind_rows(ts_fall, ts_vardd) %>%
   ungroup() %>%
-  mutate(group = recode(bioyear, 
-                        '2013' = '2013-14',
-                        '2014' = '2014-15',
-                        '2015' = '2015-16',
-                        '2016' = '2016-17')) %>%
+  rename(group = label) %>%
+  select(-bioyear, -ha) %>%
   complete(group, habitat, yday = 1:319, 
            fill = list(available = 0, accessible = 0, added = 0, returned = 0)) %>%
   mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 1,
