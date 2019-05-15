@@ -30,7 +30,7 @@ This repo is for a study of the contribution of wetland incentives programs in t
      * Fall flooding: distribute area enrolled over period between 1 July and 15 Sept, assuming two weeks of flooding and two weeks of gradual drawdown
      * Variable drawdown: apply Kristin's estimates of flood up dates (variable by year); distribute staggered drawdown over 4 weeks in Feb (with 1/4 of area starting to draw down during weeks 1, 2, 3, and 4), and assume it takes 2 weeks to go virtually dry
      * Boards-in: not included to date
-* DRAFT - Estimate proportion accessible by day of year during enrollment:
+* DONE - Estimate proportion accessible by day of year during enrollment:
      * Fall flooding: assume 100% accessible because "shallow" flooding
      * Variable drawdown: Apply original rice depth curves; 2012-13 depth data show fairly similar pattern (if anything original curves are generous and overestimate proportion suitable)
 
