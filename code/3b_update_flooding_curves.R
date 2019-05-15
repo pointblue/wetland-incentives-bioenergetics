@@ -3,7 +3,8 @@
 # wetlands not enrolled in incentive programs.
 #
 # STEP 2: update flooding curves (proportion of each land cover with open water
-#   on each day of the nonbreeding season)
+#   on each day of the nonbreeding season), focusing on wetlands and rice 
+#   (consider original CVJV flood curves for corn and "other" crops)
 #
 # PACKAGES
 library(tidyverse)
@@ -19,6 +20,7 @@ tracker <- 'data/stats_basin_ag.csv' #cloud-filled data from water tracker (via 
 tracker_meta <- 'data/basin_stats_unfilled.csv' #basin-specific metadata (via Nathan)
 br_ts <- 'data/BR_timeseries.csv'
 whep_ts <- 'data/WHEP_timeseries.csv'
+orig_curves <- 'data/cvjv_orig/flooding_curves.csv' #original CVJV flood curves
 
 # OUTPUTS
 floodcurves <- 'output/open_water_annual.csv'
@@ -74,8 +76,9 @@ meta <- read_csv(here::here(tracker_meta), col_types = cols()) %>%
   mutate(PercentObserved = case_when(is.na(PercentObserved) & ObservedArea == 0 ~ 0,
                                      TRUE ~ PercentObserved))
 
-# for each mosaic, estimate cloud-free proportion of pixels, weighted by the 
-#   proportion of each crop class in each basin
+# for each mosaic and crop class, estimate cloud-free proportion of pixels, 
+#   from the cloud-free proportion in each basin, weighted by the 
+#   proportion of each crop class in each basin (prior to any cloud filling)
 metadat <- bind_rows(
   # corn
   meta %>%
@@ -109,12 +112,12 @@ metadat <- bind_rows(
     summarize(ClassName = 'wetlands',
               prop.cloudfree = sum(basinprop.croptotal * PercentObserved)/100)
 )
-ggplot(metadat, aes(prop.cloudfree)) + geom_density() + facet_wrap(~ClassName)
+ggplot(metadat, aes(prop.cloudfree)) + geom_histogram(bins = 10) + facet_wrap(~ClassName)
 
 
 # OPEN WATER BY CROP CLASS AND DATE----------
 
-# summarize cloud-filled open water data by crop class in each mosaic
+# summarize cloud-filled open water data by crop class and basin in each mosaic
 basindat <- dat %>%
   # drop non-existent Tulare Rice:
   filter(Name != 'Tulare Rice') %>%
@@ -138,7 +141,7 @@ basindat <- dat %>%
   left_join(totals, by = c('BasinName', 'ClassName'))
 
 
-# summarize cloud-filled open water data by crop class over all basins
+# summarize cloud-filled open water data by crop class over all basins in each mosaic
 #  (also convert to number of 30x30m pixels):
 cropdat <- basindat %>%
   # summarize by crop class and mosaic date over all basins 
@@ -177,18 +180,27 @@ sdat <- cropdat_unbiased %>%
                         '2013' = '2013-14',
                         '2014' = '2014-15',
                         '2015' = '2015-16',
-                        '2016' = '2016-17')) 
+                        '2016' = '2016-17'),
+         ClassName = factor(ClassName, levels = c('wetlands', 'rice', 'corn', 'other'))) 
 
 ggplot(sdat, aes(prop.sampled)) + 
   facet_wrap(~ClassName, scales = 'free_y') + 
-  geom_density()
+  geom_histogram(bins = 10)
+#--> "other" crops still has a lot of unsampled pixels even after cloud filling
 
 ggplot(sdat, aes(prop.cloudfree)) + 
   facet_wrap(~ClassName, scales = 'free_y') + 
-  geom_density()
+  geom_histogram(bins = 10)
+#--> most data for "other" crops are <50% cloudfree
 
-ggplot(sdat %>% filter(prop.sampled >= 0.5), 
-       aes(yday, nflooded/nsampled, color = group, size = prop.cloudfree)) +
+ggplot(sdat %>% filter(prop.cloudfree >= 0.50), aes(prop.sampled)) + 
+  facet_wrap(~ClassName, scales = 'free_y') + 
+  geom_histogram(bins = 10)
+#--> "other" crops still has a lot of unsampled pixels even after cloud filling
+#  and subsetting to prop.cloudfree >= 0.50
+
+ggplot(sdat %>% filter(prop.cloudfree >= 0.50 & prop.sampled >= 0.75), 
+       aes(yday, nflooded/nsampled, color = group, size = prop.sampled)) +
   geom_point(alpha = 0.5) + facet_wrap(~ClassName) 
 
 
@@ -205,23 +217,32 @@ mdat <- sdat %>%
          prop.sampled, prop.cloudfree) %>%
   left_join(incentives, by = c('group', 'yday')) %>%
   mutate(nflooded_free = case_when(habitat == 'rice' ~ nflooded - incentives,
-                                   TRUE ~ nflooded),
-         habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn', 'other')))
+                                   TRUE ~ nflooded))
 
 # check that only rice was affected
-ggplot(mdat, aes(yday, nflooded/nsampled, color = group)) +
+ggplot(mdat %>% filter(prop.cloudfree >= 0.50 & prop.sampled >= 0.75), 
+       aes(yday, nflooded/nsampled, color = group)) +
   geom_point() + facet_wrap(~habitat) +
   geom_point(aes(y = nflooded_free/nsampled), shape = 21)
 
 
+ggplot(mdat, aes(prop.sampled, prop.cloudfree, color = habitat)) + 
+  geom_point() + 
+  geom_hline(aes(yintercept = 0.50), color = 'red') + 
+  geom_vline(aes(xintercept = 0.75), color = 'red')
+
+
 # FIT GAMMS-------------
 # proportion flooded by day of year, excluding incentive acres
+# drop those with relatively few pixels estimated, weight by prop.cloudfree
 
 by_year <- mdat %>% 
-  filter(prop.sampled >= 0.5) %>% 
+  filter(prop.sampled >= 0.75) %>%
+  mutate(weights = prop.cloudfree) %>%
+  # filter(habitat == 'wetlands' | yday > 62) %>% # drop anything before 1 Sept unless wetlands
   split(.$habitat) %>% 
   map(~ fit_gamm4(df = ., nwater = 'nflooded_free', dayofyear = 'yday',
-                  year = 'bioyear', weights = 'prop.cloudfree', 
+                  year = 'bioyear', weights = 'weights', 
                   by = 'group', plot = FALSE)) 
 
 # extract predicted values:
@@ -230,34 +251,79 @@ by_year_pred <- by_year %>%
   mutate(habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn', 'other')))
 
 
+# GAMM PLOTS------------
+# compare to original CVJV flood curves
+origdat <- read_csv(here::here(orig_curves), col_types = cols()) %>%
+  filter(habitat != 'corn') %>%
+  mutate(habitat = recode(habitat, corn_north = 'corn'))
+
 axes = list(scale_x_continuous(breaks = c(1, 32, 63, 93, 124, 154, 185, 216, 244, 275, 305), 
                                labels = c('Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 
                                           'Feb', 'Mar', 'Apr', 'May')),
             xlab(NULL),
             ylab('Proportion open water'))
 
+
 ggplot(by_year_pred, aes(yday, fit)) + facet_wrap(~habitat, nrow = 4) + 
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(prop.sampled >= 0.5),
-             aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
-             shape = 21) +
+  geom_ribbon(data = origdat, aes(ymin = lcl, ymax = ucl), fill = 'gray60', alpha = 0.5) +
+  geom_line(data = origdat, aes(yday, fit)) +
+  # geom_point(data = mdat %>% filter(prop.sampled >= 0.5),
+  #            aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
+  #            shape = 21) +
   ylim(0, 1) + axes
-  
-# compared to CVJV estimates: 
-# - wetlands curves all peak a bit lower than previously estimated
-# - rice curves vary a lot between years, but look fairly similar overall
-# - corn is very similar
-# - "other" is much higher than before... is this real or an artifact of the cloud-fill model?
 
-ggplot(by_year_pred %>% filter(habitat == 'other'), aes(yday, fit)) +
+# wetlands: similar to original CVJV curves but with a lower peak 
+#   - possible veg encroachment?
+ggplot(by_year_pred %>% filter(habitat == 'wetlands'), aes(yday, fit)) + 
+  facet_wrap(~group, nrow = 4) + 
   geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
   geom_line(aes(color = group)) +
-  geom_point(data = mdat %>% filter(habitat == 'other'),
-             aes(y = nflooded_free/nsampled, color = group), shape = 21) +
-  facet_wrap(~group, nrow = 4) + ylim(0, 1) + xlab(NULL) +
-  axes
+  geom_point(data = mdat %>% filter(prop.sampled >= 0.5, habitat == 'wetlands'),
+             aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
+             shape = 21) +
+  geom_ribbon(data = origdat %>% filter(habitat == 'wetlands'), 
+              aes(ymin = lcl, ymax = ucl), fill = 'gray60', alpha = 0.5) +
+  geom_line(data = origdat %>% filter(habitat == 'wetlands'), aes(yday, fit)) +
+  ylim(0, 1) + axes
 
+# rice: fairly similar but clearly reduced in drought years
+ggplot(by_year_pred %>% filter(habitat == 'rice'), aes(yday, fit)) + facet_wrap(~group, nrow = 4) + 
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = mdat %>% filter(prop.sampled >= 0.5, habitat == 'rice'),
+             aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
+             shape = 21) +
+  geom_ribbon(data = origdat %>% filter(habitat == 'rice'), 
+              aes(ymin = lcl, ymax = ucl), fill = 'gray60', alpha = 0.5) +
+  geom_line(data = origdat %>% filter(habitat == 'rice'), aes(yday, fit)) +
+  ylim(0, 1) + axes
+
+# corn: similar peak value, but drawsdown earlier, very consistent across years
+ggplot(by_year_pred %>% filter(habitat == 'corn'), aes(yday, fit)) + facet_wrap(~group, nrow = 4) + 
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = mdat %>% filter(prop.sampled >= 0.5, habitat == 'corn'),
+             aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
+             shape = 21) +
+  geom_ribbon(data = origdat %>% filter(habitat == 'corn'), 
+              aes(ymin = lcl, ymax = ucl), fill = 'gray60', alpha = 0.5) +
+  geom_line(data = origdat %>% filter(habitat == 'corn'), aes(yday, fit)) +
+  ylim(0, 0.5) + axes
+
+# other: much higher peak value - combined with reduced overall acreage, 
+#   suggests conversion to some other crop class?
+ggplot(by_year_pred %>% filter(habitat == 'other'), aes(yday, fit)) + facet_wrap(~group, nrow = 4) + 
+  geom_ribbon(aes(ymin = lcl, ymax = ucl, fill = group), alpha = 0.5) +
+  geom_line(aes(color = group)) +
+  geom_point(data = mdat %>% filter(prop.sampled >= 0.5 & habitat == 'other'),
+             aes(y = nflooded_free/nsampled, color = group, size = prop.cloudfree), 
+             shape = 21) +
+  geom_ribbon(data = origdat %>% filter(habitat == 'other'), 
+              aes(ymin = lcl, ymax = ucl), fill = 'gray60', alpha = 0.5) +
+  geom_line(data = origdat %>% filter(habitat == 'other'), aes(yday, fit)) +
+  ylim(0, 0.3) + axes
 
 ## mid-winter peak values:
 by_year_pred %>% 
@@ -271,7 +337,7 @@ by_year_pred %>%
 # wetlands: 203-229, 0.604-0.645 (compared to 0.81 on day 199 in previous CVJV work)
 # rice: 199-213, 0.397-0.617 (compared to 0.69 on day 188)
 # corn: 197-208, 0.241-0.249 (compared to 0.22 on day 223)
-# other: 174-194, 0.101-0.135 (compared to 0.03)
+# other: 174-194, 0.101-0.135 (compared to 0.03 in original CVJV curves)
 
 # SPLIT WETLANDS----------
 # estimate percent of flooded wetlands that are semi-permanent vs. seasonal
