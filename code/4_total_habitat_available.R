@@ -32,10 +32,10 @@ base <- read_csv(here::here(annual_acres), col_types = cols()) %>%
   split(.$year)
 
 # flood curves: replace curve for "other" crops with original CVJV flood curve
-replace <- expand.grid(group = c('2013-14', '2014-15', '2015-16', '2016-17'), 
-                       yday = c(1:319)) %>% 
-  left_join(read_csv(here::here(orig_curves), col_types = cols()) %>% 
-              filter(habitat == 'other'), 
+replace <- expand.grid(group = c('2013-14', '2014-15', '2015-16', '2016-17'),
+                       yday = c(1:319)) %>%
+  left_join(read_csv(here::here(orig_curves), col_types = cols()) %>%
+              filter(habitat == 'other'),
             by = 'yday') %>%
   arrange(group, yday)
 
@@ -61,6 +61,15 @@ change <- pmap(list(base, flood),
                accessible = depth, wetsplit = TRUE)
 names(change) = names(flood)
 
+## assume rice, corn, and other crops are not accessible prior to 1 September (day 63)
+change$`2013-14`$added[1:62, c('rice', 'corn', 'other')] = 0
+change$`2014-15`$added[1:62, c('rice', 'corn', 'other')] = 0
+change$`2015-16`$added[1:62, c('rice', 'corn', 'other')] = 0
+change$`2016-17`$added[1:62, c('rice', 'corn', 'other')] = 0
+change$`2013-14`$returned[1:62, c('rice', 'corn', 'other')] = 0
+change$`2014-15`$returned[1:62, c('rice', 'corn', 'other')] = 0
+change$`2015-16`$returned[1:62, c('rice', 'corn', 'other')] = 0
+change$`2016-17`$returned[1:62, c('rice', 'corn', 'other')] = 0
 
 # now append incentive programs (by year group, change variable, and day of year):
 incentives <- bind_rows(read_csv(here::here(br_ts), col_types = cols()), 
@@ -87,10 +96,6 @@ habitat_avail <- bind_rows(
 )
 write_csv(habitat_avail, here::here(habitat_daily))
 
-# --> Necessary? already marked as not suitable in the depth curves
-# ## assume rice, corn, and other crops are not accessible prior to 1 September (day 63)
-# change$added[1:62,c('other','corn_north','rice')] = 0
-# change$returned[1:62,c('corn_north','other','rice')] = 0
 
 # HABITAT AVAILABILITY STATS-----------------
 
