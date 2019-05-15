@@ -12,7 +12,8 @@ library(bioenergmod) # devtools::install_github("kdybala/bioenergmod")
 # INPUTS
 annual_acres <- 'data/landcover_totals_cvjv.csv'
 floodcurves <- 'output/open_water_annual.csv'
-depthcurves <- 'data/cvjv_orig/depth_curves.csv'
+orig_curves <- 'data/cvjv_orig/flooding_curves.csv' #original CVJV flood curves
+depthcurves <- 'data/cvjv_orig/depth_curves.csv' #original CVJV depth curves
 br_ts <- 'data/BR_timeseries.csv'
 whep_ts <- 'data/WHEP_timeseries.csv'
 
@@ -24,18 +25,32 @@ habitat_stats <- 'output/habitat_peak_stats.csv'
 
 # CALCULATE HABITAT AVAILABILITY--------
 
+# updated base acres of each crop class and original wetland acres:
 base <- read_csv(here::here(annual_acres), col_types = cols()) %>% 
   filter(!(habitat %in% c('seas', 'perm'))) %>%
   filter(year != 2017) %>%
   split(.$year)
 
+# flood curves: replace curve for "other" crops with original CVJV flood curve
+replace <- expand.grid(group = c('2013-14', '2014-15', '2015-16', '2016-17'), 
+                       yday = c(1:319)) %>% 
+  left_join(read_csv(here::here(orig_curves), col_types = cols()) %>% 
+              filter(habitat == 'other'), 
+            by = 'yday') %>%
+  arrange(group, yday)
+
 flood <- read_csv(here::here(floodcurves), col_types = cols()) %>%
   mutate(prop.perm = as.numeric(prop.perm)) %>%
+  filter(habitat != 'other') %>%
+  bind_rows(replace) %>%
   split(.$group)
 
+
+# original CVJV depth curves:
 depth <- read_csv(here::here(depthcurves), col_types = cols()) %>%
   filter(habitat != 'corn') %>%
   mutate(habitat = recode(habitat, corn_north = 'corn'))
+
 
 
 # calculate habitat availability in each year, with varying base acres and
@@ -97,7 +112,7 @@ peaks <- habitat_avail %>%
 
 write_csv(peaks, here::here(habitat_stats))
 
-# peak open water ranges days 182-200; 197448 - 292102 ha; lowest in 2015-16 and highest in 2016-17
-# peak open water without incentive programs ranges days 182-200; 183076 - 284500 ha
-# peak accessible ranges days 216-229; 83975 - 118180 ha; lowest in 2015-16 and highest in 2013-14 (due to incentive programs)
-# peak accessible without incentive programs ranges days 212-236; 70766 - 105050; lowest in 2015-16 and highest in 2016-17
+# peak open water ranges days 199-216; 156507 - 224751 ha; lowest in 2015-16 and highest in 2016-17
+# peak open water without incentive programs ranges days 199-212; 139628 - 217148 ha
+# peak accessible ranges days 219-236; 75622 - 105529 ha; lowest in 2015-16 and highest in 2013-14 (due to incentive programs)
+# peak accessible without incentive programs ranges days 215-238; 63644 - 91718; lowest in 2015-16 and highest in 2016-17
