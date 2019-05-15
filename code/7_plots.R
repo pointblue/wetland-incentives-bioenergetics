@@ -7,6 +7,7 @@ library(tidyverse)
 # INPUTS
 base <- 'data/landcover_totals_cvjv.csv'
 floodcurves <- 'output/open_water_annual.csv'
+orig_curves <- 'data/cvjv_orig/flooding_curves.csv' #original CVJV flood curves
 habitat_daily <- 'output/habitat_daily_stats.csv'
 habitat_stats <- 'output/habitat_peak_stats.csv'
 results_energy <- 'output/bioenergetics_results_energy.csv'
@@ -84,7 +85,17 @@ read_csv(here::here(base), col_types = cols()) %>%
 ggsave(here::here(plot_baseline), height = 4, width = 6.5, units = 'in', dpi = 350)
 
 # FLOODING CURVES-------
+# replace curve for "other" crops with original CVJV flood curve
+replace <- expand.grid(group = c('2013-14', '2014-15', '2015-16', '2016-17'), 
+                       yday = c(1:319)) %>% 
+  left_join(read_csv(here::here(orig_curves), col_types = cols()) %>% 
+              filter(habitat == 'other'), 
+            by = 'yday') %>%
+  arrange(group, yday)
+
 floodpred <- read_csv(here::here(floodcurves), col_types = cols()) %>%
+  filter(habitat != 'other') %>%
+  bind_rows(replace) %>%
   mutate(habitat = factor(habitat, 
                           levels = c('wetlands', 'rice', 'corn', 'other')),
          habitat = recode(habitat, 
@@ -153,6 +164,7 @@ peak_accessible <- accessible %>%
   group_by(scenario, group, time, incentives, population) %>%
   summarize(value = sum(value, na.rm = T)) %>% # total energy by day of year
   ungroup() %>%
+  filter(time <= 300) %>% #avoid late peaks in rice
   group_by(scenario, group, incentives, population) %>%
   summarize(time = time[value == max(value, na.rm = T)],
             value = max(value, na.rm = T))
@@ -258,27 +270,36 @@ total_consumed %>%
 # ENERGY SHORTFALLS---------------
 scale = 1000000 #millions
 
-energy <- read_csv(here::here(results_energy), col_types = cols()) %>%
-  mutate(incentives = factor(incentives, levels = c('none', 'fall only', 'all')))
+energy <- read_csv(here::here(results_energy), col_types = cols()) 
 
 # population objectives:
-ggplot(energy %>% filter(population == 'objectives'), aes(time, shortfall/scale)) + 
+energy %>%
+  filter(incentives %in% c('all', 'none') & population == 'objectives') %>%
+  mutate(incentives = recode(incentives, all = 'with', none = 'without'),
+         incentives = factor(incentives, levels = c('without', 'with'))) %>%
+  ggplot(aes(time, shortfall/scale)) + 
   facet_wrap(~group, nrow = 4) + 
   geom_area(aes(fill = incentives), position = position_identity()) + 
-  scale_fill_manual(values = pointblue.palette[c(3,2,4)]) + 
+  scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
   # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
   labs(x = NULL, y = 'Energy shortfall (kJ, millions)') +
-  timeaxis + timetheme
+  timeaxis + timetheme +
+  geom_line(aes(y = DER/scale))
 ggsave(here::here(plot_energy_shortfall), height = 8, width = 6.5, units = 'in', dpi = 350)
 
 # compare baseline population size:
-ggplot(energy %>% filter(population == 'baseline'), aes(time, shortfall/scale)) + 
+energy %>%
+  filter(incentives %in% c('all', 'none') & population == 'baseline') %>%
+  mutate(incentives = recode(incentives, all = 'with', none = 'without'),
+         incentives = factor(incentives, levels = c('without', 'with'))) %>%
+  ggplot(aes(time, shortfall/scale)) + 
   facet_wrap(~group, nrow = 4) + 
   geom_area(aes(fill = incentives), position = position_identity()) + 
-  scale_fill_manual(values = pointblue.palette[c(3,2,4)]) + 
+  scale_fill_manual(values = pointblue.palette[c(3,4)]) + 
   # geom_text(data = obj_short, aes(mid, 25, label = round(value/scale2, 0))) +
   labs(x = NULL, y = 'Energy shortfall (kJ, millions)') +
-  timeaxis + timetheme
+  timeaxis + timetheme +
+  geom_line(aes(y = DER/scale))
 ggsave(here::here(plot_energy_shortfall_baseline), height = 8, width = 6.5, units = 'in', dpi = 350)
 
 # % reduction in seasonal shortfalls contributed by incentive programs
@@ -301,16 +322,21 @@ reduction <- energy %>%
 
 
 reduction %>%
-  select(group, population, season, diff_fall, diff_spring) %>%
-  gather(diff_fall:diff_spring, key = 'incentives', value = 'value') %>% 
-  mutate(incentives = factor(incentives, levels = c('diff_spring', 'diff_fall')),
-         incentives = recode(incentives, 
-                             diff_fall = 'fall programs', 
-                             diff_spring = 'spring programs')) %>%
-  ggplot(aes(group, value, fill = incentives)) +
-  scale_fill_manual(values = pointblue.palette[c(2,4)]) + 
-  facet_wrap(~population+season, nrow = 2) +
-  geom_col() +
+  select(group, population, season, diff_all) %>%
+  ggplot(aes(group, diff_all, fill = season)) +
+  geom_col(position = position_dodge()) +
+  facet_wrap(~population) +
+  # select(group, population, season, diff_fall, diff_spring) %>%
+  # gather(diff_fall:diff_spring, key = 'incentives', value = 'value') %>% 
+  # mutate(incentives = factor(incentives, levels = c('diff_spring', 'diff_fall')),
+  #        incentives = recode(incentives, 
+  #                            diff_fall = 'fall programs', 
+  #                            diff_spring = 'spring programs')) %>%
+  # ggplot(aes(group, value, fill = incentives)) +
+  # geom_col() +
+  # facet_wrap(~population+season, nrow = 2) +
+  scale_fill_manual(values = pointblue.palette[c(2,4)]) +
   labs(x = NULL, y = '% reduction in energy shortfalls') + 
-  theme_minimal() + theme(strip.text = element_text(hjust = 0))
-ggsave(here::here(plot_energy_effect), height = 6, width = 6.5, units = 'in', dpi = 350)
+  theme_minimal() + theme(strip.text = element_text(hjust = 0)) +
+  ylim(0, 100)
+ggsave(here::here(plot_energy_effect), height = 4, width = 6.5, units = 'in', dpi = 350)
