@@ -103,6 +103,7 @@ source(here::here('code/3_crops_and_wetlands.R'))
 # - 'data/stats_basin_ag.csv' #data from water tracker (via Nathan)
 # - 'data/BR_timeseries.csv' (from step 1 above)
 # - 'data/WHEP_timeseries.csv' (from step 2 above)
+# - 'data/cvjv_orig/flooding_curves.csv' #original CVJV flood curves
 # OUTPUTS:
 # - 'output/open_water_annual.csv' (year- and crop-specific estimates of 
 #     proportion open water by day of year)
@@ -129,12 +130,14 @@ source(here::here('code/3b_update_flooding_curves.R'))
 # INPUTS:
 # - 'data/NASS_totals_cvjv.csv' #year-specific extent of each crop class
 # - 'output/open_water_annual.csv' #year-specific flooding curve estimates
+# - 'data/cvjv_orig/flooding_curves.csv' #original CVJV flood curves
 # - 'data/cvjv_orig/depth_curves.csv' #original CVJV depth curves
 # - 'data/BR_timeseries.csv' #time series of bird returns habitat added/returned
 # - 'data/WHEP_timeseries.csv' #time series of whep habitat added/returned
 # OUTPUTS:
 # - 'output/habitat_change.RData'
-# - 'figs/habitat_by_year.png'
+# - 'output/habitat_daily_stats.csv'
+# - 'output/habitat_peak_stats.csv'
 
 source(here::here('code/4_total_habitat_available.R'))
 
@@ -152,9 +155,11 @@ source(here::here('code/4_total_habitat_available.R'))
 # - 'output/habitat_returned.csv'
 # - 'output/habitat_prop.accessible.csv'
 # OUTPUTS: 
-# - 'figs/energy_accessible_by_year.png'
-# - 'figs/energy_shortfall_by_year.png'
-# - 'figs/energy_effect_by_year.png' # % reduction in shortfall from incentive programs
+# - 'output/bioenergetics_results.RData'
+# - 'output/bioenergetics_results_energy.csv'
+# - 'output/bioenergetics_results_energy_accessible.csv'
+# - 'output/bioenergetics_results_energy_consumed.csv'
+# - 'output/bioenergetics_results_energy_lost.csv'
 #
 
 source(here::here('code/5_bioenergmod.R'))
@@ -179,4 +184,23 @@ source(here::here('code/5_bioenergmod.R'))
 #
 
 source(here::here('code/6_monte_carlo.R'))
+
+# 7. plots
+# Produce publication and presentation-ready plots
+#
+# INPUTS
+# - 'output/open_water_annual.csv'
+# - 'output/habitat_change.RData'
+# - 'output/habitat_peak_stats.csv'
+# - 'output/bioenergetics_results_energy.csv'
+# - 'output/bioenergetics_results_energy_accessible.csv'
+# - 'output/bioenergetics_results_energy_consumed.csv'
+# - 'output/bioenergetics_results_energy_lost.csv'
+# OUTPUTS
+# - 'figs/flood_curves.png'
+# - 'figs/habitat_open.png'
+# - 'figs/habitat_accessible.png'
+# - 'figs/energy_accessible_by_year.png'
+# - 'figs/energy_shortfall_by_year.png'
+# - 'figs/energy_effect_by_year.png' # % reduction in shortfall from incentive programs
 
