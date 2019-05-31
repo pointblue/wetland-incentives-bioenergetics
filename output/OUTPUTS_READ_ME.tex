@@ -1,0 +1,302 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={OUTPUTS READ ME},
+            pdfauthor={Kristen E. Dybala},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{OUTPUTS READ ME}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Kristen E. Dybala}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{May 31, 2019}
+
+
+\begin{document}
+\maketitle
+
+This directory contains key results from the bioenergetics analysis of
+the impacts of incentive programs on meeting shorebird population
+objectives, in each shorebird non-breeding season from 2013-14 through
+2016-17.
+
+\subsubsection{habitat\_daily\_stats.csv}\label{habitat_daily_stats.csv}
+
+This file contains estimates of the daily extent of flooded habitat
+available in the Central Valley by land cover type, including separate
+estimates for both total open water and accessible water (i.e.,
+\textless{}10cm deep and accessible to most shorebirds). The table can
+be thought of as 2 parts (one for open water and one for accessible
+water), each of which is subdivided into 4 parts (one for each
+non-breeding season).
+
+\textbf{Description of fields:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{group:} label identifying shorebird non-breeding season; 4
+  options: 2013-14, 2014-15, 2015-16, 2016-17
+\item
+  \textbf{time:} integer identifying the day of the shorebird
+  non-breeding season, where day 1 = July 1; ranges 1 - 319
+\item
+  \textbf{corn:} estimated hectares of fields planted with corn that are
+  flooded on each day
+\item
+  \textbf{other:} estimated hectares of fields planted with ``other''
+  suitable crops that are flooded on each day; see Dybala et al. 2017
+  SFEWS for a list of ``other'' crops
+\item
+  \textbf{perm:} estimated hectares of permanent/semi-permanent managed
+  wetlands that are flooded on each day
+\item
+  \textbf{rice:} estimated hectares of fields planted with rice that are
+  flooded on each day
+\item
+  \textbf{seas:} estimated hectares of seasonal managed wetlands that
+  are flooded on each day
+\item
+  \textbf{br\_fall:} estimated hectares of fields enrolled in fall Bird
+  Returns program and flooded on each day
+\item
+  \textbf{br\_spring:} estimated hectares of fields enrolled in spring
+  (or winter) Bird Returns program and flooded on each day
+\item
+  \textbf{whep\_fall:} estimated hectares of fields enrolled in WHEP
+  fall flooding practice and currently flooded on each day
+\item
+  \textbf{whep\_vardd:} estimated hectares of fields enrolled in WHEP
+  variable drawdown practice and currently flooded on each day
+\item
+  \textbf{watertype:} label identifying whether the area flooded
+  represents total open water (open) or only shallow water accessible to
+  shorebirds (accessible); 2 options: open or accessible
+\end{itemize}
+
+\subsubsection{bioenergetics\_results\_energy.csv}\label{bioenergetics_results_energy.csv}
+
+This file contains the main results of the bioenergetics analysis,
+including the daily energy requirements (kJ) of the shorebird
+population, the daily energy supply available, and the energy shortfall
+as the difference between the two. This table can be thought of as 2
+parts (one for the shorebird population objectives and one for the
+baseline population size), each of which is subdivided into 3 parts
+representing different scenarios: including all incentive programs,
+excluding all incentive programs, and including only the fall incentive
+programs (i.e.~br\_fall and whep\_fall). Each of these individual
+scenarios is further subdivided into 4 parts representing each
+non-breeding season.
+
+\textbf{Description of fields:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{scenario:} label identifying which combination of population
+  objectives and incentive scenario is represented; 6 options:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    obj\_det: population objectives, all incentives
+  \item
+    obj\_det2: population objectives, no incentives
+  \item
+    obj\_det3: population objectives, only fall incentives
+  \item
+    obs\_det: baseline population, all incentives
+  \item
+    obs\_det2: baseline population, no incentives
+  \item
+    obs\_det3: baseline population, only fall incentives
+  \end{itemize}
+\item
+  \textbf{group:} label identifying shorebird non-breeding season; 4
+  options: 2013-14, 2014-15, 2015-16, 2016-17
+\item
+  \textbf{time:} integer identifying the day of the shorebird
+  non-breeding season, where day 1 = July 1; ranges 1 - 319
+\item
+  \textbf{DER:} daily energy requirement of the shorebird population
+\item
+  \textbf{supply:} daily total energy supply across all flooded habitats
+  included in the scenario
+\item
+  \textbf{accessible:} daily total energy supply in accessible flooded
+  habitats
+\item
+  \textbf{shortfall:} daily energy shortfall, calculated as the
+  difference between DER and accessible; values \textgreater{} 0
+  indicate an energy shortfall
+\item
+  \textbf{incentives:} label identifying which incentive programs are
+  included in the scenario, corresponds to the scenario field above; 3
+  options: all, none, and fall\_only
+\item
+  \textbf{population:} label identifying which population objectives are
+  included in the scenario, corresponds to the scenario field above; 2
+  options: objectives or baseline
+\end{itemize}
+
+\subsubsection{bioenergetics\_energy\_consumed.csv}\label{bioenergetics_energy_consumed.csv}
+
+This file provides further insights into the bioenergetics analysis,
+showing the daily amount of energy (kJ) estimated to be consumed in each
+land cover type. This amount reflects the assumption of an ideal free
+distribution of the shorebird daily energy requirements across all
+accessible flooded habitat available on that day, according to the
+estimated average energy density remaining in each habitat. (However,
+the daily energy consumed in each land cover type cannot exceed the
+total amount of energy accessible in each land cover type.) This table
+can be used to examine the relative contributions of each land cover
+type to the total shorebird energy needs over the entire non-breeding
+season. As above, this table can be thought of as 2 parts (one for the
+shorebird population objectives and one for the baseline population
+size), each of which is subdivided into 3 parts representing different
+scenarios: including all incentive programs, excluding all incentive
+programs, and including only the fall incentive programs (i.e.~br\_fall
+and whep\_fall). Each of these individual scenarios is further
+subdivided into 4 parts representing each non-breeding season.
+
+\textbf{Description of fields:}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{scenario:} label identifying which combination of population
+  objectives and incentive scenario is represented; 6 options:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    obj\_det: population objectives, all incentives
+  \item
+    obj\_det2: population objectives, no incentives
+  \item
+    obj\_det3: population objectives, only fall incentives
+  \item
+    obs\_det: baseline population, all incentives
+  \item
+    obs\_det2: baseline population, no incentives
+  \item
+    obs\_det3: baseline population, only fall incentives
+  \end{itemize}
+\item
+  \textbf{group:} label identifying shorebird non-breeding season; 4
+  options: 2013-14, 2014-15, 2015-16, 2016-17
+\item
+  \textbf{time:} integer identifying the day of the shorebird
+  non-breeding season, where day 1 = July 1; ranges 1 - 319
+\item
+  \textbf{corn:} estimated energy consumed in fields planted with corn
+  that are flooded on each day
+\item
+  \textbf{other:} estimated energy consumed in fields planted with
+  ``other'' suitable crops that are flooded on each day
+\item
+  \textbf{perm:} estimated energy consumed in permanent/semi-permanent
+  managed wetlands that are flooded on each day
+\item
+  \textbf{rice:} estimated energy consumed in fields planted with rice
+  that are flooded on each day
+\item
+  \textbf{seas:} estimated energy consumed in seasonal managed wetlands
+  that are flooded on each day
+\item
+  \textbf{br\_fall:} estimated energy consumed in fields enrolled in
+  fall Bird Returns program and flooded on each day
+\item
+  \textbf{br\_spring:} estimated energy consumed in fields enrolled in
+  spring (or winter) Bird Returns program and flooded on each day
+\item
+  \textbf{whep\_fall:} estimated energy consumed in fields enrolled in
+  WHEP fall flooding practice and currently flooded on each day
+\item
+  \textbf{whep\_vardd:} estimated energy consumed in fields enrolled in
+  WHEP variable drawdown practice and currently flooded on each day
+\item
+  \textbf{incentives:} label identifying which incentive programs are
+  included in the scenario, corresponds to the scenario field above; 3
+  options: all, none, and fall\_only
+\item
+  \textbf{population:} label identifying which population objectives are
+  included in the scenario, corresponds to the scenario field above; 2
+  options: objectives or baseline
+\end{itemize}
+
+
+\end{document}

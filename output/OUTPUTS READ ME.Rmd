@@ -36,7 +36,13 @@ This file contains the main results of the bioenergetics analysis, including the
 
 **Description of fields:**
 
-* __scenario:__ label identifying which combination of population objectives and incentive scenario is represented; 6 options:__ obj_det (population objectives, all incentives), obj_det2 (population objectives, no incentives), obj_det3 (population objectives, only fall incentives), obs_det (baseline population, all incentives), obs_det2 (baseline population, no incentives), obs_det3 (baseline population, only fall incentives)
+* __scenario:__ label identifying which combination of population objectives and incentive scenario is represented; 6 options: 
+     * obj_det: population objectives, all incentives
+     * obj_det2: population objectives, no incentives
+     * obj_det3: population objectives, only fall incentives
+     * obs_det: baseline population, all incentives
+     * obs_det2: baseline population, no incentives
+     * obs_det3: baseline population, only fall incentives
 * __group:__ label identifying shorebird non-breeding season; 4 options: 2013-14, 2014-15, 2015-16, 2016-17
 * __time:__ integer identifying the day of the shorebird non-breeding season, where day 1 = July 1; ranges 1 - 319
 * __DER:__ daily energy requirement of the shorebird population
@@ -53,8 +59,14 @@ This file provides further insights into the bioenergetics analysis, showing the
 
 **Description of fields:**
 
-* __scenario:__ label identifying which combination of population objectives and incentive scenario is represented; 6 options:__ obj_det (population objectives, all incentives), obj_det2 (population objectives, no incentives), obj_det3 (population objectives, only fall incentives), obs_det (baseline population, all incentives), obs_det2 (baseline population, no incentives), obs_det3 (baseline population, only fall incentives)
-* __group:__ label identifying shorebird non-breeding season; 4 options:__ 2013-14, 2014-15, 2015-16, 2016-17
+* __scenario:__ label identifying which combination of population objectives and incentive scenario is represented; 6 options: 
+     * obj_det: population objectives, all incentives
+     * obj_det2: population objectives, no incentives
+     * obj_det3: population objectives, only fall incentives
+     * obs_det: baseline population, all incentives
+     * obs_det2: baseline population, no incentives
+     * obs_det3: baseline population, only fall incentives
+* __group:__ label identifying shorebird non-breeding season; 4 options: 2013-14, 2014-15, 2015-16, 2016-17
 * __time:__ integer identifying the day of the shorebird non-breeding season, where day 1 = July 1; ranges 1 - 319
 * __corn:__ estimated energy consumed in fields planted with corn that are flooded on each day
 * __other:__ estimated energy consumed in fields planted with "other" suitable crops that are flooded on each day
