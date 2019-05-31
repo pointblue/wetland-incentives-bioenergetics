@@ -2,7 +2,9 @@
 title: "OUTPUTS READ ME"
 author: "Kristen E. Dybala"
 date: "May 31, 2019"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 This directory contains key results from the bioenergetics analysis of the impacts of incentive programs on meeting shorebird population objectives, in each shorebird non-breeding season from 2013-14 through 2016-17. 
