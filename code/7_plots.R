@@ -26,6 +26,8 @@ plot_energy_shortfall <- 'figs/energy_shortfall_by_year.png'
 plot_energy_shortfall_baseline <- 'figs/energy_shortfall_by_year_baseline.png'
 plot_energy_effect <- 'figs/energy_effect_by_year.png'
 
+energy_shortfall_reduction <- 'output/energy_reduction_summary.csv'
+
 # CUSTOM DESIGN------------
 pointblue.palette <-
   c('#4495d1',
@@ -356,11 +358,15 @@ reduction <- energy %>%
   ungroup() %>%
   select(-scenario) %>%
   # gather(shortfall:value, key = 'var', value = 'value') %>%
+  filter(incentives != 'fall only') %>%
+  mutate(incentives = paste0('shortfall_', incentives)) %>%
   spread(key = incentives, value = shortfall) %>%
-  mutate(diff = none - all,
-         prop = diff / none,
-         ratio = diff / incentive_ha) %>%
-  arrange(population, season, group)
+  mutate(diff = shortfall_none - shortfall_all,
+         perc = diff / shortfall_none * 100,
+         ratio = diff / incentive_ha, #calories per hectare-day
+         perc.ratio = perc / incentive_ha) %>% #% per hectare-day) %>%
+  arrange(population, group, season)
+write_csv(reduction, here::here(energy_shortfall_reduction))
 
 br_ts <- 'data/BR_timeseries.csv'
 whep_ts <- 'data/WHEP_timeseries.csv'
@@ -375,8 +381,8 @@ incentives <- bind_rows(read_csv(here::here(br_ts), col_types = cols()),
   filter(var == 'openwater')
 
 reduction %>%
-  select(group, population, season, diff, prop) %>%
-  ggplot(aes(group, prop * 100, fill = season)) +
+  select(group, population, season, diff, perc) %>%
+  ggplot(aes(group, perc, fill = season)) +
   geom_col(position = position_dodge()) +
   facet_wrap(~population, ncol = 1) +
   scale_fill_manual(values = pointblue.palette[c(2,4)]) +
