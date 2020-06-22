@@ -90,16 +90,6 @@ compile_habitat_availability <- function(list) {
             .id = 'group')) %>% 
     mutate(incentives = br_fall + br_spring + whep_fall + whep_vardd,
            wetlands = seas + perm) %>%
-    select(group, time, watertype, corn, other, rice, incentives, wetlands) %>%
-    gather(corn:wetlands, key = 'habitat', value = 'value') %>%
-    mutate(habitat = factor(habitat, 
-                            levels = c('incentives', 'rice', 'corn', 'other', 
-                                       'wetlands')),
-           habitat = recode(habitat, 
-                            other = 'other crops'),
-           label = recode(group, 
-                          '2013-14' = 'A. 2013-14',
-                          '2014-15' = 'B. 2014-15',
-                          '2015-16' = 'C. 2015-16',
-                          '2016-17' = 'D. 2016-17'))
+    select(group, time, watertype, wetlands, rice, corn, other, incentives, 
+           br_fall, br_spring, whep_fall, whep_vardd)
 }
