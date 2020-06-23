@@ -86,16 +86,11 @@ plot_floodcurves <- function(flooddf, filename, width = 80, height = 140,
                              dpi = 400) {
   flooddf <- flooddf %>% filter(habitat != 'other') %>%
     mutate(habitat = factor(habitat, levels = c('wetlands', 'rice', 'corn')),
-           group = recode(group,
-                          '2013-14' = 'WY2014', 
-                          '2014-15' = 'WY2015',
-                          '2015-16' = 'WY2016', 
-                          '2016-17' = 'WY2017'),
            yeartype = recode(group,
-                             'WY2014' = 'critically dry',
-                             'WY2015' = 'critically dry',
-                             'WY2016' = 'below normal',
-                             'WY2017' = 'wet'),
+                             '2013-14' = 'critically dry',
+                             '2014-15' = 'critically dry',
+                             '2015-16' = 'below normal',
+                             '2016-17' = 'wet'),
            label = recode(habitat,
                           'wetlands' = 'A',
                           'rice' = 'B',
@@ -131,15 +126,10 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
     select(group, time, watertype, wetlands, rice, corn, other, incentives) %>%
     gather(wetlands:incentives, key = 'habitat', value = 'value') %>%
     mutate(habitat = factor(habitat, levels = levels),
-           habitat = recode(habitat, other = 'other crops'),
-           label = recode(group,
-                          '2013-14' = 'WY2014',
-                          '2014-15' = 'WY2015',
-                          '2015-16' = 'WY2016',
-                          '2016-17' = 'WY2017'))
+           habitat = recode(habitat, other = 'other crops'))
 
   open <- habitatdf %>% filter(watertype == 'open') %>%
-    ggplot() + facet_wrap(~label, ncol = 1) +
+    ggplot() + facet_wrap(~group, ncol = 1) +
     geom_area(aes(time, value/scale, fill = habitat)) +
     scale_fill_manual(values = pal, name = NULL) +
     labs(x = NULL, y = ylabs[1], title = 'A') +
@@ -150,7 +140,7 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
           panel.grid.major.x = element_blank())
 
   accessible <- habitatdf %>% filter(watertype == 'accessible') %>%
-    ggplot() + facet_wrap(~label, ncol = 1) +
+    ggplot() + facet_wrap(~group, ncol = 1) +
     geom_area(aes(time, value/scale, fill = habitat)) +
     scale_fill_manual(values = pal, name = NULL) +
     labs(x = NULL, y = ylabs[2], title = 'B') +
@@ -172,12 +162,7 @@ plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250,
                             ylab = 'Energy shortfall (kJ, millions)',
                             filename, width = 169, height = 180, dpi = 400) {
   energydf <- energydf %>% 
-    mutate(label = recode(group, 
-                          '2013-14' = 'WY2014',
-                          '2014-15' = 'WY2015',
-                          '2015-16' = 'WY2016',
-                          '2016-17' = 'WY2017'),
-           incentives = factor(incentives, levels = c('without', 'with')))
+    mutate(incentives = factor(incentives, levels = c('without', 'with')))
   
   # get incentive timing
   habitatdf <- habitatdf %>% 
@@ -188,16 +173,11 @@ plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250,
     group_by(group, name) %>% 
     summarize(start = min(time),
               end = max(time),
-              .groups = 'drop') %>% 
-    mutate(label = recode(group, 
-                          '2013-14' = 'WY2014',
-                          '2014-15' = 'WY2015',
-                          '2015-16' = 'WY2016',
-                          '2016-17' = 'WY2017'))
+              .groups = 'drop')
   
   base <- energydf %>% filter(population == 'baseline') %>%
     ggplot(aes(time, shortfall/scale)) +
-    facet_wrap(~label, ncol = 1) +
+    facet_wrap(~group, ncol = 1) +
     geom_area(aes(fill = incentives), position = position_identity()) +
     scale_fill_manual(values = fillpalette) +
     labs(x = NULL, y = ylab, title = 'A') +
@@ -218,7 +198,7 @@ plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250,
   
   obj <- energydf %>% filter(population == 'objectives') %>%
     ggplot(aes(time, shortfall/scale)) +
-    facet_wrap(~label, ncol = 1) +
+    facet_wrap(~group, ncol = 1) +
     geom_area(aes(fill = incentives), position = position_identity()) +
     scale_fill_manual(values = fillpalette) +
     labs(x = NULL, y = NULL, title = 'B') +
