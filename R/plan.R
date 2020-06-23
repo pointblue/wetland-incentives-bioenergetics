@@ -64,5 +64,39 @@ the_plan <-
     models = fit_bioenergetics_model(
       needspath = file_in('data/cvjv_orig/daily_energy_requirement.csv'),
       energypath = file_in('data/cvjv_orig/energy_content.csv'),
-      habitatchange = change)
+      habitatchange = change),
+    
+    # extract shortfall tables
+    energysum = map_dfr(models, 
+                        ~map_dfr(.x, ~.x[['energy']], .id = 'group'), 
+                        .id = 'scenario') %>% 
+      separate(scenario, into = c('population', 'incentives'), remove = FALSE) %>% 
+      mutate(population = recode(population, obs = 'baseline', obj = 'objectives'),
+             incentives = recode(incentives, free = 'without')) %>% 
+      write_csv(file_out('output/bioenergetics_results_energy.csv')),
+    
+    # PLOT RESULTS
+    plot_landcover(nassdat, scale = 1000, ymax = 800,
+                   palette = c('gray20', 'gray40', 'gray60', 'black'),
+                   ylab = 'Total area (ha, thousands)',
+                   filename = file_out('figs/baseline_habitat_ms.png'),
+                   width = 80, height = 60, dpi = 400),
+    
+    plot_floodcurves(floodpred_by_year, 
+                     filename = file_out('figs/flood_curves_ms.png'),
+                     width = 80, height = 140, dpi = 400),
+    
+    plot_habitat(habitat_avail, scale = 1000, ymax = 250,
+                 levels = c('incentives', 'rice', 'corn', 'other', 'wetlands'),
+                 ylabs = c('Open water (ha, thousands)',
+                           'Accessible open water (ha, thousands)'),
+                 filename = file_out('figs/habitat_ms.png'), 
+                 width = 169, height = 180, dpi = 400),
+    
+    plot_shortfalls(energysum, habitat_avail, scale = 1000000, ymax = 250,
+                    fillpalette = c('without' = 'gray80', 'with' = 'gray50'),
+                    segmentpalette = c('black', 'gray60'),
+                    ylab = 'Energy shortfall (kJ, millions)',
+                    filename = file_out('figs/energy_shortfall_by_year_ms.png'),
+                    width = 169, height = 180, dpi = 400)
 )
