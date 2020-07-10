@@ -35,7 +35,7 @@ get_WHEP_timeseries <- function(df, drawdown = 14) {
   #   assume compliance with 2 weeks of "shallow" flooding + drawdown
   # - begins as late as 2 Sept (yday 64) to finish by 15 Sept (yday 77) and start drawdown
   # - assume 100% accessible because supposed to be "shallow" flooding?
-  # Note: no data for fall 2013 (because in FY2013)
+  # Note: for 2013 - flooding was for 4 weeks! (so begin as late as yday 50?)
   
   fall <- scaffold %>% 
     # add total annual acres enrolled for reference
@@ -44,10 +44,16 @@ get_WHEP_timeseries <- function(df, drawdown = 14) {
     #stagger addition evenly over 64 days of program, and returns begin after 1 month
     mutate(ha = replace_na(ha, 0),
            #stagger addition evenly over 64 days of possible program start dates
-           added = case_when(yday <= 64 ~ ha/64, 
+           #(or 50 days for 2013)
+           added = case_when(bioyear == 2013 & yday <= 50 ~ ha/50, 
+                             bioyear != 2013 & yday <= 64 ~ ha/64,
                              TRUE ~ 0),
-           #returns begin after 2 wks + drawdown; end 2 wks after day 64 + drawdown
-           returned = case_when(yday > (14 + drawdown) & yday <= (64 + 14 + drawdown) ~ ha/64,
+           #returns begin after 2 wks + drawdown (4 wks in 2013); returns end 2
+           #wks after day 64 + drawdown (or 4 wks + drawdown in 2013)
+           returned = case_when(bioyear == 2013 & yday > (28 + drawdown) &
+                                  yday <= (50 + 28 + drawdown) ~ ha/50,
+                                bioyear != 2013 & yday > (14 + drawdown) & 
+                                  yday <= (64 + 14 + drawdown) ~ ha/64,
                                 TRUE ~ 0)) %>%
     # from daily amount added and returned, calculate a daily amount available:
     #  total cumulative added minus total cumulative returned by the next day
