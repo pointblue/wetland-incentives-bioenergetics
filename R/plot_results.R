@@ -155,7 +155,8 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
 
 }
 
-plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250, 
+plot_shortfalls <- function(energydf, habitatdf, needspath,
+                            scale = 1000000, ymax = 250, 
                             fillpalette = c('without' = 'gray80', 
                                             'with' = 'gray50'),
                             segmentpalette = c('black', 'gray60'),
@@ -175,14 +176,20 @@ plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250,
               end = max(time),
               .groups = 'drop')
   
+  # get energy needs
+  needs <- read_csv(needspath, col_types = cols())
+  
   base <- energydf %>% filter(population == 'baseline') %>%
     ggplot(aes(time, shortfall/scale)) +
     facet_wrap(~group, ncol = 1) +
     geom_area(aes(fill = incentives), position = position_identity()) +
     scale_fill_manual(values = fillpalette) +
+    geom_line(data = needs, aes(yday, DER.obs/scale), size = 0.3) +
     labs(x = NULL, y = ylab, title = 'A') +
     scale_y_continuous(expand = c(0,0), limits = c(0, ymax)) +
-    theme_manuscript + timeaxis + timetheme + theme(legend.position = 'none') +
+    theme_manuscript + timeaxis + timetheme + 
+    theme(legend.position = 'none',
+          panel.grid.major.x = element_blank()) +
     geom_segment(data = habitatdf %>%
                    filter(name %in% c('br_fall', 'br_spring')),
                  aes(x = start, xend = end, y = .98*ymax, yend = .98*ymax),
@@ -201,9 +208,12 @@ plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250,
     facet_wrap(~group, ncol = 1) +
     geom_area(aes(fill = incentives), position = position_identity()) +
     scale_fill_manual(values = fillpalette) +
+    geom_line(data = needs, aes(yday, DER.obj/scale), size = 0.3) +
     labs(x = NULL, y = NULL, title = 'B') +
     scale_y_continuous(expand = c(0,0), limits = c(0, ymax)) +
-    theme_manuscript + timeaxis + timetheme + theme(legend.position = 'none') +
+    theme_manuscript + timeaxis + timetheme + 
+    theme(legend.position = 'none',
+          panel.grid.major.x = element_blank()) +
     geom_segment(data = habitatdf %>%
                    filter(name %in% c('br_fall', 'br_spring')),
                  aes(x = start, xend = end, y = .98*ymax, yend = .98*ymax),
@@ -222,3 +232,279 @@ plot_shortfalls <- function(energydf, habitatdf, scale = 1000000, ymax = 250,
   ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
 
 }
+
+plot_shortfall_timeline <- function(energydf, interval = 'day', size = 16,
+                                    filename, height, width, dpi) {
+  if (interval == 'day') {
+    energylab <- energydf %>% filter(incentives == 'without') %>% 
+      group_by(scenario, population, time) %>% 
+      summarize(max = max(shortfall),
+                min = min(shortfall),
+                .groups = 'drop') %>% 
+      mutate(label = case_when(min > 0 ~ 'consistent',
+                               max == 0 ~ 'none',
+                               TRUE ~ 'sometimes'))
+    
+    repeats <- rle(energylab$label)
+    
+    energylab <- energylab %>% 
+      mutate(segs = rep(paste0('seg', c(1:length(repeats$lengths))), 
+                        times = repeats$lengths),
+             population = factor(population, 
+                                 levels = c('objectives', 'baseline')),
+             population = recode(population, baseline = 'baseline\npopulation',
+                                 objectives = 'population\nobjectives')) %>% 
+      group_by(scenario, population, segs, label) %>% 
+      summarize(start = min(time),
+                end = max(time)+1,
+                .groups = 'drop') %>% 
+      arrange(scenario, population, start)
+    
+  } else if (interval == 'week') {
+    
+    energylab <- energydf %>% filter(incentives == 'without') %>% 
+      mutate(week = rep(c(rep(paste0('week', c(1:45)), each = 7), 
+                          rep('week46', 4)), 
+                        8)) %>%
+      group_by(scenario, population, group, week) %>% 
+      summarize(start = min(time),
+                end = max(time),
+                shortfall = sum(shortfall), .groups = 'drop') %>% 
+      group_by(scenario, population, week, start, end) %>%
+      summarize(max = max(shortfall),
+                min = min(shortfall),
+                .groups = 'drop') %>%
+      mutate(label = case_when(min > 0 ~ 'consistent',
+                               max == 0 ~ 'none',
+                               TRUE ~ 'sometimes'))
+    
+    repeats <- rle(energylab$label)
+    
+    energylab <- energylab %>% 
+      mutate(segs = rep(paste0('seg', c(1:length(repeats$lengths))), 
+                        times = repeats$lengths),
+             population = factor(population, 
+                                 levels = c('objectives', 'baseline')),
+             population = recode(population, baseline = 'baseline\npopulation',
+                                 objectives = 'population\nobjectives')) %>% 
+      group_by(scenario, population, segs, label) %>% 
+      summarize(start = min(start),
+                end = max(end)+1,
+                .groups = 'drop') %>% 
+      arrange(scenario, population, start)
+    
+  }  else if (interval == 'halfmonth') {
+    
+    energylab <- energydf %>% filter(incentives == 'without') %>% 
+      mutate(halfmonth = rep(rep(c('Jul1-15', 'Jul16-31', 'Aug1-15', 'Aug16-31',
+                                   'Sep1-15', 'Sep16-30', 'Oct1-15', 'Oct16-31',
+                                   'Nov1-15', 'Nov16-30', 'Dec1-15', 'Dec16-31',
+                                   'Jan1-15', 'Jan16-31', 'Feb1-15', 'Feb16-28',
+                                   'Mar1-15', 'Mar16-31', 'Apr1-15', 'Apr16-30',
+                                   'May1-15'),
+                                 times = c(15, 16, 15, 16, 15, 15, 15, 16,
+                                           15, 15, 15, 16, 15, 16, 15, 13,
+                                           15, 16, 15, 15, 15)), 8),
+             halfmonth = factor(halfmonth,
+                                levels = c('Jul1-15', 'Jul16-31', 'Aug1-15', 'Aug16-31',
+                                           'Sep1-15', 'Sep16-30', 'Oct1-15', 'Oct16-31',
+                                           'Nov1-15', 'Nov16-30', 'Dec1-15', 'Dec16-31',
+                                           'Jan1-15', 'Jan16-31', 'Feb1-15', 'Feb16-28',
+                                           'Mar1-15', 'Mar16-31', 'Apr1-15', 'Apr16-30',
+                                           'May1-15'))) %>%
+      group_by(scenario, population, group, halfmonth) %>% 
+      summarize(start = min(time),
+                end = max(time),
+                shortfall = sum(shortfall), .groups = 'drop') %>% 
+      group_by(scenario, population, halfmonth, start, end) %>%
+      summarize(max = max(shortfall),
+                min = min(shortfall),
+                .groups = 'drop') %>%
+      mutate(label = case_when(min > 0 ~ 'consistent',
+                               max == 0 ~ 'none',
+                               TRUE ~ 'sometimes'))
+    
+    repeats <- rle(energylab$label)
+    
+    energylab <- energylab %>% 
+      mutate(segs = rep(paste0('seg', c(1:length(repeats$lengths))), 
+                        times = repeats$lengths),
+             population = factor(population, 
+                                 levels = c('objectives', 'baseline')),
+             population = recode(population, baseline = 'baseline\npopulation',
+                                 objectives = 'population\nobjectives')) %>% 
+      group_by(scenario, population, segs, label) %>% 
+      summarize(start = min(start),
+                end = max(end)+1,
+                .groups = 'drop') %>% 
+      arrange(scenario, population, start)
+  }
+  
+  ggplot(energylab, 
+         aes(x = start, xend = end, 
+             y = population, yend = population, 
+             color = label)) +
+    geom_segment(linetype = 1, size = size) +
+    scale_color_manual(values = c('consistent' = 'black', 
+                                  'none' = 'gray80', 
+                                  'sometimes' = 'gray50'), name = NULL) +
+    labs(y = NULL, x = NULL) +
+    timeaxis + theme_manuscript + timetheme + 
+    theme(legend.position = 'none',
+          panel.grid.major.x = element_blank())
+  
+  ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
+}
+
+plot_filled_habitat <- function(filled, scale = 1000, ymax = 100,
+                                ylab = 'Additional habitat needed (ha, thousands)',
+                                filename, height, width, units, dpi) {
+  filled %>% select(population:time, new) %>% 
+    group_by(population, time) %>% 
+    summarize(min = min(new), max = max(new), .groups = 'drop') %>% 
+    pivot_longer(min:max) %>% 
+    mutate(population = recode(population, baseline = 'A', objectives = 'B')) %>% 
+    ggplot(aes(time, value/scale, fill = name)) + 
+    geom_area(position = 'identity', alpha = 0.5) + 
+    facet_wrap(~population, ncol = 1) + 
+    scale_fill_manual(values = c('gray70', 'gray20')) + 
+    theme_manuscript + timetheme + timeaxis +
+    labs(y = ylab) + ylim(0, ymax) +
+    theme(legend.position = 'none')
+  
+  ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
+}
+
+plot_incentive_effects <- function(energydf, consumptiondf, habitatdf, 
+                                   scale = 1000000000, ymax = 25) {
+  # left_join(consumptiondf %>% 
+  #             # program-specific proportion of total energy consumed across all
+  #             # incentive programs
+  #             select(population:time, br_fall:whep_vardd) %>% 
+  #             filter(incentives == 'with') %>% 
+  #             pivot_longer(br_fall:whep_vardd) %>% 
+  #             group_by(population, incentives, group, name) %>% 
+  #             summarize(value = sum(value), .groups = 'drop') %>% 
+  #             group_by(population, incentives, group) %>% 
+  #             mutate(total = sum(value), prop = value/total),
+  #           energydf %>% 
+  #             # difference in total energy shortfalls with vs without incentive
+  #             # programs
+  #             select(population:time, shortfall) %>% 
+  #             group_by(population, group, incentives) %>% 
+  #             summarize(shortfall = sum(shortfall), .groups = 'drop') %>% 
+  #             pivot_wider(names_from = incentives, values_from = shortfall) %>% 
+  #             mutate(diff = without - with) %>% 
+  #             select(population, group, without, diff),
+  #           by = c('population', 'group')) %>% 
+  #   # assume contribution of each program to reduction in energy shortfalls is
+  #   # proportional to energy consumed in each land cover type
+  #   mutate(contribution = prop * diff,
+  #          contribution.perc = contribution / without) %>% 
+  #   # match to total number of hectare-days flooded (including drawdown
+  #   # period)
+  #   left_join(habitatdf %>% filter(watertype == 'open') %>% 
+  #               select(group, time, br_fall:whep_vardd) %>% 
+  #               pivot_longer(br_fall:whep_vardd) %>% 
+  #               group_by(group, name) %>% 
+  #               summarize(investment = sum(value), .groups = 'drop'),
+  #             by = c('group', 'name')) %>% 
+  #   # calculate contribution to energy reduction per ha-day
+  #   mutate(ratio = contribution/investment,
+  #          ratio.perc = contribution.perc/investment*100000,
+  #          name = factor(name, 
+  #                        levels = c('whep_fall', 'br_fall', 'whep_vardd', 'br_spring'))) %>% 
+  #   ggplot(aes(name, ratio.perc, fill = group)) + geom_col(position = 'dodge') +
+  #   scale_fill_manual(values = pointblue.palette[c(1:3,5)]) +
+  #   facet_wrap(~population, ncol = 1, scales = 'free_y') +
+  #   labs(x = 'incentive program', 
+  #        y = '% reduction in total energy shortfall per 100k ha-days') +
+  #   theme_manuscript + 
+  #   theme(legend.position = c(1, 1), 
+  #         legend.justification = c(1,1))
+  
+  # consumption bar chart:
+  # left_join(consumed, energysum, 
+  #           by = c('scenario', 'population', 'incentives', 'group', 'time')) %>% 
+  #   mutate(wetlands = seas + perm) %>% 
+  #   select(-seas, -perm) %>% 
+  #   group_by(scenario, population, incentives, group) %>% 
+  #   summarize_at(vars(corn:wetlands), ~sum(., na.rm = TRUE)) %>% 
+  #   pivot_longer(cols = c(corn:whep_vardd, shortfall, wetlands)) %>% 
+  #   mutate(name = factor(name, 
+  #                        levels = c('shortfall', 'whep_fall', 
+  #                                   'br_fall', 'br_spring', 'whep_vardd', 
+  #                                   'rice', 'wetlands', 'corn', 'other'))) %>% 
+  #   # pivot_wider(names_from = incentives, values_from = value) %>% 
+  #   filter(population == 'objectives') %>% 
+  #   ggplot() + 
+  #   geom_col(aes(incentives, value, fill = name), position = 'fill') + 
+  #   facet_wrap(~group, ncol = 4) + 
+  #   scale_fill_manual(values = c('gray80', pointblue.palette[c(8:11, 3)], 
+  #                                pointblue.palette[4], 'yellow', pointblue.palette[2])) + 
+  #   scale_y_continuous(expand = c(0,0)) +
+  #   theme_manuscript
+  
+  # old version:
+  effect <- left_join(energydf %>% 
+                        mutate(season = ifelse(time <= 123, 'fall', 'spring')) %>% 
+                        group_by(population, incentives, group, season) %>% 
+                        summarize(shortfall = sum(shortfall), .groups = 'drop') %>% 
+                        pivot_wider(names_from = incentives, values_from = shortfall),
+                      habitatdf %>% filter(watertype == 'open') %>%
+                        mutate(incentive_fall = br_fall + whep_fall,
+                               incentive_spring = br_spring + whep_vardd) %>%
+                        select(group, time, incentive_fall:incentive_spring) %>% 
+                        pivot_longer(incentive_fall:incentive_spring, 
+                                     values_to = 'ha_days') %>% 
+                        separate(name, into = c('incentive', 'season')) %>% 
+                        group_by(group, season) %>% 
+                        summarize(ha_days = sum(ha_days), .groups = 'drop'),
+                      by = c('group', 'season')) %>%
+    mutate(diff = without - with,
+           diff.perc = diff / without * 100,
+           # absolute reduction hectare-day incentivized
+           ratio = diff / ha_days,
+           # % reduction per 1 million hectare-days)
+           ratio.perc = diff.perc / ha_days * 10000) %>%
+    arrange(population, group)
+  
+  effect %>% 
+    ggplot(aes(season, ratio, fill = group)) +
+    geom_col(position = position_dodge()) +
+    facet_wrap(~population, ncol = 1) +
+    # scale_fill_manual(values = pointblue.palette[c(2,4)]) +
+    scale_fill_grey() +
+    labs(x = NULL, y = 'Reduction in energy shortfalls (kJ) per ha-day', title = NULL) +
+    scale_y_continuous(limits = c(0, ymax), expand = c(0, 0)) +
+    theme_manuscript +
+    theme(legend.position = c(0, 1),
+          legend.justification = c(0, 1),
+          legend.title = element_blank())
+  # theme(legend.position = 'none')
+  
+  # absdiff <- effect %>% select(group, population, diff) %>%
+  #   ggplot(aes(group, diff/scale, fill = population)) +
+  #   geom_col(position = position_dodge()) +
+  #   scale_fill_manual(values = pointblue.palette[c(2,4)]) +
+  #   labs(x = NULL, y = 'Reduction in shortfalls (kJ, billions)', title = 'A') +
+  #   scale_y_continuous(limits = c(0, 3), expand = c(0, 0)) +
+  #   theme_manuscript +
+  #   theme(legend.position = c(1, 1), legend.justification = c(1, 1),
+  #         legend.title = element_blank())
+  
+  # #    -- incentive ha (MS version)
+  # invest <- effect %>% select(group, incentive_ha) %>% distinct() %>%
+  #   ggplot(aes(group, incentive_ha/1000000)) + geom_col(fill = 'gray50', width = 0.5) +
+  #   labs(x = NULL, y = 'ha-days incentivized (millions)', title = 'C') +
+  #   scale_y_continuous(limits = c(0, 3), expand = c(0, 0)) +
+  #   theme_manuscript +
+  #   theme(legend.position = 'none')
+  #
+  # absdiff/percdiff/invest
+  # ggsave(here::here(plot_energy_effect_ms),
+  #        height = ms.single * 2.25, width = ms.single,
+  #        units = 'mm', dpi = 400)
+  
+}
+
