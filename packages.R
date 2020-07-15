@@ -9,6 +9,8 @@ library(rnass) #remotes::install_github('emraher/rnass')
 library(gamm4)
 library(bioenergmod) #remotes::install_github('kdybala/bioenergmod')
 library(patchwork)
+library(flextable)
+library(officer)
 
 conflicted::conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("select", "dplyr")
