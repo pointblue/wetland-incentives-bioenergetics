@@ -9,11 +9,10 @@
 ##' @param shortfallseason data.frame containing annual and seasonal estimates
 ##'   of total energy shortfalls, including lcl and ucl from Monte Carlo
 ##' @param scale factor by which to divide values in the table
-##' @param title name of table to be passed to save_as_docx
 ##' @param pathout name of filepath to be passed to save_as_docx
 ##' @description Functions to produce near-publication-ready tables of results
 
-make_effort_table <- function(effortdat, scale = 1000000, title, pathout) {
+make_effort_table <- function(effortdat, scale = 1000000, pathout) {
   tabledat <- bind_rows(effortdat %>% filter(label == 'total') %>% select(-label) %>%
                           pivot_longer(br_fall:incentives, names_to = 'habitat',
                                        values_to = 'total') %>%
@@ -154,10 +153,10 @@ make_effort_table <- function(effortdat, scale = 1000000, title, pathout) {
   #   align(align = 'center', part = 'header') %>% 
   #   border_inner_h(border = officer::fp_border(width = 0))
   
-  save_as_docx(!!title = table, path = pathout)
+  save_as_docx(table, path = pathout)
 }
 
-make_habitat_table <- function(habitatdat, scale = 1000000, title, pathout) {
+make_habitat_table <- function(habitatdat, scale = 1000000, pathout) {
   
   tabledat <- habitatdat %>%
     select(year = group, habitat, total, lcl, ucl) %>%
@@ -179,7 +178,7 @@ make_habitat_table <- function(habitatdat, scale = 1000000, title, pathout) {
                                habitat == 'br_spring' ~ 'BirdReturns spring',
                                habitat == 'whep_fall' ~ 'WHEP fall flooding',
                                habitat == 'whep_vardd' ~ 'WHEP variable drawdown',
-                               habitat == 'other' ~ 'Other crops'
+                               habitat == 'other' ~ 'Other crops',
                                TRUE ~ str_to_sentence(habitat)),
            name = factor(name, levels = c('total', 'lcl', 'ucl')),
            year = gsub('-', '', year),
@@ -239,11 +238,11 @@ make_habitat_table <- function(habitatdat, scale = 1000000, title, pathout) {
     align(align = 'center', part = 'body', j = c(1, 2)) %>% 
     border_inner_h(border = officer::fp_border(width = 0))
   
-  save_as_docx(!!title = table, path = pathout)
+  save_as_docx(table, path = pathout)
 }
 
 make_shortfall_table <- function(shortfalltotals, shortfallseason, 
-                                 scale = 1000000000, title, pathout) {
+                                 scale = 1000000000, pathout) {
   values <- bind_rows(shortfalltotals %>% mutate(season = 'total') %>% select(-habitat),
                       shortfallseason) %>% 
     select(population, season, group, incentives, total, lcl, ucl)
@@ -337,10 +336,12 @@ make_shortfall_table <- function(shortfalltotals, shortfallseason,
     align(align = 'center', part = 'header') %>% 
     border_inner_h(border = officer::fp_border(width = 0))
   
-  save_as_docx(!!title = table, path = pathout)
+  save_as_docx(table, path = pathout)
 }
 
-
+make_habitatneed_table <- function(filldat, scale, title, pathout) {
+  
+}
 
 
 
