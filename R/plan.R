@@ -135,30 +135,59 @@ the_plan <-
       needspath = file_in('data/cvjv_orig/daily_energy_requirement.csv'),
       basepath = file_in('data/cvjv_orig/baseline_potential_habitat.csv'),
       energysim = energysim, floodsim = floodsim, depthsim = depthsim, 
-      nsim = 3, days = 319, 
+      nsim = 1000, days = 319, 
       groups = c('2013-14', '2014-15', '2015-16', '2016-17'),
       brdat, whepdat),
     
     # compile shortfalls: find mean, lcl, ucl for each scenario and time step
-    # across all iterations
-    shortfallsum_mc = map_dfr(models_mc, summarize_mc, 
-                              element = 'energy', var = 'shortfall', 
-                              groups = c('2013-14', '2014-15', '2015-16', '2016-17'),
-                              days = 319, 
-                              .id = 'scenario') %>% 
+    # across all iterations (compared to original point estimates)
+    shortfallsum_mc = map2_dfr(models_mc, 
+                               energysum %>% 
+                                 mutate(scenario = factor(scenario, 
+                                                          levels = names(models_mc))) %>% 
+                                 split(.$scenario),
+                               ~summarize_mc(mc = .x,
+                                             element = 'energy', 
+                                             var = 'shortfall',
+                                             groups = c('2013-14', '2014-15', '2015-16', '2016-17'),
+                                             days = 319,
+                                             by = 'year',
+                                             origdat = .y),
+                               .id = 'scenario') %>% 
       separate(scenario, into = c('population', 'incentives'), remove = FALSE) %>% 
       mutate(population = recode(population, obs = 'baseline', obj = 'objectives'),
              incentives = recode(incentives, free = 'without')),
     
-    accessible_incentives_mc = map_dfr(models_mc, summarize_mc, 
-                              element = 'accessible', var = 'incentives', 
-                              groups = c('2013-14', '2014-15', '2015-16', '2016-17'),
-                              days = 319, 
-                              .id = 'scenario') %>% 
+    shortfall_byseason_mc = map2_dfr(models_mc, 
+                                     energysum %>% 
+                                       mutate(scenario = factor(scenario, 
+                                                                levels = names(models_mc))) %>% 
+                                       split(.$scenario),
+                                     ~summarize_mc(mc = .x, 
+                                                   element = 'energy', 
+                                                   var = 'shortfall', 
+                                                   groups = c('2013-14', '2014-15', '2015-16', '2016-17'),
+                                                   days = 319, by = 'season',
+                                                   origdat = .y),
+                                     .id = 'scenario') %>% 
       separate(scenario, into = c('population', 'incentives'), remove = FALSE) %>% 
       mutate(population = recode(population, obs = 'baseline', obj = 'objectives'),
              incentives = recode(incentives, free = 'without')),
-    
+
+    # compile estimated totals of accessible habitat (compared to original point estimates)
+    accessible_mc = map_dfr(c('wetlands', 'rice', 'corn', 'other', 
+                              'br_fall', 'br_spring', 'whep_fall', 
+                              'whep_vardd', 'incentives', 'totalfree') %>% set_names(),
+                            ~summarize_mc(models_mc$obj_with, 
+                                          element = 'accessible', 
+                                          var = .x,
+                                          groups = c('2013-14', '2014-15', 
+                                                     '2015-16', '2016-17'),
+                                          days = 319, by = 'year',
+                                          orighabitat = habitat_avail %>% 
+                                            filter(watertype == 'accessible')),
+                            .id = 'habitat'),
+
     # FILL SHORTFALLS-----------
     # if new habitat has same energy density as wetlands:
     fill_wetlands = fill_all_shortfalls(
@@ -217,6 +246,18 @@ the_plan <-
                                  column = "filled", drawdown = 0)) %>% 
       map_dfr(~map_dfr(.x, ~.x[['accessible']], .id = 'group'),
               .id = 'population'),
+    
+    # CREATE TABLES--------------
+    
+    table_effort = make_habitat_table(effort, 
+                                      pathout = file_out('doc/table_habitat_accessible.docx')),
+    
+    table_habitat = make_habitat_table(accessible_mc,
+                                       pathout = file_out('doc/table_habitat_accessible.docx')),
+    
+    table_shortfalls = make_shortfall_table(shortfallsum_mc, 
+                                            shortfall_byseason_mc, 
+                                            pathout = file_out('doc/table_shortfalls.docx')),
     
     # PLOT RESULTS---------------
     fig_landcover = plot_landcover(
