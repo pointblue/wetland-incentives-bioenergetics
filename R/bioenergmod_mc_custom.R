@@ -103,6 +103,9 @@ resample_depthcurves <- function(origsimpath, ...) {
     filter(group == '2013-14') %>% 
     select(-group) %>% 
     complete(habitat, yday, fill = list(prop.accessible = NA)) %>% 
+    # try adjusting whep_fall down so this process can generate some error
+    mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 0.95,
+                                       TRUE ~ prop.accessible)) %>% 
     split(.$habitat) %>% 
     map(function(x) {
       zp = rlogis(10000, location=0, scale=0.25)
@@ -335,7 +338,7 @@ simulate_habitat_change = function(i, base, floodsim, depthsim, days, groups) {
   return(changesim)
 }
 
-summarize_mc <- function(mc, element, var, groups, days, by = 'day') {
+summarize_mc <- function(mc, element, var, groups, days, by = 'day', origdat = NULL) {
   if (by == 'day') {
     if (var %in% dimnames(mc[[element]])[[2]]) {
       tibble(group = rep(groups, each = days),
@@ -357,17 +360,80 @@ summarize_mc <- function(mc, element, var, groups, days, by = 'day') {
              ucl = NA)
     }
   } else if (by == 'year') {
+    
+    f = rep(groups, each = days) %>% as.factor()
+    
     if (var %in% dimnames(mc[[element]])[[2]]) {
-      f = rep(groups, each = days) %>% as.factor()
-      tibble(group = groups,
-             mean = apply(mc[[element]][, var, ], MARGIN = 2, split, f) %>% 
-               map_dfr(map, sum) %>% 
-               apply(MARGIN = 2, mean)) %>% 
-        bind_cols(apply(mc[[element]][, var, ], MARGIN = 2, split, f) %>% 
-                    map_dfr(map, sum) %>% 
-                    apply(MARGIN = 2, quantile, c(0.5, 0.025, 0.975)) %>% 
-                    t() %>% as_tibble() %>% 
-                    rename(median = '50%', lcl = '2.5%', ucl = '97.5%'))
+      
+      origdat %>% select(group, total = !!var) %>% 
+        mutate(habitat = var) %>% 
+        group_by(group, habitat) %>% 
+        summarize_at(vars(-group_cols()), ~ sum(.)) %>% 
+        left_join(tibble(group = groups,
+                         mc_mean = apply(mc[[element]][, var, ], 
+                                         MARGIN = 2, split, f) %>% 
+                           map_dfr(map, sum) %>% 
+                           apply(MARGIN = 2, mean)) %>% 
+                    bind_cols(apply(mc[[element]][, var, ], 
+                                    MARGIN = 2, split, f) %>% 
+                                map_dfr(map, sum) %>% 
+                                apply(MARGIN = 2, quantile, 
+                                      c(0.5, 0.025, 0.975)) %>% 
+                                t() %>% as_tibble() %>% 
+                                rename(mc_median = '50%', lcl = '2.5%', 
+                                       ucl = '97.5%')),
+                  by = 'group')
+      
+    } else if (var == 'wetlands') {
+
+      origdat %>% select(group, total = !!var) %>% 
+        mutate(habitat = var) %>% 
+        group_by(group, habitat) %>% 
+        summarize_at(vars(-group_cols()), ~ sum(.)) %>% 
+        left_join(tibble(group = groups,
+                         # first sum across perm and seas for each date, year, and iteration
+                         mc_mean = apply(mc[[element]][, c('perm', 'seas'), ],
+                                         MARGIN = c(1, 3), sum) %>% 
+                           apply(MARGIN = 2, split, f) %>% 
+                           map_dfr(map, sum) %>% 
+                           apply(MARGIN = 2, mean)) %>% 
+                    bind_cols(apply(mc[[element]][, c('perm', 'seas'), ],
+                                    MARGIN = c(1, 3), sum) %>% 
+                                apply(MARGIN = 2, split, f) %>% 
+                                map_dfr(map, sum) %>% 
+                                apply(MARGIN = 2, quantile, 
+                                      c(0.5, 0.025, 0.975)) %>% 
+                                t() %>% as_tibble() %>% 
+                                rename(mc_median = '50%', lcl = '2.5%', 
+                                       ucl = '97.5%')),
+                  by = 'group')
+      
+    } else if (var == 'totalfree') {
+
+      origdat %>% select(group, wetlands, rice, corn, other) %>% 
+        mutate(habitat = var) %>% 
+        group_by(group, habitat) %>% 
+        summarize_at(vars(-group_cols()), ~ sum(.)) %>% 
+        mutate(total = wetlands + rice + corn + other) %>% 
+        select(group, habitat, total) %>% 
+        left_join(tibble(group = groups,
+                         # first sum across unincentivized habitat for each date, year, and iteration
+                         mc_mean = apply(mc[[element]][, c('perm', 'seas', 'rice', 'corn', 'other'), ],
+                                         MARGIN = c(1, 3), sum) %>% 
+                           apply(MARGIN = 2, split, f) %>% 
+                           map_dfr(map, sum) %>% 
+                           apply(MARGIN = 2, mean)) %>% 
+                    bind_cols(apply(mc[[element]][, c('perm', 'seas', 'rice', 'corn', 'other'), ],
+                                    MARGIN = c(1, 3), sum) %>% 
+                                apply(MARGIN = 2, split, f) %>% 
+                                map_dfr(map, sum) %>% 
+                                apply(MARGIN = 2, quantile, 
+                                      c(0.5, 0.025, 0.975)) %>% 
+                                t() %>% as_tibble() %>% 
+                                rename(mc_median = '50%', lcl = '2.5%', 
+                                       ucl = '97.5%')),
+                  by = 'group')
+      
     } else {
       tibble(group = rep(groups, each = days),
              mean = NA,
@@ -375,6 +441,42 @@ summarize_mc <- function(mc, element, var, groups, days, by = 'day') {
              lcl = NA,
              ucl = NA)
     }
+  } else if (by == 'season') {
+    # season and year totals
+    f = rep(groups, each = days) %>% as.factor()
+    g = rep(c(rep('fall', 184), rep('spring', days - 184)), length(groups))
+    fg = paste(f, g) %>% as.factor()
+    
+    if (var %in% dimnames(mc[[element]])[[2]]) {
+      origdat %>% select(group, !!var) %>% mutate(season = g) %>% 
+        group_by(group, season) %>% 
+        summarize_at(vars(-group_cols()), ~ sum(.)) %>% 
+        rename(total = shortfall) %>% 
+        left_join(enframe(apply(mc[[element]][, var, ], 
+                                MARGIN = 2, split, fg) %>% 
+                            map_dfr(map, sum) %>% 
+                            apply(MARGIN = 2, mean)) %>% 
+                    left_join(apply(mc[[element]][, var, ], 
+                                    MARGIN = 2, split, fg) %>% 
+                                map_dfr(map, sum) %>% 
+                                apply(MARGIN = 2, quantile, 
+                                      c(0.5, 0.025, 0.975)) %>% 
+                                t() %>% as.data.frame() %>% 
+                                rownames_to_column() %>% 
+                                rename(mc_median = '50%', lcl = '2.5%', 
+                                       ucl = '97.5%'),
+                              by = c('name' = 'rowname')) %>% 
+                    separate(name, into = c('group', 'season'), sep = ' ') %>% 
+                    rename(mc_mean = value),
+                  by = c('group', 'season'))
+    }
+  } else {
+    tibble(group = fg,
+           mean = NA,
+           median = NA,
+           lcl = NA,
+           ucl = NA) %>% 
+      separate(group, into = c('group', 'season'), sep = ' ')
   }
 
 }
