@@ -174,17 +174,33 @@ the_plan <-
       mutate(population = recode(population, obs = 'baseline', obj = 'objectives'),
              incentives = recode(incentives, free = 'without')),
 
+    shortfall_byday_mc = map2_dfr(models_mc,
+                                  energysum %>% 
+                                    mutate(scenario = factor(scenario, levels = names(models_mc))) %>% 
+                                    split(.$scenario),
+                                  ~summarize_mc(mc = .x,
+                                                element = 'energy',
+                                                var = 'shortfall',
+                                                groups = c('2013-14', '2014-15', '2015-16', '2016-17'),
+                                                days = 319, by = 'day',
+                                                origdat = .y),
+                                  .id = 'scenario') %>% 
+      separate(scenario, into = c('population', 'incentives'), remove = FALSE) %>% 
+      mutate(population = recode(population, obs = 'baseline', obj = 'objectives'),
+             incentives = recode(incentives, free = 'without')),
+    
     # compile estimated totals of accessible habitat (compared to original point estimates)
     accessible_mc = map_dfr(c('wetlands', 'rice', 'corn', 'other', 
                               'br_fall', 'br_spring', 'whep_fall', 
-                              'whep_vardd', 'incentives', 'totalfree') %>% set_names(),
+                              'whep_vardd', 'incentives', 'totalfree',
+                              'grandtotal') %>% set_names(),
                             ~summarize_mc(models_mc$obj_with, 
                                           element = 'accessible', 
                                           var = .x,
                                           groups = c('2013-14', '2014-15', 
                                                      '2015-16', '2016-17'),
                                           days = 319, by = 'year',
-                                          orighabitat = habitat_avail %>% 
+                                          origdat = habitat_avail %>% 
                                             filter(watertype == 'accessible')),
                             .id = 'habitat'),
 
@@ -249,15 +265,22 @@ the_plan <-
     
     # CREATE TABLES--------------
     
-    table_effort = make_habitat_table(effort, 
-                                      pathout = file_out('doc/table_habitat_accessible.docx')),
+    table_effort = make_effort_table(
+      effort, scale = 1000000,
+      pathout = file_out('output/table_incentive_effort.docx')),
     
-    table_habitat = make_habitat_table(accessible_mc,
-                                       pathout = file_out('doc/table_habitat_accessible.docx')),
+    table_habitat = make_habitat_table(
+      accessible_mc, scale = 1000000,
+      pathout = file_out('output/table_habitat_accessible.docx')),
     
-    table_shortfalls = make_shortfall_table(shortfallsum_mc, 
-                                            shortfall_byseason_mc, 
-                                            pathout = file_out('doc/table_shortfalls.docx')),
+    table_shortfalls = make_shortfall_table(
+      shortfallsum_mc, shortfall_byseason_mc, scale = 1000000000,
+      pathout = file_out('output/table_shortfalls.docx')),
+    
+    table_habitatneed = make_habitatneed_table(
+      fill_rice, 
+      newhabitatpath = file_in('data/filling_shortfalls_framework.csv'),
+      pathout = file_out('output/table_habitat_needs.docx')),
     
     # PLOT RESULTS---------------
     fig_landcover = plot_landcover(
@@ -288,10 +311,18 @@ the_plan <-
       segmentpalette = c('black', 'gray60'),
       ylab = 'Energy shortfall (kJ, millions)',
       filename = file_out('figs/energy_shortfall_by_year_ms.png'),
-      width = 169, height = 180, dpi = 400),
+      width = 169, height = 200, dpi = 400),
+    
+    fig_shortsum_ci = plot_shortfalls_ci(
+      shortfall_byday_mc, 
+      needspath = file_in('data/cvjv_orig/daily_energy_requirement.csv'),
+      scale = 1000000, ymax = 280,
+      ylab = 'Energy shortfall (kJ, millions)',
+      filename = file_out('figs/energy_shortfall_by_year_ci.png'),
+      width = 169, height = 200, dpi = 400),
     
     fig_shorttimeline = plot_shortfall_timeline(
-      energysum, size = 12, interval = 'week',
+      shortfall_byday_mc %>% ungroup(), size = 12, interval = 'week_ci',
       filename = file_out('figs/energy_shortfall_timeline.png'),
       width = 169, height = 30, dpi = 400),
     
