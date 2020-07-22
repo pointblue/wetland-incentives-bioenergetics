@@ -181,7 +181,7 @@ plot_shortfalls <- function(energydf, habitatdf, needspath,
   
   base <- energydf %>% filter(population == 'baseline') %>%
     ggplot(aes(time, shortfall/scale)) +
-    facet_wrap(~group, ncol = 1) +
+    facet_wrap(~group, ncol = 1, scales = 'free_x') +
     geom_area(aes(fill = incentives), position = position_identity()) +
     scale_fill_manual(values = fillpalette) +
     geom_line(data = needs, aes(yday, DER.obs/scale), size = 0.3) +
@@ -205,7 +205,7 @@ plot_shortfalls <- function(energydf, habitatdf, needspath,
   
   obj <- energydf %>% filter(population == 'objectives') %>%
     ggplot(aes(time, shortfall/scale)) +
-    facet_wrap(~group, ncol = 1) +
+    facet_wrap(~group, ncol = 1, scales = 'free_x') +
     geom_area(aes(fill = incentives), position = position_identity()) +
     scale_fill_manual(values = fillpalette) +
     geom_line(data = needs, aes(yday, DER.obj/scale), size = 0.3) +
@@ -231,6 +231,43 @@ plot_shortfalls <- function(energydf, habitatdf, needspath,
   base + obj
   ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
 
+}
+
+plot_shortfalls_ci <- function(energydf, needspath,
+                               scale = 1000000, ymax = 250, 
+                               ylab = 'Energy shortfall (kJ, millions)',
+                               filename, width = 169, height = 180, dpi = 400) {
+  # get energy needs
+  needs <- read_csv(needspath, col_types = cols())
+  
+  base <- energydf %>% filter(population == 'baseline' & incentives == 'without') %>%
+    ggplot(aes(time, total/scale)) +
+    facet_wrap(~group, ncol = 1, scales = 'free_x') +
+    geom_ribbon(aes(ymin = lcl/scale, ymax = ucl/scale), fill = 'gray80') +
+    geom_line() +
+    geom_line(data = needs, aes(yday, DER.obs/scale), size = 0.3, linetype = 'dashed') +
+    labs(x = NULL, y = ylab, title = 'A') +
+    scale_y_continuous(expand = c(0,0), limits = c(0, ymax)) +
+    theme_manuscript + timeaxis + timetheme + 
+    theme(legend.position = 'none',
+          panel.grid.major.x = element_blank())
+  
+  obj <- energydf %>% filter(population == 'objectives' & incentives == 'without') %>%
+    ggplot(aes(time, total/scale)) +
+    facet_wrap(~group, ncol = 1, scales = 'free_x') +
+    geom_ribbon(aes(ymin = lcl/scale, ymax = ucl/scale), fill = 'gray80') +
+    geom_line() +
+    geom_line(data = needs, aes(yday, DER.obj/scale), size = 0.3, linetype = 'dashed') +
+    labs(x = NULL, y = NULL, title = 'B') +
+    scale_y_continuous(expand = c(0,0), limits = c(0, ymax)) +
+    theme_manuscript + timeaxis + timetheme + 
+    theme(legend.position = 'none',
+          panel.grid.major.x = element_blank())
+  
+  require(patchwork)
+  base + obj
+  ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
+  
 }
 
 plot_shortfall_timeline <- function(energydf, interval = 'day', size = 16,
@@ -293,7 +330,51 @@ plot_shortfall_timeline <- function(energydf, interval = 'day', size = 16,
                 .groups = 'drop') %>% 
       arrange(scenario, population, start)
     
-  }  else if (interval == 'halfmonth') {
+  } else if (interval == 'week_ci') {
+    
+    energylab <- energydf %>% filter(incentives == 'without') %>% 
+      mutate(week = rep(c(rep(paste0('week', c(1:45)), each = 7), 
+                          rep('week46', 4)), 
+                        8)) %>% 
+      group_by(scenario, population, group, week) %>% 
+      summarize(start = min(time), 
+                end = max(time), 
+                total = sum(total), 
+                lcl = sum(lcl), 
+                ucl = sum(ucl), 
+                .groups = 'drop') %>% 
+      mutate(label = case_when(total > 0 & lcl > 0 ~ 'g97', 
+                               total > 0 & lcl == 0 ~ 'g50', 
+                               total == 0 & ucl > 0 ~ 'g2', 
+                               total == 0 & ucl == 0 ~ 'l2')) %>% 
+      group_by(scenario, population, week, start, end, label) %>% 
+      count() %>% 
+      ungroup() %>% 
+      pivot_wider(names_from = 'label', values_from = 'n') %>% 
+      arrange(population, start) %>% 
+      mutate(label = case_when(g97 == 4 ~ 'always', 
+                               g50 + g97 == 4 ~ 'consistent', 
+                               g50 == 4 ~ 'consistent', 
+                               g50 < 4 & is.na(g97) ~ 'sometimes',
+                               l2 == 4 ~ 'none', 
+                               TRUE ~ 'uncertain'))
+    
+    repeats <- rle(energylab$label)
+    
+    energylab <- energylab %>% 
+      mutate(segs = rep(paste0('seg', c(1:length(repeats$lengths))), 
+                        times = repeats$lengths),
+             population = factor(population, 
+                                 levels = c('objectives', 'baseline')),
+             population = recode(population, baseline = 'baseline\npopulation',
+                                 objectives = 'population\nobjectives')) %>% 
+      group_by(scenario, population, segs, label) %>% 
+      summarize(start = min(start),
+                end = max(end)+1,
+                .groups = 'drop') %>% 
+      arrange(scenario, population, start)
+    
+  } else if (interval == 'halfmonth') {
     
     energylab <- energydf %>% filter(incentives == 'without') %>% 
       mutate(halfmonth = rep(rep(c('Jul1-15', 'Jul16-31', 'Aug1-15', 'Aug16-31',
@@ -340,14 +421,23 @@ plot_shortfall_timeline <- function(energydf, interval = 'day', size = 16,
       arrange(scenario, population, start)
   }
   
+  if ('always' %in% energylab$label) {
+    palette = c('always' = 'black',
+                'consistent' = 'gray35',
+                'sometimes' = 'gray65',
+                'uncertain' = 'gray80',
+                'none' = 'gray80')
+  } else {
+    palette = c('consistent' = 'black',
+                'sometimes' = 'gray50',
+                'none' = 'gray80')
+  }
   ggplot(energylab, 
          aes(x = start, xend = end, 
              y = population, yend = population, 
              color = label)) +
     geom_segment(linetype = 1, size = size) +
-    scale_color_manual(values = c('consistent' = 'black', 
-                                  'none' = 'gray80', 
-                                  'sometimes' = 'gray50'), name = NULL) +
+    scale_color_manual(values = palette, name = NULL) +
     labs(y = NULL, x = NULL) +
     timeaxis + theme_manuscript + timetheme + 
     theme(legend.position = 'none',
@@ -365,9 +455,9 @@ plot_filled_habitat <- function(filled, scale = 1000, ymax = 100,
     pivot_longer(min:max) %>% 
     mutate(population = recode(population, baseline = 'A', objectives = 'B')) %>% 
     ggplot(aes(time, value/scale, fill = name)) + 
-    geom_area(position = 'identity', alpha = 0.5) + 
+    geom_area(position = 'identity') + 
     facet_wrap(~population, ncol = 1) + 
-    scale_fill_manual(values = c('gray70', 'gray20')) + 
+    scale_fill_manual(values = c('gray50', 'black')) + 
     theme_manuscript + timetheme + timeaxis +
     labs(y = ylab) + ylim(0, ymax) +
     theme(legend.position = 'none')
