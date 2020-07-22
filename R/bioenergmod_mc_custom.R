@@ -341,16 +341,21 @@ simulate_habitat_change = function(i, base, floodsim, depthsim, days, groups) {
 summarize_mc <- function(mc, element, var, groups, days, by = 'day', origdat = NULL) {
   if (by == 'day') {
     if (var %in% dimnames(mc[[element]])[[2]]) {
-      tibble(group = rep(groups, each = days),
-             time = rep(c(1:days), length(groups)),
-             mean = mc[[element]][, var, ] %>% 
-               apply(MARGIN = 1, mean)) %>% 
-        bind_cols(mc[[element]][, var, ] %>% 
-                    apply(MARGIN = 1, quantile, 
-                          c(0.5, 0.025, 0.975)) %>% 
-                    t() %>% 
-                    as_tibble() %>% 
-                    rename(median = '50%', lcl = '2.5%', ucl = '97.5%'))
+      origdat %>% select(group, time, total = !!var) %>% 
+        group_by(group, time) %>% 
+        summarize_at(vars(-group_cols()), ~ sum(.)) %>% 
+        left_join(tibble(group = rep(groups, each = days),
+                         time = rep(c(1:days), length(groups)),
+                         mean = mc[[element]][, var, ] %>% 
+                           apply(MARGIN = 1, mean)) %>% 
+                    bind_cols(mc[[element]][, var, ] %>% 
+                                apply(MARGIN = 1, quantile, 
+                                      c(0.5, 0.025, 0.975)) %>% 
+                                t() %>% 
+                                as_tibble() %>% 
+                                rename(median = '50%', lcl = '2.5%', ucl = '97.5%')),
+                  by = c('group', 'time'))
+      
     } else {
       tibble(group = rep(groups, each = days),
              time = rep(c(1:days), length(groups)),
@@ -433,6 +438,36 @@ summarize_mc <- function(mc, element, var, groups, days, by = 'day', origdat = N
                                 rename(mc_median = '50%', lcl = '2.5%', 
                                        ucl = '97.5%')),
                   by = 'group')
+      
+    } else if (var == 'grandtotal') {
+      
+      origdat %>% select(-time, -watertype) %>% 
+        mutate(habitat = var) %>% 
+        group_by(group, habitat) %>% 
+        summarize_at(vars(-group_cols()), ~ sum(.)) %>% 
+        mutate(total = wetlands + rice + corn + other + incentives) %>% 
+        select(group, habitat, total) %>% 
+        left_join(tibble(group = groups,
+                         # first sum across unincentivized habitat for each date, year, and iteration
+                         mc_mean = apply(
+                           mc[[element]][, c('perm', 'seas', 'rice', 'corn', 
+                                             'other', 'incentives'), ],
+                           MARGIN = c(1, 3), sum) %>% 
+                           apply(MARGIN = 2, split, f) %>% 
+                           map_dfr(map, sum) %>% 
+                           apply(MARGIN = 2, mean)) %>% 
+                    bind_cols(
+                      apply(mc[[element]][, c('perm', 'seas', 'rice', 'corn', 
+                                              'other', 'incentives'), ],
+                            MARGIN = c(1, 3), sum) %>% 
+                        apply(MARGIN = 2, split, f) %>% 
+                        map_dfr(map, sum) %>% 
+                        apply(MARGIN = 2, quantile, c(0.5, 0.025, 0.975)) %>% 
+                        t() %>% as_tibble() %>% 
+                        rename(mc_median = '50%', lcl = '2.5%', ucl = '97.5%')
+                      ),
+                  by = 'group')
+      
       
     } else {
       tibble(group = rep(groups, each = days),
