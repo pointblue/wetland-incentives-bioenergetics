@@ -103,9 +103,6 @@ resample_depthcurves <- function(origsimpath, ...) {
     filter(group == '2013-14') %>% 
     select(-group) %>% 
     complete(habitat, yday, fill = list(prop.accessible = NA)) %>% 
-    # try adjusting whep_fall down so this process can generate some error
-    mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 0.95,
-                                       TRUE ~ prop.accessible)) %>% 
     split(.$habitat) %>% 
     map(function(x) {
       zp = rlogis(10000, location=0, scale=0.25)

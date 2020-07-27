@@ -11,7 +11,7 @@
 
 # ANNUAL TOTALS----------------
 get_WHEP_data <- function(path, cols) {
-  df <- read_xlsx(path)[cols,] %>%
+  df <- readxl::read_xlsx(path)[cols,] %>%
     pivot_longer(FY2014:FY2017, names_to = 'fiscalyear', values_to = 'acres') %>%
     mutate(ha = as.numeric(acres) / 2.47105,
            practice = case_when(`fiscal year` == 'Fall flooding (2 weeks in July,Aug,or Sep)' ~ 'WHEP_fall',
@@ -34,7 +34,7 @@ get_WHEP_timeseries <- function(df, drawdown = 14) {
   # fall flooding: stagger open water evenly over period 1 July - 15 Sep, 
   #   assume compliance with 2 weeks of "shallow" flooding + drawdown
   # - begins as late as 2 Sept (yday 64) to finish by 15 Sept (yday 77) and start drawdown
-  # - assume 100% accessible because supposed to be "shallow" flooding?
+  # - assume 90% accessible because supposed to be "shallow" flooding?
   # Note: for 2013 - flooding was for 4 weeks! (so begin as late as yday 50?)
   
   fall <- scaffold %>% 
@@ -121,7 +121,7 @@ get_WHEP_timeseries <- function(df, drawdown = 14) {
 }
 
 estimate_WHEP_compliance <- function(df, rates) {
-  # for whep_fall assume 100% compliance; for whep_vardd assume original rice
+  # for whep_fall assume 90% compliance; for whep_vardd assume original rice
   # depth curves apply
   orig_curves <- read_csv(rates, col_types = cols()) %>% 
     filter(habitat == 'rice') %>% 
@@ -129,7 +129,7 @@ estimate_WHEP_compliance <- function(df, rates) {
   
   df %>% 
     left_join(orig_curves, by = 'yday') %>% 
-    mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 1,
+    mutate(prop.accessible = case_when(habitat == 'whep_fall' ~ 0.9,
                                        habitat == 'whep_vardd' ~ fit),
            accessible = available * prop.accessible) %>% 
     select(habitat, group, yday, available, accessible, added, returned, 
