@@ -16,6 +16,7 @@ conflicted::conflict_prefer("filter", "dplyr")
 conflicted::conflict_prefer("select", "dplyr")
 conflicted::conflict_prefer("lag", "dplyr")
 conflicted::conflict_prefer("gather", "tidyr")
+conflicted::conflict_prefer("read_xlsx", "readxl")
 
 # API for rnass package:
 # acquire from: https://quickstats.nass.usda.gov/api
