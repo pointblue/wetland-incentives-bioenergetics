@@ -102,13 +102,14 @@ plot_floodcurves <- function(flooddf, filename, width = 80, height = 140,
     facet_wrap(~label, ncol = 1) +
     geom_line(aes(linetype = year, color = year)) +
     geom_hline(aes(yintercept = 0)) +
-    scale_color_manual(values = c('gray70', 'gray70', 'gray40', 'black')) +
+    scale_color_manual(values = c('gray80', 'gray40', 'gray40', 'black')) +
     scale_linetype_manual(values = c('dashed', 'dotted', 'longdash', 'solid')) +
     scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +
     labs(y = 'Proportion open water', color = NULL, linetype = NULL) +
     theme_manuscript + timeaxis + timetheme +
     theme(legend.position = c(0, 1),
           legend.justification = c(0, 1),
+          legend.key.width = unit(1.5, "line"),
           panel.grid.major.x = element_blank(),
           strip.text = element_text(hjust = 0, face = 'bold', size = 10))
   
@@ -166,8 +167,7 @@ plot_shortfalls <- function(energydf, habitatdf, needspath,
     mutate(incentives = factor(incentives, levels = c('without', 'with')))
   
   # get incentive timing
-  habitatdf <- habitatdf %>% 
-    filter(watertype == 'open') %>%  
+  habitatdf <- habitatdf %>% filter(watertype == 'open') %>%  
     select(group, time, br_fall:whep_vardd) %>% 
     pivot_longer(br_fall:whep_vardd) %>% 
     filter(value > 0) %>% 
@@ -233,39 +233,90 @@ plot_shortfalls <- function(energydf, habitatdf, needspath,
 
 }
 
-plot_shortfalls_ci <- function(energydf, needspath,
+plot_shortfalls_ci <- function(energydf, habitatdf, needspath,
                                scale = 1000000, ymax = 250, 
                                ylab = 'Energy shortfall (kJ, millions)',
-                               filename, width = 169, height = 180, dpi = 400) {
+                               filename, width = 169, height = 180, dpi = 400,
+                               fillpalette = c('without' = 'gray80', 
+                                               'with' = 'gray30'),
+                               linepalette = c('without' = 'gray20',
+                                               'with' = 'black',
+                                               'br' = 'black', 
+                                               'whep' = 'gray60'),
+                               linetypepalette = c('without' = 'dashed',
+                                                   'with' = 'solid',
+                                                   'br' = 'solid', 
+                                                   'whep' = 'dashed')) {
   # get energy needs
-  needs <- read_csv(needspath, col_types = cols())
-  
-  base <- energydf %>% filter(population == 'baseline' & incentives == 'without') %>%
+  needs <- read_csv(needspath, col_types = cols()) %>% 
+    select(time = yday, objectives = DER.obj, baseline = DER.obs) %>% 
+    pivot_longer(objectives:baseline, 
+                 names_to = 'population', 
+                 values_to = 'need')
+  # combine with shortfall estimates and CI
+  energydf = energydf %>% 
+    left_join(needs, by = c('time', 'population')) %>% 
+    mutate(incentives = factor(incentives, levels = c('without', 'with')))
+
+  # get incentive timing
+  habitatdf <- habitatdf %>% filter(watertype == 'open') %>%  
+    select(group, time, br_fall:whep_vardd) %>% 
+    pivot_longer(br_fall:whep_vardd) %>% 
+    filter(value > 0) %>% 
+    group_by(group, name) %>% 
+    summarize(start = min(time),
+              end = max(time),
+              .groups = 'drop') %>% 
+    mutate(type = if_else(name %in% c('br_spring', 'br_fall'), 'br', 'whep'),
+           y = if_else(type == 'br', .98*ymax, .94*ymax),
+           yend = if_else(type == 'br', .98*ymax, .94*ymax))
+
+  panelA <- energydf %>% filter(population == 'baseline') %>%
     ggplot(aes(time, total/scale)) +
     facet_wrap(~group, ncol = 1, scales = 'free_x') +
-    geom_ribbon(aes(ymin = lcl/scale, ymax = ucl/scale), fill = 'gray80') +
-    geom_line() +
-    geom_line(data = needs, aes(yday, DER.obs/scale), size = 0.3, linetype = 'dashed') +
+    geom_line(aes(y = need/scale), linetype = 'dotted') +
+    geom_ribbon(aes(ymin = lcl/scale, ymax = ucl/scale, fill = incentives),
+                alpha = 0.5) +
+    geom_line(aes(color = incentives, linetype = incentives)) +
+    # incentive timing segments:
+    geom_segment(data = habitatdf,
+                 aes(x = start, xend = end, y = y, yend = yend, 
+                     color = type, linetype = type),
+                 arrow = arrow(angle = 90, ends = 'both',
+                               length = unit(0.02, 'inches'))) +
+    scale_fill_manual(values = fillpalette) +
+    scale_color_manual(values = linepalette) +
+    scale_linetype_manual(values = linetypepalette) +
     labs(x = NULL, y = ylab, title = 'A') +
-    scale_y_continuous(expand = c(0,0), limits = c(0, ymax)) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, ymax)) +
     theme_manuscript + timeaxis + timetheme + 
     theme(legend.position = 'none',
           panel.grid.major.x = element_blank())
   
-  obj <- energydf %>% filter(population == 'objectives' & incentives == 'without') %>%
+  panelB <- energydf %>% filter(population == 'objectives') %>%
     ggplot(aes(time, total/scale)) +
     facet_wrap(~group, ncol = 1, scales = 'free_x') +
-    geom_ribbon(aes(ymin = lcl/scale, ymax = ucl/scale), fill = 'gray80') +
-    geom_line() +
-    geom_line(data = needs, aes(yday, DER.obj/scale), size = 0.3, linetype = 'dashed') +
+    geom_line(aes(y = need/scale), linetype = 'dotted') +
+    geom_ribbon(aes(ymin = lcl/scale, ymax = ucl/scale, fill = incentives),
+                alpha = 0.5) +
+    geom_line(aes(color = incentives, linetype = incentives)) +
+    # incentive timing segments:
+    geom_segment(data = habitatdf,
+                 aes(x = start, xend = end, y = y, yend = yend, 
+                     color = type, linetype = type),
+                 arrow = arrow(angle = 90, ends = 'both',
+                               length = unit(0.02, 'inches'))) +
+    scale_fill_manual(values = fillpalette) +
+    scale_color_manual(values = linepalette) +
+    scale_linetype_manual(values = linetypepalette) +
     labs(x = NULL, y = NULL, title = 'B') +
-    scale_y_continuous(expand = c(0,0), limits = c(0, ymax)) +
+    scale_y_continuous(expand = c(0, 0), limits = c(0, ymax)) +
     theme_manuscript + timeaxis + timetheme + 
     theme(legend.position = 'none',
           panel.grid.major.x = element_blank())
   
   require(patchwork)
-  base + obj
+  panelA + panelB
   ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
   
 }
