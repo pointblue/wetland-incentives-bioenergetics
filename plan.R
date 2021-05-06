@@ -211,7 +211,7 @@ accessible_mc = map_dfr(
                 days = 319, 
                 origdat = habitat_avail %>% filter(watertype == 'accessible')),
   .id = 'habitat') %>% 
-  write_csv('output/accesible_mc.csv')
+  write_csv('output/accessible_mc.csv')
 
 # FILL SHORTFALLS-----------
 # if new habitat has same energy density as wetlands:
@@ -277,32 +277,32 @@ fill_rice_hab = fill_rice %>%
 
 table_effort = make_effort_table(
   effort, scale = 1000000,
-  pathout = file_out('output/table_incentive_effort.docx'))
+  pathout = 'output/table_incentive_effort.docx')
 
 table_habitat = make_habitat_table(
   accessible_mc, scale = 1000000,
-  pathout = file_out('output/table_habitat_accessible.docx'))
+  pathout = 'output/table_habitat_accessible.docx')
 
 table_shortfalls = make_shortfall_table(
   shortfallsum_mc, shortfall_byseason_mc, scale = 1000000000,
-  pathout = file_out('output/table_shortfalls.docx'))
+  pathout = 'output/table_shortfalls.docx')
 
 table_habitatneed = make_habitatneed_table(
   fill_rice, 
-  newhabitatpath = file_in('data/filling_shortfalls_framework.csv'),
-  pathout = file_out('output/table_habitat_needs.docx'))
+  newhabitatpath = 'data/filling_shortfalls_framework.csv',
+  pathout = 'output/table_habitat_needs2.docx')
     
 # PLOT RESULTS---------------
 fig_landcover = plot_landcover(
   nassdat, scale = 1000, ymax = 800,
   palette = c('gray20', 'gray40', 'gray60', 'black'),
   ylab = 'Total area (ha, thousands)',
-  filename = file_out('figs/baseline_habitat_ms.png'),
+  filename = 'figs/baseline_habitat_ms.png',
   width = 80, height = 60, dpi = 400)
 
 fig_floodcurve = plot_floodcurves(
   floodpred_by_year, 
-  filename = file_out('figs/flood_curves_ms.png'),
+  filename = 'figs/flood_curves_ms.png',
   width = 80, height = 140, dpi = 400)
 
 fig_habitat = plot_habitat(
@@ -310,18 +310,8 @@ fig_habitat = plot_habitat(
   levels = c('incentives', 'rice', 'corn', 'other', 'wetlands'),
   ylabs = c('Open water (ha, thousands)',
             'Accessible open water (ha, thousands)'),
-  filename = file_out('figs/habitat_ms.png'), 
+  filename = 'figs/habitat_ms.png', 
   width = 169, height = 180, dpi = 400)
-
-# fig_shortsum = plot_shortfalls(
-#   energysum, habitat_avail, 
-#   needspath = file_in('data/cvjv_orig/daily_energy_requirement.csv'),
-#   scale = 1000000, ymax = 280,
-#   fillpalette = c('without' = 'gray80', 'with' = 'gray50'),
-#   segmentpalette = c('black', 'gray60'),
-#   ylab = 'Energy shortfall (kJ, millions)',
-#   filename = file_out('figs/energy_shortfall_by_year_ms.png'),
-#   width = 169, height = 200, dpi = 400)
 
 fig_shortsum_ci = plot_shortfalls_ci(
   energydf = shortfall_byday_mc, 
@@ -332,24 +322,18 @@ fig_shortsum_ci = plot_shortfalls_ci(
   filename = 'figs/energy_shortfall_by_year_ci2.png',
   width = 169, height = 200, dpi = 400)
 
-fig_shortsum_ci_color = plot_shortfalls_ci(
-  energydf = shortfall_byday_mc, 
+fig_shortsum = plot_shortfalls(
+  energydf = energysum, 
   habitatdf = habitat_avail,
   needspath = 'data/cvjv_orig/daily_energy_requirement.csv',
   scale = 1000000, ymax = 280,
   ylab = 'Energy shortfall (kJ, millions)',
-  filename = 'figs/energy_shortfall_by_year_ci2_color.png',
-  width = 169, height = 200, dpi = 400,
-  fillpalette = c('without' = pointblue.palette[2], 
-                  'with' = pointblue.palette[4]),
-  linepalette = c('without' = 'seagreen',
-                  'with' = pointblue.palette[4],
-                  'br' = 'black', 
-                  'whep' = 'gray60'))
+  filename = 'figs/energy_shortfall_by_year_ms2.png',
+  width = 169, height = 200, dpi = 400)
 
 fig_shorttimeline = plot_shortfall_timeline(
   shortfall_byday_mc %>% ungroup(), size = 12, interval = 'week_ci',
-  filename = file_out('figs/energy_shortfall_timeline.png'),
+  filename = 'figs/energy_shortfall_timeline.png',
   width = 169, height = 30, dpi = 400)
 
 # plot_incentive_effects(energysum, consumed, habitat_avail),
@@ -357,6 +341,6 @@ fig_shorttimeline = plot_shortfall_timeline(
 fig_filled = plot_filled_habitat(
   fill_rice_hab, scale = 1000, 
   ylab = 'Additional habitat needed (ha, thousands)',
-  filename = file_out('figs/filled_shortfalls.png'),
+  filename = 'figs/filled_shortfalls.png',
   width = 80, height = 100, dpi = 400)
 
