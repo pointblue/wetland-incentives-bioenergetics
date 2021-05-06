@@ -382,16 +382,32 @@ make_shortfall_table <- function(shortfalltotals, shortfallseason,
 
 make_habitatneed_table <- function(filldat, newhabitatpath, pathout) {
   tabledat <- left_join(read_csv(newhabitatpath, col_types = cols()),
-                        filldat, by = c('start', 'end')) %>% 
+                        filldat, by = c('start', 'end'))
+  
+  tabledat_format = bind_rows(
+    tabledat,
+    tabledat %>% 
+      mutate(season = if_else(end < 185, 'fall', 'spring')) %>% 
+      group_by(group, population, season) %>% 
+      summarize(filled = sum(filled), 
+                .groups = 'drop') %>% 
+      mutate(start.date = case_when(season == 'fall' ~ 'Fall Total', 
+                                    season == 'spring' ~ 'Spring Total'), 
+             start = 320, end = 320) %>% 
+      select(-season)
+    ) %>% 
     mutate(filled = format(filled, big.mark = ',')) %>% 
     pivot_wider(names_from = group, values_from = filled) %>% 
     arrange(population, start) %>% 
     mutate(start.date = factor(start.date, levels = c(' ', unique(start.date)))) %>% 
     select(-start, -end) %>% 
     complete(start.date, population) %>% 
-    arrange(population, start.date)
+    arrange(population, start.date) %>% 
+    mutate(population = case_when(!is.na(`2013-14`) ~ '',
+                                  TRUE ~ population))
   
-  table <- flextable(tabledat, 
+  require(flextable)
+  table <- flextable(tabledat_format, 
                      col_keys = c('population', 'dates',
                                   '2013-14', '2014-15', '2015-16', '2016-17')) %>% 
     flextable::compose(j = "dates",
@@ -399,12 +415,12 @@ make_habitatneed_table <- function(filldat, newhabitatpath, pathout) {
     set_header_labels(population = '', 
                       dates = 'program interval') %>% 
     merge_at(i = 1, j = 1:6, part = 'body') %>% 
-    merge_at(i = 22, j = 1:6, part = 'body') %>% 
+    merge_at(i = 24, j = 1:6, part = 'body') %>% 
     theme_vanilla() %>% 
     font(part = 'all', fontname = 'Times New Roman') %>% 
     fontsize(part = 'all', size = 12) %>% 
     bold(part = 'header') %>% 
-    bold(i = c(1, 22), part = 'body') %>% 
+    bold(i = c(1, 24), part = 'body') %>% 
     set_table_properties(width = 1, layout = 'autofit') %>% 
     # autofit(part = 'header') %>% 
     # autofit(add_w = 0, add_h = 0, part = 'body') %>% 
@@ -412,7 +428,9 @@ make_habitatneed_table <- function(filldat, newhabitatpath, pathout) {
     align(j = 1, align = 'left', part = 'body') %>%
     align(j = 2, align = 'center', part = 'body') %>% 
     border_inner_h(border = officer::fp_border(width = 0)) %>% 
-    border(i = 22, border.top = officer::fp_border())
+    border(i = 22, border.top = officer::fp_border()) %>% 
+    border(i = 24, border.top = officer::fp_border()) %>% 
+    border(i = 45, border.top = officer::fp_border())
   
   save_as_docx(table, path = pathout)
   return(table)
