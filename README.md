@@ -1,10 +1,5 @@
----
-output:
-  md_document:
-    variant: gfm
----
-
-## Shorebird bioenergetics & Central Valley habitat incentives
+Shorebird bioenergetics & Central Valley habitat incentives
+================
 
 This repository is for a study of the contribution of shorebird habitat
 incentive programs in the Central Valley (e.g. Bird Returns, WHEP) to
@@ -14,7 +9,8 @@ of these incentive programs to meeting Central Valley Joint Venture
 population objectives and reducing shorebird energy shortfalls during
 the non-breeding season.
 
-## Authors: Greg Golet, Kristen Dybala, Matt Reiter, Krisitn Sesser, Mark Reynolds, Rodd Kelsey
+**Authors:** Greg Golet, Kristen Dybala, Matt Reiter, Kristin Sesser,
+Mark Reynolds, Rodd Kelsey
 
 ## STATUS:
 
