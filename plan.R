@@ -290,7 +290,7 @@ table_shortfalls = make_shortfall_table(
 table_habitatneed = make_habitatneed_table(
   fill_rice, 
   newhabitatpath = 'data/filling_shortfalls_framework.csv',
-  pathout = 'output/table_habitat_needs2.docx')
+  pathout = 'output/table_habitat_needs.docx')
     
 # PLOT RESULTS---------------
 fig_landcover = plot_landcover(
@@ -319,7 +319,7 @@ fig_shortsum_ci = plot_shortfalls_ci(
   needspath = 'data/cvjv_orig/daily_energy_requirement.csv',
   scale = 1000000, ymax = 280,
   ylab = 'Energy shortfall (kJ, millions)',
-  filename = 'figs/energy_shortfall_by_year_ci2.png',
+  filename = 'figs/energy_shortfall_by_year_ci.png',
   width = 169, height = 200, dpi = 400)
 
 fig_shortsum = plot_shortfalls(
@@ -328,7 +328,7 @@ fig_shortsum = plot_shortfalls(
   needspath = 'data/cvjv_orig/daily_energy_requirement.csv',
   scale = 1000000, ymax = 280,
   ylab = 'Energy shortfall (kJ, millions)',
-  filename = 'figs/energy_shortfall_by_year_ms2.png',
+  filename = 'figs/energy_shortfall_by_year_ms.png',
   width = 169, height = 200, dpi = 400)
 
 fig_shorttimeline = plot_shortfall_timeline(
