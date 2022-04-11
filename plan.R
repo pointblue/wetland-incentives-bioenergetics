@@ -78,6 +78,7 @@ change = estimate_habitat_change(
   floodcurves = floodpred_by_year,
   time = 'yday', value = 'fit', wetsplit = TRUE) %>% 
   append_incentives(brdat, whepdat)
+save(change, file = 'output/change.RData')
 # change is a list of lists: one element for each year ("group"), within which
 # are the elements: openwater, added, returned, accessible, prop.accessible;
 # each of these is a df with columns for time (day of year) and each cover type
@@ -310,6 +311,7 @@ fig_habitat = plot_habitat(
   levels = c('incentives', 'rice', 'corn', 'other', 'wetlands'),
   ylabs = c('Open water (ha, thousands)',
             'Accessible open water (ha, thousands)'),
+  col = c('brown', pointblue.palette[3], 'gold', pointblue.palette[c(2, 4)]),
   filename = 'figs/habitat_ms.png', 
   width = 169, height = 180, dpi = 400)
 
@@ -333,6 +335,11 @@ fig_shortsum = plot_shortfalls(
 
 fig_shorttimeline = plot_shortfall_timeline(
   shortfall_byday_mc %>% ungroup(), size = 12, interval = 'week_ci',
+  col = c('always' = 'brown',
+          'consistent' = pointblue.palette[3],
+          'sometimes' = 'gold',
+          'uncertain' = 'darkgreen',
+          'none' = 'darkgreen'),
   filename = 'figs/energy_shortfall_timeline.png',
   width = 169, height = 30, dpi = 400)
 
@@ -341,6 +348,7 @@ fig_shorttimeline = plot_shortfall_timeline(
 fig_filled = plot_filled_habitat(
   fill_rice_hab, scale = 1000, 
   ylab = 'Additional habitat needed (ha, thousands)',
+  col = c('gold', 'brown'),
   filename = 'figs/filled_shortfalls.png',
   width = 80, height = 100, dpi = 400)
 
