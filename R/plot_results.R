@@ -23,8 +23,6 @@ pointblue.palette <- c('#4495d1', '#74b743', '#f7941d', '#005baa', '#bfd730',
                        #add a few more complementary colors
                        '#b74374', '#5e2a84', '#d2c921')
 
-pal <- c(pointblue.palette[c(9, 3)], 'yellow', pointblue.palette[c(2, 4)])
-
 # theme for manuscript figures (smaller font sizes)
 theme_manuscript <- theme_classic() + 
   theme(title = element_text(size = 10),
@@ -105,7 +103,7 @@ plot_floodcurves <- function(flooddf, filename, width = 80, height = 140,
     scale_color_manual(values = c('gray80', 'gray40', 'gray40', 'black')) +
     scale_linetype_manual(values = c('dashed', 'dotted', 'longdash', 'solid')) +
     scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +
-    labs(y = 'Proportion open water', color = NULL, linetype = NULL) +
+    labs(y = 'Proportion with open water', color = NULL, linetype = NULL) +
     theme_manuscript + timeaxis + timetheme +
     theme(legend.position = c(0, 1),
           legend.justification = c(0, 1),
@@ -122,7 +120,8 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
                                     'wetlands'),
                          ylabs = c('Open water (ha, thousands)',
                                    'Accessible open water (ha, thousands)'),
-                         filename, width = 169, height = 180, dpi = 400) {
+                         col = NULL,
+                         filename = NULL, width = 169, height = 180, dpi = 400) {
   habitatdf <- habitatdf %>%
     select(group, time, watertype, wetlands, rice, corn, other, incentives) %>%
     gather(wetlands:incentives, key = 'habitat', value = 'value') %>%
@@ -132,7 +131,7 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
   open <- habitatdf %>% filter(watertype == 'open') %>%
     ggplot() + facet_wrap(~group, ncol = 1) +
     geom_area(aes(time, value/scale, fill = habitat)) +
-    scale_fill_manual(values = pal, name = NULL) +
+    scale_fill_manual(values = col, name = NULL) +
     labs(x = NULL, y = ylabs[1], title = 'A') +
     scale_y_continuous(expand = c(0, 0), limits = c(0, ymax)) +
     theme_manuscript + timeaxis + timetheme +
@@ -143,7 +142,7 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
   accessible <- habitatdf %>% filter(watertype == 'accessible') %>%
     ggplot() + facet_wrap(~group, ncol = 1) +
     geom_area(aes(time, value/scale, fill = habitat)) +
-    scale_fill_manual(values = pal, name = NULL) +
+    scale_fill_manual(values = col, name = NULL) +
     labs(x = NULL, y = ylabs[2], title = 'B') +
     scale_y_continuous(expand = c(0, 0), limits = c(0, ymax)) +
     theme_manuscript + timeaxis + timetheme +
@@ -151,8 +150,14 @@ plot_habitat <- function(habitatdf, scale = 1000, ymax = 250,
           panel.grid.major.x = element_blank())
 
   require(patchwork)
-  open + accessible
-  ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
+  p = open + accessible
+  print(p)
+  
+  if (!is.null(filename)) {
+    ggsave(filename, plot = p,
+           height = height, width = width, units = 'mm', dpi = dpi)
+  }
+  return(p)
 
 }
 
@@ -289,7 +294,8 @@ plot_shortfalls_ci <- function(energydf, habitatdf, needspath,
 }
 
 plot_shortfall_timeline <- function(energydf, interval = 'day', size = 16,
-                                    filename, height, width, dpi) {
+                                    filename = NULL, height, width, dpi,
+                                    col = NULL) {
   if (interval == 'day') {
     energylab <- energydf %>% filter(incentives == 'without') %>% 
       group_by(scenario, population, time) %>% 
@@ -439,48 +445,67 @@ plot_shortfall_timeline <- function(energydf, interval = 'day', size = 16,
       arrange(scenario, population, start)
   }
   
-  if ('always' %in% energylab$label) {
-    palette = c('always' = 'black',
-                'consistent' = 'gray35',
-                'sometimes' = 'gray65',
-                'uncertain' = 'gray80',
-                'none' = 'gray80')
+  if (is.null(col)) {
+    if ('always' %in% energylab$label) {
+      palette = c('always' = 'black',
+                  'consistent' = 'gray35',
+                  'sometimes' = 'gray65',
+                  'uncertain' = 'gray80',
+                  'none' = 'gray80')
+    } else {
+      palette = c('consistent' = 'black',
+                  'sometimes' = 'gray50',
+                  'none' = 'gray80')
+    }
   } else {
-    palette = c('consistent' = 'black',
-                'sometimes' = 'gray50',
-                'none' = 'gray80')
+    palette = col
   }
-  ggplot(energylab, 
-         aes(x = start, xend = end, 
-             y = population, yend = population, 
-             color = label)) +
+
+  
+  p = ggplot(energylab, 
+             aes(x = start, xend = end, 
+                 y = population, yend = population, 
+                 color = label)) +
     geom_segment(linetype = 1, size = size) +
     scale_color_manual(values = palette, name = NULL) +
     labs(y = NULL, x = NULL) +
     timeaxis + theme_manuscript + timetheme + 
     theme(legend.position = 'none',
           panel.grid.major.x = element_blank())
-  
-  ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
+  print(p)
+
+  if (!is.null(filename)) {
+    ggsave(filename, plot = p,
+           height = height, width = width, units = 'mm', dpi = dpi)
+  }
+
 }
 
 plot_filled_habitat <- function(filled, scale = 1000, ymax = 100,
                                 ylab = 'Additional habitat needed (ha, thousands)',
-                                filename, height, width, units, dpi) {
-  filled %>% select(population:time, new) %>% 
+                                col = c('gray50', 'black'),
+                                filename = NULL, height, width, units, dpi) {
+  df = filled %>% select(population:time, new) %>% 
     group_by(population, time) %>% 
     summarize(min = min(new), max = max(new), .groups = 'drop') %>% 
     pivot_longer(min:max) %>% 
-    mutate(population = recode(population, baseline = 'A', objectives = 'B')) %>% 
-    ggplot(aes(time, value/scale, fill = name)) + 
+    mutate(population = recode(population, baseline = 'A', objectives = 'B'))
+  
+  p = ggplot(df, aes(time, value/scale, fill = name)) + 
     geom_area(position = 'identity') + 
-    facet_wrap(~population, ncol = 1) + 
-    scale_fill_manual(values = c('gray50', 'black')) + 
+    facet_wrap(~population, ncol = 1) +
+    scale_fill_manual(values = col) +
     theme_manuscript + timetheme + timeaxis +
     labs(y = ylab) + ylim(0, ymax) +
     theme(legend.position = 'none')
+
+  print(p)
   
-  ggsave(filename, height = height, width = width, units = 'mm', dpi = dpi)
+  if (!is.null(filename)) {
+    ggsave(filename, plot = p,
+           height = height, width = width, units = 'mm', dpi = dpi)
+  }
+  return(p)
 }
 
 plot_incentive_effects <- function(energydf, consumptiondf, habitatdf, 
