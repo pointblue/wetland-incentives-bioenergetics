@@ -129,10 +129,31 @@ consumed = map_dfr(models,
 #   result should be a named list with elements for each
 #   landcover type; each list contains estimates for each time step (rows) and
 #   simulation (columns)
+
+# # reconstitute original CVJV resamples from separate csv files stored on GitHub
+# floodsim = list(
+#   wetlands = read_csv('data/cvjv_orig/resamples/floodsim_wetlands.csv') %>% as.matrix(),
+#   rice = read_csv('data/cvjv_orig/resamples/floodsim_rice.csv') %>% as.matrix(),
+#   corn = read_csv('data/cvjv_orig/resamples/floodsim_corn.csv') %>% as.matrix(),
+#   other = read_csv('data/cvjv_orig/resamples/floodsim_other.csv') %>% as.matrix(),
+#   corn_north = read_csv('data/cvjv_orig/resamples/floodsim_corn_north.csv') %>% as.matrix()
+# )
+# depthsim = list(
+#   rice = read_csv('data/cvjv_orig/resamples/depthsim_rice.csv') %>% as.matrix(),
+#   corn = read_csv('data/cvjv_orig/resamples/depthsim_other.csv') %>% pull(corn),
+#   other = read_csv('data/cvjv_orig/resamples/depthsim_other.csv') %>% pull(other),
+#   perm = read_csv('data/cvjv_orig/resamples/depthsim_perm.csv') %>% as.matrix(),
+#   seas = read_csv('data/cvjv_orig/resamples/depthsim_seas.csv') %>% as.matrix(),
+#   corn_north = read_csv('data/cvjv_orig/resamples/depthsim_other.csv') %>% pull(corn_north)
+# )
+# energysim = read_csv('data/cvjv_orig/resamples/energysim.csv')
+# save(floodsim, depthsim, energysim, file = 'data/resamples.RData')
+
 floodsim = resample_floodcurves(
   floodmod_by_year, seas = 67849.127, perm = 6986.170) %>% 
   add_original_resamples( #for "other" field and row crops
     origsimpath = 'data/cvjv_orig/resamples.RData')
+
 
 depthsim = resample_depthcurves(
   origsimpath = 'data/cvjv_orig/resamples.RData',
@@ -153,6 +174,25 @@ models_mc = run_mc_all(
   brdat, whepdat)
   
 save(models_mc, file = 'output/model_results_mc.RData')
+# models_mc is a list of lists: one element for each scenario (shorebird
+# population size as baseline or objectives, and including or excluding habitat
+# from incentive programs), within which are the elements: energy,
+# energy.supply, openwater, and accessible; each of these is an array with
+# dimensions 1:1276 (319 timesteps/days for each of the 4 years of the study),
+# 5-10 varying columns, and 1:1000 (resamples). 
+
+# The element "energy" contains 5 columns, including the time (day of year where
+# 1 July = day 1), DER (daily energy requirement), supply (total energy supply),
+# accessible (total accessible energy supply), and shortfall (total energy
+# shortfall, as the difference between DER and accessible); time and DER do not
+# vary with scenario or resamples. 
+
+# The other elements energy.supply, openwater, and accessible contain the
+# columns: time, corn, other, perm, rice, and seas, with corresponding values
+# for the amount of habitat or energy supply provided by each land cover class;
+# if the scenario includes habitat from incentive programs, these elements also
+# contain columns for br_fall, br_spring, whep_fall, whep_vardd, and incentives
+# (the total across all incentive programs)
 
 # compile shortfalls: find mean, lcl, ucl for each scenario and time step
 # across all iterations (compared to original point estimates)
@@ -273,7 +313,8 @@ fill_rice_hab = fill_rice %>%
                              column = "filled", drawdown = 0)) %>% 
   map_dfr(~map_dfr(.x, ~.x[['accessible']], .id = 'group'),
           .id = 'population')
-    
+write_csv(fill_rice_hab, 'output/fill_rice_hab.csv')
+
 # CREATE TABLES--------------
 
 table_effort = make_effort_table(
@@ -294,61 +335,98 @@ table_habitatneed = make_habitatneed_table(
   pathout = 'output/table_habitat_needs.docx')
     
 # PLOT RESULTS---------------
-fig_landcover = plot_landcover(
-  nassdat, scale = 1000, ymax = 800,
-  palette = c('gray20', 'gray40', 'gray60', 'black'),
-  ylab = 'Total area (ha, thousands)',
-  filename = 'figs/baseline_habitat_ms.png',
-  width = 80, height = 60, dpi = 400)
+# Specs for Ecological Monographs:
 
-fig_floodcurve = plot_floodcurves(
+# Provide each figure a single time as a high-resolution image suitable for
+# publication. Preferred file formats include TIF, EPS, PDF, or AI at 600 ppi,
+# while JPEG, PPT/PPTX, or DOC/DOCX are acceptable if the resolution is
+# sufficient. See Author Guidelines online for more details. Ultimately, we are
+# looking for files that remain crisp and clear when the on-screen view is
+# significantly zoomed in, and produce crisp, clean prints for readers that
+# print the PDF version of the final publication.
+
+# Please provide figures sized for PDF publication. Column width figures (3
+# inches) are preferred when possible. For wide or multi-panel figures, provide
+# images sized no larger than 6 inches wide x 8 inches high for portrait layout
+# in the typeset PDF of your paper. All text should be no smaller than 6 point
+# and no larger than 10 point when the image is sized for publication. For
+# readability, we suggest using a text size hierarchy, sizing axis numbers
+# between 6 and 7-point, axis labels between 8 and 9-point, panel labels that
+# consist of words between 7 and 8 point, and panel labels that consist of a
+# single letter at 10 point.
+
+# fig_landcover = plot_landcover(
+#   nassdat, scale = 1000, ymax = 800,
+#   palette = c('gray20', 'gray40', 'gray60', 'black'),
+#   ylab = 'Total area (ha, thousands)',
+#   filename = 'figs/baseline_habitat_ms.png',
+#   width = 80, height = 60, dpi = 400)
+
+# Fig 1: Flood curves (column width - 3 inches)
+plot_floodcurves(
   floodpred_by_year, 
-  filename = 'figs/flood_curves_ms.png',
-  width = 80, height = 140, dpi = 400)
+  # read_csv('output/floodcurves.csv'),
+  filename = 'figs/Fig1_floodcurves.tiff',
+  width = 3, height = 5.25, units = 'in', dpi = 600)
 
-fig_habitat = plot_habitat(
-  habitat_avail, scale = 1000, ymax = 250,
+# Fig 2: Open water and accessible water (double - 6 x 8 inches)
+plot_habitat(
+  # habitat_avail, 
+  read_csv('output/habitat_avail.csv'),
+  scale = 1000, ymax = 250,
   levels = c('incentives', 'rice', 'corn', 'other', 'wetlands'),
   ylabs = c('Open water (ha, thousands)',
             'Accessible open water (ha, thousands)'),
   col = c('brown', pointblue.palette[3], 'gold', pointblue.palette[c(2, 4)]),
-  filename = 'figs/habitat_ms.png', 
-  width = 169, height = 180, dpi = 400)
+  filename = 'figs/Fig2_habitat.tiff', 
+  width = 6, height = 8, units = 'in', dpi = 600)
 
-fig_shortsum_ci = plot_shortfalls_ci(
-  energydf = shortfall_byday_mc, 
-  habitatdf = habitat_avail,
+# Fig 3: Shortfalls with CI (double - 6 x 8 inches)
+plot_shortfalls_ci(
+  # energydf = shortfall_byday_mc,
+  energydf = read_csv('output/shortfall_byday_mc.csv'),
+  # habitatdf = habitat_avail,
+  habitatdf = read_csv('output/habitat_avail.csv'),
   needspath = 'data/cvjv_orig/daily_energy_requirement.csv',
   scale = 1000000, ymax = 280,
   ylab = 'Energy shortfall (kJ, millions)',
-  filename = 'figs/energy_shortfall_by_year_ci.png',
-  width = 169, height = 200, dpi = 400)
+  filename = 'figs/Fig3_shortfalls.tiff',
+  width = 6, height = 8, units = 'in', dpi = 600)
 
-fig_shortsum = plot_shortfalls(
-  energydf = energysum, 
-  habitatdf = habitat_avail,
+# Fig 4: Effects of incentives on shortfalls (double - 6 x 8 inches)
+plot_shortfalls(
+  # energydf = energysum,
+  energydf = read_csv('output/bioenergetics_results_energy.csv'),
+  # habitatdf = habitat_avail,
+  habitatdf = read_csv('output/habitat_avail.csv'),
   needspath = 'data/cvjv_orig/daily_energy_requirement.csv',
   scale = 1000000, ymax = 280,
   ylab = 'Energy shortfall (kJ, millions)',
-  filename = 'figs/energy_shortfall_by_year_ms.png',
-  width = 169, height = 200, dpi = 400)
+  filename = 'figs/Fig4_shortfall_comparison.tiff',
+  width = 6, height = 8, units = 'in', dpi = 600)
 
-fig_shorttimeline = plot_shortfall_timeline(
-  shortfall_byday_mc %>% ungroup(), size = 12, interval = 'week_ci',
+# Fig 5: Color timeline (double wide but short - 6 x 2?)
+plot_shortfall_timeline(
+  # shortfall_byday_mc %>% ungroup(), 
+  read_csv('output/shortfall_byday_mc.csv'),
+  size = 10, interval = 'week_ci',
   col = c('always' = 'brown',
           'consistent' = pointblue.palette[3],
           'sometimes' = 'gold',
-          'uncertain' = 'darkgreen',
-          'none' = 'darkgreen'),
-  filename = 'figs/energy_shortfall_timeline.png',
-  width = 169, height = 30, dpi = 400)
+          'uncertain' = 'chartreuse3',
+          'none' = 'chartreuse3'),
+  filename = 'figs/Fig5_shortfall_timeline.tiff',
+  width = 6, height = 1, units = 'in', dpi = 600)
 
-# plot_incentive_effects(energysum, consumed, habitat_avail),
-
-fig_filled = plot_filled_habitat(
-  fill_rice_hab, scale = 1000, 
+# Fig 6: Color filled habitat needed (3 inches wide)
+plot_filled_habitat(
+  # fill_rice_hab, 
+  read_csv('output/fill_rice_hab.csv'),
+  scale = 1000, 
   ylab = 'Additional habitat needed (ha, thousands)',
   col = c('gold', 'brown'),
-  filename = 'figs/filled_shortfalls.png',
-  width = 80, height = 100, dpi = 400)
+  filename = 'figs/Fig6_habitatneed.tiff',
+  width = 3, height = 3.75, units = 'in', dpi = 600)
+
+
 
