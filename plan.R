@@ -165,21 +165,21 @@ energysim = resample_energydens(
 save(floodsim, depthsim, energysim, file = 'output/resamples.RData')
 
 # ARCHIVE VERSION (GIT-LARGE FILE STORAGE)
-write_csv(as.data.frame(floodsim$wetlands), 'output/resamples/floodsim_wetlands.csv')
-write_csv(as.data.frame(floodsim$rice), 'output/resamples/floodsim_rice.csv')
-write_csv(as.data.frame(floodsim$corn), 'output/resamples/floodsim_corn.csv')
-write_csv(as.data.frame(floodsim$other), 'output/resamples/floodsim_other.csv')
-write_csv(as.data.frame(floodsim$prop.perm), 'output/resamples/floodsim_prop.perm.csv')
-write_csv(as.data.frame(depthsim$rice), 'output/resamples/depthsim_rice.csv')
-write_csv(as.data.frame(depthsim$perm), 'output/resamples/depthsim_perm.csv')
-write_csv(as.data.frame(depthsim$seas), 'output/resamples/depthsim_seas.csv')
-write_csv(as.data.frame(depthsim$whep_vardd), 'output/resamples/depthsim_whep_vardd.csv')
-write_csv(as.data.frame(depthsim$whep_fall), 'output/resamples/depthsim_whep_fall.csv')
-write_csv(as.data.frame(depthsim$br_fall), 'output/resamples/depthsim_br_fall.csv')
-write_csv(as.data.frame(depthsim$br_spring), 'output/resamples/depthsim_br_spring.csv')
-write_csv(data.frame(corn = depthsim$corn, other = depthsim$other),
-          'output/resamples/depthsim_other.csv')
-write_csv(as.data.frame(energysim), 'output/resamples/energysim.csv')
+# write_csv(as.data.frame(floodsim$wetlands), 'output/resamples/floodsim_wetlands.csv')
+# write_csv(as.data.frame(floodsim$rice), 'output/resamples/floodsim_rice.csv')
+# write_csv(as.data.frame(floodsim$corn), 'output/resamples/floodsim_corn.csv')
+# write_csv(as.data.frame(floodsim$other), 'output/resamples/floodsim_other.csv')
+# write_csv(as.data.frame(floodsim$prop.perm), 'output/resamples/floodsim_prop.perm.csv')
+# write_csv(as.data.frame(depthsim$rice), 'output/resamples/depthsim_rice.csv')
+# write_csv(as.data.frame(depthsim$perm), 'output/resamples/depthsim_perm.csv')
+# write_csv(as.data.frame(depthsim$seas), 'output/resamples/depthsim_seas.csv')
+# write_csv(as.data.frame(depthsim$whep_vardd), 'output/resamples/depthsim_whep_vardd.csv')
+# write_csv(as.data.frame(depthsim$whep_fall), 'output/resamples/depthsim_whep_fall.csv')
+# write_csv(as.data.frame(depthsim$br_fall), 'output/resamples/depthsim_br_fall.csv')
+# write_csv(as.data.frame(depthsim$br_spring), 'output/resamples/depthsim_br_spring.csv')
+# write_csv(data.frame(corn = depthsim$corn, other = depthsim$other),
+#           'output/resamples/depthsim_other.csv')
+# write_csv(as.data.frame(energysim), 'output/resamples/energysim.csv')
 
 
 # returns an array, nsims deep
@@ -192,6 +192,61 @@ models_mc = run_mc_all(
   brdat, whepdat)
   
 save(models_mc, file = 'output/model_results_mc.RData')
+# models_mc is a list of lists: one element for each scenario (shorebird
+# population size as baseline or objectives, and including or excluding habitat
+# from incentive programs), within which are the elements: energy,
+# energy.supply, openwater, and accessible; each of these is an array with
+# dimensions 1:1276 (319 timesteps/days for each of the 4 years of the study),
+# 5-10 varying columns, and 1:1000 (resamples). 
+
+# The element "energy" contains 5 columns, including the time (day of year where
+# 1 July = day 1), DER (daily energy requirement), supply (total energy supply),
+# accessible (total accessible energy supply), and shortfall (total energy
+# shortfall, as the difference between DER and accessible); time and DER do not
+# vary with scenario or resamples. 
+
+# The other elements energy.supply, openwater, and accessible contain the
+# columns: time, corn, other, perm, rice, and seas, with corresponding values
+# for the amount of habitat or energy supply provided by each land cover class;
+# if the scenario includes habitat from incentive programs, these elements also
+# contain columns for br_fall, br_spring, whep_fall, whep_vardd, and incentives
+# (the total across all incentive programs)
+
+
+# ARCHIVE VERSION (GIT-LARGE FILE STORAGE)
+# # energy need and timestep: does not vary with resamples or with/without incentive programs
+# write_csv(as.data.frame(models_mc$obj_with$energy[, c('time', 'DER'), 1]),
+#           'output/model_results/objectives_energy_requirement.csv')
+# write_csv(as.data.frame(models_mc$obs_with$energy[, c('time', 'DER'), 1]),
+#           'output/model_results/baseline_energy_requirement.csv')
+# # assuming population objectives and including habitat from incentive programs:
+# write_csv(as.data.frame(models_mc$obj_with$energy[,'supply',]), 
+#           'output/model_results/objectives_with_incentives_energy_supply.csv')
+# write_csv(as.data.frame(models_mc$obj_with$energy[,'accessible',]), 
+#           'output/model_results/objectives_with_incentives_energy_accessible.csv')
+# write_csv(as.data.frame(models_mc$obj_with$energy[,'shortfall',]), 
+#           'output/model_results/objectives_with_incentives_energy_shortfall.csv')
+# # assuming baseline population and including habitat from incentive programs:
+# write_csv(as.data.frame(models_mc$obs_with$energy[,'supply',]), 
+#           'output/model_results/baseline_with_incentives_energy_supply.csv')
+# write_csv(as.data.frame(models_mc$obs_with$energy[,'accessible',]), 
+#           'output/model_results/baseline_with_incentives_energy_accessible.csv')
+# write_csv(as.data.frame(models_mc$obs_with$energy[,'shortfall',]), 
+#           'output/model_results/baseline_with_incentives_energy_shortfall.csv')
+# # assuming population objectives and excluding habitat from incentive programs:
+# write_csv(as.data.frame(models_mc$obj_free$energy[,'supply',]), 
+#           'output/model_results/objectives_without_incentives_energy_supply.csv')
+# write_csv(as.data.frame(models_mc$obj_free$energy[,'accessible',]), 
+#           'output/model_results/objectives_without_incentives_energy_accessible.csv')
+# write_csv(as.data.frame(models_mc$obj_free$energy[,'shortfall',]), 
+#           'output/model_results/objectives_without_incentives_energy_shortfall.csv')
+# # assuming baseline population and excluding habitat from incentive programs:
+# write_csv(as.data.frame(models_mc$obs_free$energy[,'supply',]), 
+#           'output/model_results/baseline_without_incentives_energy_supply.csv')
+# write_csv(as.data.frame(models_mc$obs_free$energy[,'accessible',]), 
+#           'output/model_results/baseline_without_incentives_energy_accessible.csv')
+# write_csv(as.data.frame(models_mc$obs_free$energy[,'shortfall',]), 
+#           'output/model_results/baseline_without_incentives_energy_shortfall.csv')
 
 # compile shortfalls: find mean, lcl, ucl for each scenario and time step
 # across all iterations (compared to original point estimates)
