@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 cff-version: 1.0.1
-=======
-cff-version: 1.2.0
->>>>>>> 6a3aed2f2510db9f5302357040667314cf828dfc
 message: "If you use these data and software, please cite as below:"
 authors:
   - family-names: Dybala
