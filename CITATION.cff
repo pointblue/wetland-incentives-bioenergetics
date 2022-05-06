@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use these data and software, please cite as below:"
+authors:
+  - family-names: Dybala
+    given-names: Kristen
+    orcid: https://orcid.org/0000-0002-2787-4600
+  - family-names: Golet
+    given-names: Gregory
+title: "Data and code for examining shorebird bioenergetics and habitat incentive programs in California's Central Valley"
+version: 1.0.1
+doi: 10.5281/zenodo.6523067
+date-released: 2022-05-06
